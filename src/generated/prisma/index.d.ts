@@ -43,6 +43,11 @@ export type VerificationToken = $Result.DefaultSelection<Prisma.$VerificationTok
  * 
  */
 export type ChangeLogEntry = $Result.DefaultSelection<Prisma.$ChangeLogEntryPayload>
+/**
+ * Model CostSnapshot
+ * 
+ */
+export type CostSnapshot = $Result.DefaultSelection<Prisma.$CostSnapshotPayload>
 
 /**
  * Enums
@@ -247,6 +252,16 @@ export class PrismaClient<
     * ```
     */
   get changeLogEntry(): Prisma.ChangeLogEntryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.costSnapshot`: Exposes CRUD operations for the **CostSnapshot** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CostSnapshots
+    * const costSnapshots = await prisma.costSnapshot.findMany()
+    * ```
+    */
+  get costSnapshot(): Prisma.CostSnapshotDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -692,7 +707,8 @@ export namespace Prisma {
     Session: 'Session',
     User: 'User',
     VerificationToken: 'VerificationToken',
-    ChangeLogEntry: 'ChangeLogEntry'
+    ChangeLogEntry: 'ChangeLogEntry',
+    CostSnapshot: 'CostSnapshot'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -711,7 +727,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "project" | "account" | "session" | "user" | "verificationToken" | "changeLogEntry"
+      modelProps: "project" | "account" | "session" | "user" | "verificationToken" | "changeLogEntry" | "costSnapshot"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1159,6 +1175,80 @@ export namespace Prisma {
           }
         }
       }
+      CostSnapshot: {
+        payload: Prisma.$CostSnapshotPayload<ExtArgs>
+        fields: Prisma.CostSnapshotFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CostSnapshotFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CostSnapshotFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>
+          }
+          findFirst: {
+            args: Prisma.CostSnapshotFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CostSnapshotFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>
+          }
+          findMany: {
+            args: Prisma.CostSnapshotFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>[]
+          }
+          create: {
+            args: Prisma.CostSnapshotCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>
+          }
+          createMany: {
+            args: Prisma.CostSnapshotCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CostSnapshotCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>[]
+          }
+          delete: {
+            args: Prisma.CostSnapshotDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>
+          }
+          update: {
+            args: Prisma.CostSnapshotUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>
+          }
+          deleteMany: {
+            args: Prisma.CostSnapshotDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CostSnapshotUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CostSnapshotUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>[]
+          }
+          upsert: {
+            args: Prisma.CostSnapshotUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostSnapshotPayload>
+          }
+          aggregate: {
+            args: Prisma.CostSnapshotAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCostSnapshot>
+          }
+          groupBy: {
+            args: Prisma.CostSnapshotGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CostSnapshotGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CostSnapshotCountArgs<ExtArgs>
+            result: $Utils.Optional<CostSnapshotCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1249,6 +1339,7 @@ export namespace Prisma {
     user?: UserOmit
     verificationToken?: VerificationTokenOmit
     changeLogEntry?: ChangeLogEntryOmit
+    costSnapshot?: CostSnapshotOmit
   }
 
   /* Types for Logging */
@@ -1344,10 +1435,12 @@ export namespace Prisma {
 
   export type ProjectCountOutputType = {
     changelog: number
+    costSnapshots: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     changelog?: boolean | ProjectCountOutputTypeCountChangelogArgs
+    costSnapshots?: boolean | ProjectCountOutputTypeCountCostSnapshotsArgs
   }
 
   // Custom InputTypes
@@ -1366,6 +1459,13 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountChangelogArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChangeLogEntryWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountCostSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostSnapshotWhereInput
   }
 
 
@@ -1586,6 +1686,7 @@ export namespace Prisma {
     lastActivityAt?: boolean
     createdAt?: boolean
     changelog?: boolean | Project$changelogArgs<ExtArgs>
+    costSnapshots?: boolean | Project$costSnapshotsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -1619,6 +1720,7 @@ export namespace Prisma {
   export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "status" | "frontendUrl" | "lastActivityAt" | "createdAt", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     changelog?: boolean | Project$changelogArgs<ExtArgs>
+    costSnapshots?: boolean | Project$costSnapshotsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1628,6 +1730,7 @@ export namespace Prisma {
     name: "Project"
     objects: {
       changelog: Prisma.$ChangeLogEntryPayload<ExtArgs>[]
+      costSnapshots: Prisma.$CostSnapshotPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2031,6 +2134,7 @@ export namespace Prisma {
   export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     changelog<T extends Project$changelogArgs<ExtArgs> = {}>(args?: Subset<T, Project$changelogArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChangeLogEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    costSnapshots<T extends Project$costSnapshotsArgs<ExtArgs> = {}>(args?: Subset<T, Project$costSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2473,6 +2577,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChangeLogEntryScalarFieldEnum | ChangeLogEntryScalarFieldEnum[]
+  }
+
+  /**
+   * Project.costSnapshots
+   */
+  export type Project$costSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    where?: CostSnapshotWhereInput
+    orderBy?: CostSnapshotOrderByWithRelationInput | CostSnapshotOrderByWithRelationInput[]
+    cursor?: CostSnapshotWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CostSnapshotScalarFieldEnum | CostSnapshotScalarFieldEnum[]
   }
 
   /**
@@ -7873,6 +8001,1083 @@ export namespace Prisma {
 
 
   /**
+   * Model CostSnapshot
+   */
+
+  export type AggregateCostSnapshot = {
+    _count: CostSnapshotCountAggregateOutputType | null
+    _avg: CostSnapshotAvgAggregateOutputType | null
+    _sum: CostSnapshotSumAggregateOutputType | null
+    _min: CostSnapshotMinAggregateOutputType | null
+    _max: CostSnapshotMaxAggregateOutputType | null
+  }
+
+  export type CostSnapshotAvgAggregateOutputType = {
+    costAmount: Decimal | null
+  }
+
+  export type CostSnapshotSumAggregateOutputType = {
+    costAmount: Decimal | null
+  }
+
+  export type CostSnapshotMinAggregateOutputType = {
+    id: string | null
+    projectId: string | null
+    costAmount: Decimal | null
+    createdAt: Date | null
+  }
+
+  export type CostSnapshotMaxAggregateOutputType = {
+    id: string | null
+    projectId: string | null
+    costAmount: Decimal | null
+    createdAt: Date | null
+  }
+
+  export type CostSnapshotCountAggregateOutputType = {
+    id: number
+    projectId: number
+    costAmount: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type CostSnapshotAvgAggregateInputType = {
+    costAmount?: true
+  }
+
+  export type CostSnapshotSumAggregateInputType = {
+    costAmount?: true
+  }
+
+  export type CostSnapshotMinAggregateInputType = {
+    id?: true
+    projectId?: true
+    costAmount?: true
+    createdAt?: true
+  }
+
+  export type CostSnapshotMaxAggregateInputType = {
+    id?: true
+    projectId?: true
+    costAmount?: true
+    createdAt?: true
+  }
+
+  export type CostSnapshotCountAggregateInputType = {
+    id?: true
+    projectId?: true
+    costAmount?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type CostSnapshotAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CostSnapshot to aggregate.
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostSnapshots to fetch.
+     */
+    orderBy?: CostSnapshotOrderByWithRelationInput | CostSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CostSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CostSnapshots
+    **/
+    _count?: true | CostSnapshotCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CostSnapshotAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CostSnapshotSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CostSnapshotMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CostSnapshotMaxAggregateInputType
+  }
+
+  export type GetCostSnapshotAggregateType<T extends CostSnapshotAggregateArgs> = {
+        [P in keyof T & keyof AggregateCostSnapshot]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCostSnapshot[P]>
+      : GetScalarType<T[P], AggregateCostSnapshot[P]>
+  }
+
+
+
+
+  export type CostSnapshotGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostSnapshotWhereInput
+    orderBy?: CostSnapshotOrderByWithAggregationInput | CostSnapshotOrderByWithAggregationInput[]
+    by: CostSnapshotScalarFieldEnum[] | CostSnapshotScalarFieldEnum
+    having?: CostSnapshotScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CostSnapshotCountAggregateInputType | true
+    _avg?: CostSnapshotAvgAggregateInputType
+    _sum?: CostSnapshotSumAggregateInputType
+    _min?: CostSnapshotMinAggregateInputType
+    _max?: CostSnapshotMaxAggregateInputType
+  }
+
+  export type CostSnapshotGroupByOutputType = {
+    id: string
+    projectId: string
+    costAmount: Decimal
+    createdAt: Date
+    _count: CostSnapshotCountAggregateOutputType | null
+    _avg: CostSnapshotAvgAggregateOutputType | null
+    _sum: CostSnapshotSumAggregateOutputType | null
+    _min: CostSnapshotMinAggregateOutputType | null
+    _max: CostSnapshotMaxAggregateOutputType | null
+  }
+
+  type GetCostSnapshotGroupByPayload<T extends CostSnapshotGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CostSnapshotGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CostSnapshotGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CostSnapshotGroupByOutputType[P]>
+            : GetScalarType<T[P], CostSnapshotGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CostSnapshotSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    projectId?: boolean
+    costAmount?: boolean
+    createdAt?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["costSnapshot"]>
+
+  export type CostSnapshotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    projectId?: boolean
+    costAmount?: boolean
+    createdAt?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["costSnapshot"]>
+
+  export type CostSnapshotSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    projectId?: boolean
+    costAmount?: boolean
+    createdAt?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["costSnapshot"]>
+
+  export type CostSnapshotSelectScalar = {
+    id?: boolean
+    projectId?: boolean
+    costAmount?: boolean
+    createdAt?: boolean
+  }
+
+  export type CostSnapshotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "projectId" | "costAmount" | "createdAt", ExtArgs["result"]["costSnapshot"]>
+  export type CostSnapshotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type CostSnapshotIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type CostSnapshotIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+
+  export type $CostSnapshotPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CostSnapshot"
+    objects: {
+      project: Prisma.$ProjectPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      projectId: string
+      costAmount: Prisma.Decimal
+      createdAt: Date
+    }, ExtArgs["result"]["costSnapshot"]>
+    composites: {}
+  }
+
+  type CostSnapshotGetPayload<S extends boolean | null | undefined | CostSnapshotDefaultArgs> = $Result.GetResult<Prisma.$CostSnapshotPayload, S>
+
+  type CostSnapshotCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CostSnapshotFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CostSnapshotCountAggregateInputType | true
+    }
+
+  export interface CostSnapshotDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CostSnapshot'], meta: { name: 'CostSnapshot' } }
+    /**
+     * Find zero or one CostSnapshot that matches the filter.
+     * @param {CostSnapshotFindUniqueArgs} args - Arguments to find a CostSnapshot
+     * @example
+     * // Get one CostSnapshot
+     * const costSnapshot = await prisma.costSnapshot.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CostSnapshotFindUniqueArgs>(args: SelectSubset<T, CostSnapshotFindUniqueArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CostSnapshot that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CostSnapshotFindUniqueOrThrowArgs} args - Arguments to find a CostSnapshot
+     * @example
+     * // Get one CostSnapshot
+     * const costSnapshot = await prisma.costSnapshot.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CostSnapshotFindUniqueOrThrowArgs>(args: SelectSubset<T, CostSnapshotFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CostSnapshot that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotFindFirstArgs} args - Arguments to find a CostSnapshot
+     * @example
+     * // Get one CostSnapshot
+     * const costSnapshot = await prisma.costSnapshot.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CostSnapshotFindFirstArgs>(args?: SelectSubset<T, CostSnapshotFindFirstArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CostSnapshot that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotFindFirstOrThrowArgs} args - Arguments to find a CostSnapshot
+     * @example
+     * // Get one CostSnapshot
+     * const costSnapshot = await prisma.costSnapshot.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CostSnapshotFindFirstOrThrowArgs>(args?: SelectSubset<T, CostSnapshotFindFirstOrThrowArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CostSnapshots that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CostSnapshots
+     * const costSnapshots = await prisma.costSnapshot.findMany()
+     * 
+     * // Get first 10 CostSnapshots
+     * const costSnapshots = await prisma.costSnapshot.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const costSnapshotWithIdOnly = await prisma.costSnapshot.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CostSnapshotFindManyArgs>(args?: SelectSubset<T, CostSnapshotFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CostSnapshot.
+     * @param {CostSnapshotCreateArgs} args - Arguments to create a CostSnapshot.
+     * @example
+     * // Create one CostSnapshot
+     * const CostSnapshot = await prisma.costSnapshot.create({
+     *   data: {
+     *     // ... data to create a CostSnapshot
+     *   }
+     * })
+     * 
+     */
+    create<T extends CostSnapshotCreateArgs>(args: SelectSubset<T, CostSnapshotCreateArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CostSnapshots.
+     * @param {CostSnapshotCreateManyArgs} args - Arguments to create many CostSnapshots.
+     * @example
+     * // Create many CostSnapshots
+     * const costSnapshot = await prisma.costSnapshot.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CostSnapshotCreateManyArgs>(args?: SelectSubset<T, CostSnapshotCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CostSnapshots and returns the data saved in the database.
+     * @param {CostSnapshotCreateManyAndReturnArgs} args - Arguments to create many CostSnapshots.
+     * @example
+     * // Create many CostSnapshots
+     * const costSnapshot = await prisma.costSnapshot.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CostSnapshots and only return the `id`
+     * const costSnapshotWithIdOnly = await prisma.costSnapshot.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CostSnapshotCreateManyAndReturnArgs>(args?: SelectSubset<T, CostSnapshotCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CostSnapshot.
+     * @param {CostSnapshotDeleteArgs} args - Arguments to delete one CostSnapshot.
+     * @example
+     * // Delete one CostSnapshot
+     * const CostSnapshot = await prisma.costSnapshot.delete({
+     *   where: {
+     *     // ... filter to delete one CostSnapshot
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CostSnapshotDeleteArgs>(args: SelectSubset<T, CostSnapshotDeleteArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CostSnapshot.
+     * @param {CostSnapshotUpdateArgs} args - Arguments to update one CostSnapshot.
+     * @example
+     * // Update one CostSnapshot
+     * const costSnapshot = await prisma.costSnapshot.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CostSnapshotUpdateArgs>(args: SelectSubset<T, CostSnapshotUpdateArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CostSnapshots.
+     * @param {CostSnapshotDeleteManyArgs} args - Arguments to filter CostSnapshots to delete.
+     * @example
+     * // Delete a few CostSnapshots
+     * const { count } = await prisma.costSnapshot.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CostSnapshotDeleteManyArgs>(args?: SelectSubset<T, CostSnapshotDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CostSnapshots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CostSnapshots
+     * const costSnapshot = await prisma.costSnapshot.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CostSnapshotUpdateManyArgs>(args: SelectSubset<T, CostSnapshotUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CostSnapshots and returns the data updated in the database.
+     * @param {CostSnapshotUpdateManyAndReturnArgs} args - Arguments to update many CostSnapshots.
+     * @example
+     * // Update many CostSnapshots
+     * const costSnapshot = await prisma.costSnapshot.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CostSnapshots and only return the `id`
+     * const costSnapshotWithIdOnly = await prisma.costSnapshot.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CostSnapshotUpdateManyAndReturnArgs>(args: SelectSubset<T, CostSnapshotUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CostSnapshot.
+     * @param {CostSnapshotUpsertArgs} args - Arguments to update or create a CostSnapshot.
+     * @example
+     * // Update or create a CostSnapshot
+     * const costSnapshot = await prisma.costSnapshot.upsert({
+     *   create: {
+     *     // ... data to create a CostSnapshot
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CostSnapshot we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CostSnapshotUpsertArgs>(args: SelectSubset<T, CostSnapshotUpsertArgs<ExtArgs>>): Prisma__CostSnapshotClient<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CostSnapshots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotCountArgs} args - Arguments to filter CostSnapshots to count.
+     * @example
+     * // Count the number of CostSnapshots
+     * const count = await prisma.costSnapshot.count({
+     *   where: {
+     *     // ... the filter for the CostSnapshots we want to count
+     *   }
+     * })
+    **/
+    count<T extends CostSnapshotCountArgs>(
+      args?: Subset<T, CostSnapshotCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CostSnapshotCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CostSnapshot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CostSnapshotAggregateArgs>(args: Subset<T, CostSnapshotAggregateArgs>): Prisma.PrismaPromise<GetCostSnapshotAggregateType<T>>
+
+    /**
+     * Group by CostSnapshot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostSnapshotGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CostSnapshotGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CostSnapshotGroupByArgs['orderBy'] }
+        : { orderBy?: CostSnapshotGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CostSnapshotGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCostSnapshotGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CostSnapshot model
+   */
+  readonly fields: CostSnapshotFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CostSnapshot.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CostSnapshotClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CostSnapshot model
+   */
+  interface CostSnapshotFieldRefs {
+    readonly id: FieldRef<"CostSnapshot", 'String'>
+    readonly projectId: FieldRef<"CostSnapshot", 'String'>
+    readonly costAmount: FieldRef<"CostSnapshot", 'Decimal'>
+    readonly createdAt: FieldRef<"CostSnapshot", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CostSnapshot findUnique
+   */
+  export type CostSnapshotFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which CostSnapshot to fetch.
+     */
+    where: CostSnapshotWhereUniqueInput
+  }
+
+  /**
+   * CostSnapshot findUniqueOrThrow
+   */
+  export type CostSnapshotFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which CostSnapshot to fetch.
+     */
+    where: CostSnapshotWhereUniqueInput
+  }
+
+  /**
+   * CostSnapshot findFirst
+   */
+  export type CostSnapshotFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which CostSnapshot to fetch.
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostSnapshots to fetch.
+     */
+    orderBy?: CostSnapshotOrderByWithRelationInput | CostSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CostSnapshots.
+     */
+    cursor?: CostSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CostSnapshots.
+     */
+    distinct?: CostSnapshotScalarFieldEnum | CostSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * CostSnapshot findFirstOrThrow
+   */
+  export type CostSnapshotFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which CostSnapshot to fetch.
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostSnapshots to fetch.
+     */
+    orderBy?: CostSnapshotOrderByWithRelationInput | CostSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CostSnapshots.
+     */
+    cursor?: CostSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CostSnapshots.
+     */
+    distinct?: CostSnapshotScalarFieldEnum | CostSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * CostSnapshot findMany
+   */
+  export type CostSnapshotFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which CostSnapshots to fetch.
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostSnapshots to fetch.
+     */
+    orderBy?: CostSnapshotOrderByWithRelationInput | CostSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CostSnapshots.
+     */
+    cursor?: CostSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostSnapshots.
+     */
+    skip?: number
+    distinct?: CostSnapshotScalarFieldEnum | CostSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * CostSnapshot create
+   */
+  export type CostSnapshotCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CostSnapshot.
+     */
+    data: XOR<CostSnapshotCreateInput, CostSnapshotUncheckedCreateInput>
+  }
+
+  /**
+   * CostSnapshot createMany
+   */
+  export type CostSnapshotCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CostSnapshots.
+     */
+    data: CostSnapshotCreateManyInput | CostSnapshotCreateManyInput[]
+  }
+
+  /**
+   * CostSnapshot createManyAndReturn
+   */
+  export type CostSnapshotCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * The data used to create many CostSnapshots.
+     */
+    data: CostSnapshotCreateManyInput | CostSnapshotCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CostSnapshot update
+   */
+  export type CostSnapshotUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CostSnapshot.
+     */
+    data: XOR<CostSnapshotUpdateInput, CostSnapshotUncheckedUpdateInput>
+    /**
+     * Choose, which CostSnapshot to update.
+     */
+    where: CostSnapshotWhereUniqueInput
+  }
+
+  /**
+   * CostSnapshot updateMany
+   */
+  export type CostSnapshotUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CostSnapshots.
+     */
+    data: XOR<CostSnapshotUpdateManyMutationInput, CostSnapshotUncheckedUpdateManyInput>
+    /**
+     * Filter which CostSnapshots to update
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * Limit how many CostSnapshots to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CostSnapshot updateManyAndReturn
+   */
+  export type CostSnapshotUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * The data used to update CostSnapshots.
+     */
+    data: XOR<CostSnapshotUpdateManyMutationInput, CostSnapshotUncheckedUpdateManyInput>
+    /**
+     * Filter which CostSnapshots to update
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * Limit how many CostSnapshots to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CostSnapshot upsert
+   */
+  export type CostSnapshotUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CostSnapshot to update in case it exists.
+     */
+    where: CostSnapshotWhereUniqueInput
+    /**
+     * In case the CostSnapshot found by the `where` argument doesn't exist, create a new CostSnapshot with this data.
+     */
+    create: XOR<CostSnapshotCreateInput, CostSnapshotUncheckedCreateInput>
+    /**
+     * In case the CostSnapshot was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CostSnapshotUpdateInput, CostSnapshotUncheckedUpdateInput>
+  }
+
+  /**
+   * CostSnapshot delete
+   */
+  export type CostSnapshotDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter which CostSnapshot to delete.
+     */
+    where: CostSnapshotWhereUniqueInput
+  }
+
+  /**
+   * CostSnapshot deleteMany
+   */
+  export type CostSnapshotDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CostSnapshots to delete
+     */
+    where?: CostSnapshotWhereInput
+    /**
+     * Limit how many CostSnapshots to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CostSnapshot without action
+   */
+  export type CostSnapshotDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostSnapshot
+     */
+    select?: CostSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostSnapshot
+     */
+    omit?: CostSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostSnapshotInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7955,6 +9160,16 @@ export namespace Prisma {
   };
 
   export type ChangeLogEntryScalarFieldEnum = (typeof ChangeLogEntryScalarFieldEnum)[keyof typeof ChangeLogEntryScalarFieldEnum]
+
+
+  export const CostSnapshotScalarFieldEnum: {
+    id: 'id',
+    projectId: 'projectId',
+    costAmount: 'costAmount',
+    createdAt: 'createdAt'
+  };
+
+  export type CostSnapshotScalarFieldEnum = (typeof CostSnapshotScalarFieldEnum)[keyof typeof CostSnapshotScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -8046,6 +9261,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -8066,6 +9288,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFilter<"Project"> | Date | string
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
+    costSnapshots?: CostSnapshotListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -8076,6 +9299,7 @@ export namespace Prisma {
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
     changelog?: ChangeLogEntryOrderByRelationAggregateInput
+    costSnapshots?: CostSnapshotOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -8089,6 +9313,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFilter<"Project"> | Date | string
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
+    costSnapshots?: CostSnapshotListRelationFilter
   }, "id" | "name">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -8429,6 +9654,58 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ChangeLogEntry"> | Date | string
   }
 
+  export type CostSnapshotWhereInput = {
+    AND?: CostSnapshotWhereInput | CostSnapshotWhereInput[]
+    OR?: CostSnapshotWhereInput[]
+    NOT?: CostSnapshotWhereInput | CostSnapshotWhereInput[]
+    id?: StringFilter<"CostSnapshot"> | string
+    projectId?: StringFilter<"CostSnapshot"> | string
+    costAmount?: DecimalFilter<"CostSnapshot"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"CostSnapshot"> | Date | string
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }
+
+  export type CostSnapshotOrderByWithRelationInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    costAmount?: SortOrder
+    createdAt?: SortOrder
+    project?: ProjectOrderByWithRelationInput
+  }
+
+  export type CostSnapshotWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CostSnapshotWhereInput | CostSnapshotWhereInput[]
+    OR?: CostSnapshotWhereInput[]
+    NOT?: CostSnapshotWhereInput | CostSnapshotWhereInput[]
+    projectId?: StringFilter<"CostSnapshot"> | string
+    costAmount?: DecimalFilter<"CostSnapshot"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"CostSnapshot"> | Date | string
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }, "id">
+
+  export type CostSnapshotOrderByWithAggregationInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    costAmount?: SortOrder
+    createdAt?: SortOrder
+    _count?: CostSnapshotCountOrderByAggregateInput
+    _avg?: CostSnapshotAvgOrderByAggregateInput
+    _max?: CostSnapshotMaxOrderByAggregateInput
+    _min?: CostSnapshotMinOrderByAggregateInput
+    _sum?: CostSnapshotSumOrderByAggregateInput
+  }
+
+  export type CostSnapshotScalarWhereWithAggregatesInput = {
+    AND?: CostSnapshotScalarWhereWithAggregatesInput | CostSnapshotScalarWhereWithAggregatesInput[]
+    OR?: CostSnapshotScalarWhereWithAggregatesInput[]
+    NOT?: CostSnapshotScalarWhereWithAggregatesInput | CostSnapshotScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CostSnapshot"> | string
+    projectId?: StringWithAggregatesFilter<"CostSnapshot"> | string
+    costAmount?: DecimalWithAggregatesFilter<"CostSnapshot"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeWithAggregatesFilter<"CostSnapshot"> | Date | string
+  }
+
   export type ProjectCreateInput = {
     id?: string
     name: string
@@ -8437,6 +9714,7 @@ export namespace Prisma {
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
+    costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -8447,6 +9725,7 @@ export namespace Prisma {
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
+    costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -8457,6 +9736,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
+    costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -8467,6 +9747,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
+    costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -8830,6 +10111,54 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CostSnapshotCreateInput = {
+    id?: string
+    costAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    project: ProjectCreateNestedOneWithoutCostSnapshotsInput
+  }
+
+  export type CostSnapshotUncheckedCreateInput = {
+    id?: string
+    projectId: string
+    costAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+  }
+
+  export type CostSnapshotUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutCostSnapshotsNestedInput
+  }
+
+  export type CostSnapshotUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostSnapshotCreateManyInput = {
+    id?: string
+    projectId: string
+    costAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+  }
+
+  export type CostSnapshotUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostSnapshotUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -8882,12 +10211,22 @@ export namespace Prisma {
     none?: ChangeLogEntryWhereInput
   }
 
+  export type CostSnapshotListRelationFilter = {
+    every?: CostSnapshotWhereInput
+    some?: CostSnapshotWhereInput
+    none?: CostSnapshotWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type ChangeLogEntryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CostSnapshotOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -9254,6 +10593,62 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type CostSnapshotCountOrderByAggregateInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    costAmount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type CostSnapshotAvgOrderByAggregateInput = {
+    costAmount?: SortOrder
+  }
+
+  export type CostSnapshotMaxOrderByAggregateInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    costAmount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type CostSnapshotMinOrderByAggregateInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    costAmount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type CostSnapshotSumOrderByAggregateInput = {
+    costAmount?: SortOrder
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type ChangeLogEntryCreateNestedManyWithoutProjectInput = {
     create?: XOR<ChangeLogEntryCreateWithoutProjectInput, ChangeLogEntryUncheckedCreateWithoutProjectInput> | ChangeLogEntryCreateWithoutProjectInput[] | ChangeLogEntryUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ChangeLogEntryCreateOrConnectWithoutProjectInput | ChangeLogEntryCreateOrConnectWithoutProjectInput[]
@@ -9261,11 +10656,25 @@ export namespace Prisma {
     connect?: ChangeLogEntryWhereUniqueInput | ChangeLogEntryWhereUniqueInput[]
   }
 
+  export type CostSnapshotCreateNestedManyWithoutProjectInput = {
+    create?: XOR<CostSnapshotCreateWithoutProjectInput, CostSnapshotUncheckedCreateWithoutProjectInput> | CostSnapshotCreateWithoutProjectInput[] | CostSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: CostSnapshotCreateOrConnectWithoutProjectInput | CostSnapshotCreateOrConnectWithoutProjectInput[]
+    createMany?: CostSnapshotCreateManyProjectInputEnvelope
+    connect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+  }
+
   export type ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<ChangeLogEntryCreateWithoutProjectInput, ChangeLogEntryUncheckedCreateWithoutProjectInput> | ChangeLogEntryCreateWithoutProjectInput[] | ChangeLogEntryUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ChangeLogEntryCreateOrConnectWithoutProjectInput | ChangeLogEntryCreateOrConnectWithoutProjectInput[]
     createMany?: ChangeLogEntryCreateManyProjectInputEnvelope
     connect?: ChangeLogEntryWhereUniqueInput | ChangeLogEntryWhereUniqueInput[]
+  }
+
+  export type CostSnapshotUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<CostSnapshotCreateWithoutProjectInput, CostSnapshotUncheckedCreateWithoutProjectInput> | CostSnapshotCreateWithoutProjectInput[] | CostSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: CostSnapshotCreateOrConnectWithoutProjectInput | CostSnapshotCreateOrConnectWithoutProjectInput[]
+    createMany?: CostSnapshotCreateManyProjectInputEnvelope
+    connect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -9298,6 +10707,20 @@ export namespace Prisma {
     deleteMany?: ChangeLogEntryScalarWhereInput | ChangeLogEntryScalarWhereInput[]
   }
 
+  export type CostSnapshotUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<CostSnapshotCreateWithoutProjectInput, CostSnapshotUncheckedCreateWithoutProjectInput> | CostSnapshotCreateWithoutProjectInput[] | CostSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: CostSnapshotCreateOrConnectWithoutProjectInput | CostSnapshotCreateOrConnectWithoutProjectInput[]
+    upsert?: CostSnapshotUpsertWithWhereUniqueWithoutProjectInput | CostSnapshotUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: CostSnapshotCreateManyProjectInputEnvelope
+    set?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    disconnect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    delete?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    connect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    update?: CostSnapshotUpdateWithWhereUniqueWithoutProjectInput | CostSnapshotUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: CostSnapshotUpdateManyWithWhereWithoutProjectInput | CostSnapshotUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: CostSnapshotScalarWhereInput | CostSnapshotScalarWhereInput[]
+  }
+
   export type ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<ChangeLogEntryCreateWithoutProjectInput, ChangeLogEntryUncheckedCreateWithoutProjectInput> | ChangeLogEntryCreateWithoutProjectInput[] | ChangeLogEntryUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ChangeLogEntryCreateOrConnectWithoutProjectInput | ChangeLogEntryCreateOrConnectWithoutProjectInput[]
@@ -9310,6 +10733,20 @@ export namespace Prisma {
     update?: ChangeLogEntryUpdateWithWhereUniqueWithoutProjectInput | ChangeLogEntryUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: ChangeLogEntryUpdateManyWithWhereWithoutProjectInput | ChangeLogEntryUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: ChangeLogEntryScalarWhereInput | ChangeLogEntryScalarWhereInput[]
+  }
+
+  export type CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<CostSnapshotCreateWithoutProjectInput, CostSnapshotUncheckedCreateWithoutProjectInput> | CostSnapshotCreateWithoutProjectInput[] | CostSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: CostSnapshotCreateOrConnectWithoutProjectInput | CostSnapshotCreateOrConnectWithoutProjectInput[]
+    upsert?: CostSnapshotUpsertWithWhereUniqueWithoutProjectInput | CostSnapshotUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: CostSnapshotCreateManyProjectInputEnvelope
+    set?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    disconnect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    delete?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    connect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+    update?: CostSnapshotUpdateWithWhereUniqueWithoutProjectInput | CostSnapshotUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: CostSnapshotUpdateManyWithWhereWithoutProjectInput | CostSnapshotUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: CostSnapshotScalarWhereInput | CostSnapshotScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -9448,6 +10885,28 @@ export namespace Prisma {
     upsert?: ProjectUpsertWithoutChangelogInput
     connect?: ProjectWhereUniqueInput
     update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutChangelogInput, ProjectUpdateWithoutChangelogInput>, ProjectUncheckedUpdateWithoutChangelogInput>
+  }
+
+  export type ProjectCreateNestedOneWithoutCostSnapshotsInput = {
+    create?: XOR<ProjectCreateWithoutCostSnapshotsInput, ProjectUncheckedCreateWithoutCostSnapshotsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutCostSnapshotsInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProjectUpdateOneRequiredWithoutCostSnapshotsNestedInput = {
+    create?: XOR<ProjectCreateWithoutCostSnapshotsInput, ProjectUncheckedCreateWithoutCostSnapshotsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutCostSnapshotsInput
+    upsert?: ProjectUpsertWithoutCostSnapshotsInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutCostSnapshotsInput, ProjectUpdateWithoutCostSnapshotsInput>, ProjectUncheckedUpdateWithoutCostSnapshotsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -9646,6 +11105,33 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[]
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type ChangeLogEntryCreateWithoutProjectInput = {
     id?: string
     provider: string
@@ -9669,6 +11155,27 @@ export namespace Prisma {
 
   export type ChangeLogEntryCreateManyProjectInputEnvelope = {
     data: ChangeLogEntryCreateManyProjectInput | ChangeLogEntryCreateManyProjectInput[]
+  }
+
+  export type CostSnapshotCreateWithoutProjectInput = {
+    id?: string
+    costAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+  }
+
+  export type CostSnapshotUncheckedCreateWithoutProjectInput = {
+    id?: string
+    costAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+  }
+
+  export type CostSnapshotCreateOrConnectWithoutProjectInput = {
+    where: CostSnapshotWhereUniqueInput
+    create: XOR<CostSnapshotCreateWithoutProjectInput, CostSnapshotUncheckedCreateWithoutProjectInput>
+  }
+
+  export type CostSnapshotCreateManyProjectInputEnvelope = {
+    data: CostSnapshotCreateManyProjectInput | CostSnapshotCreateManyProjectInput[]
   }
 
   export type ChangeLogEntryUpsertWithWhereUniqueWithoutProjectInput = {
@@ -9697,6 +11204,32 @@ export namespace Prisma {
     message?: StringFilter<"ChangeLogEntry"> | string
     meta?: JsonNullableFilter<"ChangeLogEntry">
     createdAt?: DateTimeFilter<"ChangeLogEntry"> | Date | string
+  }
+
+  export type CostSnapshotUpsertWithWhereUniqueWithoutProjectInput = {
+    where: CostSnapshotWhereUniqueInput
+    update: XOR<CostSnapshotUpdateWithoutProjectInput, CostSnapshotUncheckedUpdateWithoutProjectInput>
+    create: XOR<CostSnapshotCreateWithoutProjectInput, CostSnapshotUncheckedCreateWithoutProjectInput>
+  }
+
+  export type CostSnapshotUpdateWithWhereUniqueWithoutProjectInput = {
+    where: CostSnapshotWhereUniqueInput
+    data: XOR<CostSnapshotUpdateWithoutProjectInput, CostSnapshotUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type CostSnapshotUpdateManyWithWhereWithoutProjectInput = {
+    where: CostSnapshotScalarWhereInput
+    data: XOR<CostSnapshotUpdateManyMutationInput, CostSnapshotUncheckedUpdateManyWithoutProjectInput>
+  }
+
+  export type CostSnapshotScalarWhereInput = {
+    AND?: CostSnapshotScalarWhereInput | CostSnapshotScalarWhereInput[]
+    OR?: CostSnapshotScalarWhereInput[]
+    NOT?: CostSnapshotScalarWhereInput | CostSnapshotScalarWhereInput[]
+    id?: StringFilter<"CostSnapshot"> | string
+    projectId?: StringFilter<"CostSnapshot"> | string
+    costAmount?: DecimalFilter<"CostSnapshot"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"CostSnapshot"> | Date | string
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -9934,6 +11467,7 @@ export namespace Prisma {
     frontendUrl?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
+    costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutChangelogInput = {
@@ -9943,6 +11477,7 @@ export namespace Prisma {
     frontendUrl?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
+    costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutChangelogInput = {
@@ -9968,6 +11503,7 @@ export namespace Prisma {
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutChangelogInput = {
@@ -9977,6 +11513,63 @@ export namespace Prisma {
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectCreateWithoutCostSnapshotsInput = {
+    id?: string
+    name: string
+    status?: $Enums.ProjectStatus
+    frontendUrl?: string | null
+    lastActivityAt?: Date | string
+    createdAt?: Date | string
+    changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutCostSnapshotsInput = {
+    id?: string
+    name: string
+    status?: $Enums.ProjectStatus
+    frontendUrl?: string | null
+    lastActivityAt?: Date | string
+    createdAt?: Date | string
+    changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutCostSnapshotsInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutCostSnapshotsInput, ProjectUncheckedCreateWithoutCostSnapshotsInput>
+  }
+
+  export type ProjectUpsertWithoutCostSnapshotsInput = {
+    update: XOR<ProjectUpdateWithoutCostSnapshotsInput, ProjectUncheckedUpdateWithoutCostSnapshotsInput>
+    create: XOR<ProjectCreateWithoutCostSnapshotsInput, ProjectUncheckedCreateWithoutCostSnapshotsInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutCostSnapshotsInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutCostSnapshotsInput, ProjectUncheckedUpdateWithoutCostSnapshotsInput>
+  }
+
+  export type ProjectUpdateWithoutCostSnapshotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutCostSnapshotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ChangeLogEntryCreateManyProjectInput = {
@@ -9984,6 +11577,12 @@ export namespace Prisma {
     provider: string
     message: string
     meta?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type CostSnapshotCreateManyProjectInput = {
+    id?: string
+    costAmount: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
   }
 
@@ -10008,6 +11607,24 @@ export namespace Prisma {
     provider?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     meta?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostSnapshotUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostSnapshotUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostSnapshotUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Project, ProjectStatus } from '@/generated/prisma';
+import { Project, ProjectStatus, CostSnapshot } from '@/generated/prisma';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -13,9 +13,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; // Use navigation router for App Router
 import NotesDrawer from './NotesDrawer'; // Import the drawer
+import { DollarSign } from 'lucide-react'; // Import an icon
 
 interface ProjectCardProps {
-  project: Project;
+  project: Project & { latestCostSnapshot?: CostSnapshot | null };
 }
 
 // Helper to format date/time
@@ -24,11 +25,20 @@ function formatDateTime(date: Date | string | null): string {
   return new Date(date).toLocaleString();
 }
 
+// Helper to format currency
+function formatCurrency(amount: string | number | null | undefined): string {
+  if (amount == null || amount === '') return 'N/A';
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return 'Invalid'; // Handle parsing errors
+  return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
 export default function ProjectCard({ project }: ProjectCardProps) {
   const router = useRouter();
   const [currentStatus, setCurrentStatus] = useState(project.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const latestCost = project.latestCostSnapshot?.costAmount;
 
   const handleStatusChange = async (newStatus: ProjectStatus) => {
     if (newStatus === currentStatus || isUpdating) {
@@ -111,6 +121,18 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               ) : (
                 <p className="text-sm text-muted-foreground italic">Not set</p>
               )}
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <DollarSign className="h-6 w-6 text-muted-foreground" />
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none">Est. Monthly Cost</p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(latestCost as unknown as string | null)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Snapshot taken: {formatDateTime(project.latestCostSnapshot?.createdAt ?? null)}
+              </p>
             </div>
           </div>
         </CardContent>

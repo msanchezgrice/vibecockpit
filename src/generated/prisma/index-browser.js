@@ -170,6 +170,13 @@ exports.Prisma.ChangeLogEntryScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CostSnapshotScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  costAmount: 'costAmount',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -208,7 +215,8 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   User: 'User',
   VerificationToken: 'VerificationToken',
-  ChangeLogEntry: 'ChangeLogEntry'
+  ChangeLogEntry: 'ChangeLogEntry',
+  CostSnapshot: 'CostSnapshot'
 };
 
 /**

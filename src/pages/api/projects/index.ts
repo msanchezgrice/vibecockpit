@@ -30,10 +30,20 @@ export default async function handler(
     case 'GET':
       try {
         const projects = await prisma.project.findMany({
-          // Optionally filter by user ID later: where: { userId },
           orderBy: { createdAt: 'desc' },
+          include: {
+            costSnapshots: { // Include the latest cost snapshot
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
         });
-        res.status(200).json(projects);
+        // Map the result slightly to make accessing the snapshot easier on the client
+        const projectsWithCost = projects.map(p => ({
+            ...p,
+            latestCostSnapshot: p.costSnapshots[0] ?? null,
+        }));
+        res.status(200).json(projectsWithCost);
       } catch (error) {
         console.error('Failed to fetch projects:', error);
         res.status(500).json({ message: 'Failed to fetch projects' });

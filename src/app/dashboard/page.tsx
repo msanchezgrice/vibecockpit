@@ -3,52 +3,41 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import Link from 'next/link';
 import { LoginButton, LogoutButton } from './authButtons';
 import ProjectCard from '@/components/ProjectCard';
-import { Project } from '@/generated/prisma';
+import { Project } from '@/generated/prisma'; // Keep this simple for now
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-// Function to fetch projects (server-side)
+// Revert to original function fetching from API
 async function getProjects(cookie: string | null): Promise<Project[]> {
-  if (!cookie) return []; // No cookie, no projects
-
-  // Fetch from the API route using the absolute URL and forwarding the cookie
+  if (!cookie) return [];
   const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/projects`;
-
   try {
     const response = await fetch(url, {
-      headers: {
-        Cookie: cookie, // Forward the session cookie
-      },
-      cache: 'no-store', // Ensure fresh data
+      headers: { Cookie: cookie }, cache: 'no-store',
     });
-
     if (!response.ok) {
       if (response.status === 401) {
-        // Handle unauthorized specifically if needed, maybe log out?
-        console.error('Unauthorized fetching projects');
-        return [];
+        console.error('Unauthorized fetching projects'); return [];
       }
       throw new Error(`Failed to fetch projects: ${response.statusText}`);
     }
     return response.json();
   } catch (error) {
     console.error('Error fetching projects:', error);
-    return []; // Return empty array on error
+    return [];
   }
 }
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
-  // Redirect to home if not logged in
   if (!session) {
-    redirect('/'); // Or redirect to a dedicated login page
+    redirect('/');
   }
 
-  // Get cookies directly from headers()
-  const requestHeaders = headers(); // Call headers() to get the object
-  const cookie = requestHeaders.get('cookie'); // Call .get() on the returned object
-  const projects = await getProjects(cookie);
+  const requestHeaders = headers();
+  const cookie = requestHeaders.get('cookie');
+  const projects = await getProjects(cookie); // Call original fetcher
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 md:p-12 lg:p-24">

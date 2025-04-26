@@ -22,6 +22,7 @@ model Project {
   lastActivityAt DateTime @default(now()) @map("last_activity_at")
   createdAt      DateTime @default(now()) @map("created_at")
   changelog      ChangeLogEntry[]
+  costSnapshots  CostSnapshot[]
 }
 
 enum ProjectStatus {
@@ -97,4 +98,16 @@ model ChangeLogEntry {
 
   @@index([projectId, createdAt])
   @@map("changelog_entries")
+}
+
+model CostSnapshot {
+  id         String    @id @default(cuid())
+  projectId  String    @map("project_id")
+  costAmount Decimal   @map("cost_amount")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt(sort: Desc)])
+  @@map("cost_snapshots")
 }
