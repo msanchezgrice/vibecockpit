@@ -1,0 +1,8 @@
+# ESLint Ignore
+
+# Generated code
+src/generated/prisma/**
+
+# Build artifacts
+.next/
+*.tsbuildinfo 
