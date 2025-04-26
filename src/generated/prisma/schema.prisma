@@ -15,12 +15,13 @@ datasource db {
 }
 
 model Project {
-  id             String        @id @default(uuid())
-  name           String        @unique
-  status         ProjectStatus @default(design)
-  frontendUrl    String?       @map("frontend_url")
-  lastActivityAt DateTime      @default(now()) @map("last_activity_at")
-  createdAt      DateTime      @default(now()) @map("created_at")
+  id             String           @id @default(uuid())
+  name           String           @unique
+  status         ProjectStatus    @default(design)
+  frontendUrl    String?          @map("frontend_url")
+  lastActivityAt DateTime         @default(now()) @map("last_activity_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  changelog      ChangeLogEntry[]
 }
 
 enum ProjectStatus {
@@ -82,4 +83,18 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model ChangeLogEntry {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  provider  String // e.g., "note", "github_commit", "vercel_deploy"
+  message   String // Removed @db.Text
+  meta      Json? // Store arbitrary JSON data if needed
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@map("changelog_entries")
 }

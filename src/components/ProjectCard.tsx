@@ -12,6 +12,7 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; // Use navigation router for App Router
+import NotesDrawer from './NotesDrawer'; // Import the drawer
 
 interface ProjectCardProps {
   project: Project;
@@ -66,56 +67,59 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>{project.name}</CardTitle>
-        <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="flex items-center space-x-4 rounded-md border p-4">
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">Status</p>
-            <Select
-              value={currentStatus}
-              onValueChange={handleStatusChange}
-              disabled={isUpdating}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(ProjectStatus).map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)} {/* Capitalize */}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-          </div>
-        </div>
-        <div className="flex items-center space-x-4 rounded-md border p-4">
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">Frontend URL</p>
-            {project.frontendUrl ? (
-              <Link
-                href={project.frontendUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-500 hover:underline break-all"
+    <Card className="w-full max-w-sm flex flex-col justify-between">
+      <div>
+        <CardHeader>
+          <CardTitle>{project.name}</CardTitle>
+          <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none">Status</p>
+              <Select
+                value={currentStatus}
+                onValueChange={handleStatusChange}
+                disabled={isUpdating}
               >
-                {project.frontendUrl}
-              </Link>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">Not set</p>
-            )}
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(ProjectStatus).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)} {/* Capitalize */}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+            </div>
           </div>
-        </div>
-      </CardContent>
-      <CardFooter>
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none">Frontend URL</p>
+              {project.frontendUrl ? (
+                <Link
+                  href={project.frontendUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:underline break-all"
+                >
+                  {project.frontendUrl}
+                </Link>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Not set</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </div>
+      <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">
           Last Activity: {formatDateTime(project.lastActivityAt)}
         </p>
+        <NotesDrawer projectId={project.id} />
       </CardFooter>
     </Card>
   );
