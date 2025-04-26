@@ -26,49 +26,49 @@ importers:
       next-auth:
         specifier: ^4.24.11
         version: 4.24.11(next@15.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      prisma:
-        specifier: ^6.6.0
-        version: 6.6.0(typescript@5.8.3)
       react:
-        specifier: ^19.0.0
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: ^19.0.0
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
-      vitest:
-        specifier: ^3.1.2
-        version: 3.1.2(@types/node@20.17.31)(jiti@2.4.2)(lightningcss@1.29.2)
       zod:
         specifier: ^3.24.3
         version: 3.24.3
     devDependencies:
       '@eslint/eslintrc':
-        specifier: ^3
+        specifier: ^3.3.1
         version: 3.3.1
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: ^4.1.4
         version: 4.1.4
       '@types/node':
-        specifier: ^20
+        specifier: ^20.17.31
         version: 20.17.31
       '@types/react':
-        specifier: ^19
+        specifier: ^19.1.2
         version: 19.1.2
       '@types/react-dom':
-        specifier: ^19
+        specifier: ^19.1.2
         version: 19.1.2(@types/react@19.1.2)
       eslint:
-        specifier: ^9
+        specifier: ^9.25.1
         version: 9.25.1(jiti@2.4.2)
       eslint-config-next:
         specifier: 15.3.1
         version: 15.3.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)
+      prisma:
+        specifier: ^6.6.0
+        version: 6.6.0(typescript@5.8.3)
       tailwindcss:
-        specifier: ^4
+        specifier: ^4.1.4
         version: 4.1.4
       typescript:
-        specifier: ^5
+        specifier: ^5.8.3
         version: 5.8.3
+      vitest:
+        specifier: ^3.1.2
+        version: 3.1.2(@types/node@20.17.31)(jiti@2.4.2)(lightningcss@1.29.2)
 
 packages:
 
