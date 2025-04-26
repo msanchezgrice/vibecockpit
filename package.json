@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run"
@@ -30,7 +30,11 @@
     "eslint-config-next": "15.3.1",
     "prisma": "^6.6.0",
     "tailwindcss": "^4.1.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "vitest": "^3.1.2"
+  },
+  "prisma": {
+    "seed": "pnpm exec ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   }
 }

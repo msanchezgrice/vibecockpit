@@ -10,6 +10,22 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Project {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  status         ProjectStatus @default(design)
+  frontendUrl    String?  @map("frontend_url")
+  lastActivityAt DateTime @default(now()) @map("last_activity_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+}
+
+enum ProjectStatus {
+  design
+  launched
+  paused
+  retired
 }
