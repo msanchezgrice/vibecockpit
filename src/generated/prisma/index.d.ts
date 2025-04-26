@@ -48,6 +48,11 @@ export type ChangeLogEntry = $Result.DefaultSelection<Prisma.$ChangeLogEntryPayl
  * 
  */
 export type CostSnapshot = $Result.DefaultSelection<Prisma.$CostSnapshotPayload>
+/**
+ * Model AnalyticsSnapshot
+ * 
+ */
+export type AnalyticsSnapshot = $Result.DefaultSelection<Prisma.$AnalyticsSnapshotPayload>
 
 /**
  * Enums
@@ -262,6 +267,16 @@ export class PrismaClient<
     * ```
     */
   get costSnapshot(): Prisma.CostSnapshotDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.analyticsSnapshot`: Exposes CRUD operations for the **AnalyticsSnapshot** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AnalyticsSnapshots
+    * const analyticsSnapshots = await prisma.analyticsSnapshot.findMany()
+    * ```
+    */
+  get analyticsSnapshot(): Prisma.AnalyticsSnapshotDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -708,7 +723,8 @@ export namespace Prisma {
     User: 'User',
     VerificationToken: 'VerificationToken',
     ChangeLogEntry: 'ChangeLogEntry',
-    CostSnapshot: 'CostSnapshot'
+    CostSnapshot: 'CostSnapshot',
+    AnalyticsSnapshot: 'AnalyticsSnapshot'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -727,7 +743,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "project" | "account" | "session" | "user" | "verificationToken" | "changeLogEntry" | "costSnapshot"
+      modelProps: "project" | "account" | "session" | "user" | "verificationToken" | "changeLogEntry" | "costSnapshot" | "analyticsSnapshot"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1249,6 +1265,80 @@ export namespace Prisma {
           }
         }
       }
+      AnalyticsSnapshot: {
+        payload: Prisma.$AnalyticsSnapshotPayload<ExtArgs>
+        fields: Prisma.AnalyticsSnapshotFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AnalyticsSnapshotFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AnalyticsSnapshotFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+          }
+          findFirst: {
+            args: Prisma.AnalyticsSnapshotFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AnalyticsSnapshotFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+          }
+          findMany: {
+            args: Prisma.AnalyticsSnapshotFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>[]
+          }
+          create: {
+            args: Prisma.AnalyticsSnapshotCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+          }
+          createMany: {
+            args: Prisma.AnalyticsSnapshotCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AnalyticsSnapshotCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>[]
+          }
+          delete: {
+            args: Prisma.AnalyticsSnapshotDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+          }
+          update: {
+            args: Prisma.AnalyticsSnapshotUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+          }
+          deleteMany: {
+            args: Prisma.AnalyticsSnapshotDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AnalyticsSnapshotUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AnalyticsSnapshotUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>[]
+          }
+          upsert: {
+            args: Prisma.AnalyticsSnapshotUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsSnapshotPayload>
+          }
+          aggregate: {
+            args: Prisma.AnalyticsSnapshotAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAnalyticsSnapshot>
+          }
+          groupBy: {
+            args: Prisma.AnalyticsSnapshotGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AnalyticsSnapshotGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AnalyticsSnapshotCountArgs<ExtArgs>
+            result: $Utils.Optional<AnalyticsSnapshotCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1340,6 +1430,7 @@ export namespace Prisma {
     verificationToken?: VerificationTokenOmit
     changeLogEntry?: ChangeLogEntryOmit
     costSnapshot?: CostSnapshotOmit
+    analyticsSnapshot?: AnalyticsSnapshotOmit
   }
 
   /* Types for Logging */
@@ -1436,11 +1527,13 @@ export namespace Prisma {
   export type ProjectCountOutputType = {
     changelog: number
     costSnapshots: number
+    analyticsSnapshots: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     changelog?: boolean | ProjectCountOutputTypeCountChangelogArgs
     costSnapshots?: boolean | ProjectCountOutputTypeCountCostSnapshotsArgs
+    analyticsSnapshots?: boolean | ProjectCountOutputTypeCountAnalyticsSnapshotsArgs
   }
 
   // Custom InputTypes
@@ -1466,6 +1559,13 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountCostSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CostSnapshotWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountAnalyticsSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AnalyticsSnapshotWhereInput
   }
 
 
@@ -1687,6 +1787,7 @@ export namespace Prisma {
     createdAt?: boolean
     changelog?: boolean | Project$changelogArgs<ExtArgs>
     costSnapshots?: boolean | Project$costSnapshotsArgs<ExtArgs>
+    analyticsSnapshots?: boolean | Project$analyticsSnapshotsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -1721,6 +1822,7 @@ export namespace Prisma {
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     changelog?: boolean | Project$changelogArgs<ExtArgs>
     costSnapshots?: boolean | Project$costSnapshotsArgs<ExtArgs>
+    analyticsSnapshots?: boolean | Project$analyticsSnapshotsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1731,6 +1833,7 @@ export namespace Prisma {
     objects: {
       changelog: Prisma.$ChangeLogEntryPayload<ExtArgs>[]
       costSnapshots: Prisma.$CostSnapshotPayload<ExtArgs>[]
+      analyticsSnapshots: Prisma.$AnalyticsSnapshotPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2135,6 +2238,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     changelog<T extends Project$changelogArgs<ExtArgs> = {}>(args?: Subset<T, Project$changelogArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChangeLogEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     costSnapshots<T extends Project$costSnapshotsArgs<ExtArgs> = {}>(args?: Subset<T, Project$costSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    analyticsSnapshots<T extends Project$analyticsSnapshotsArgs<ExtArgs> = {}>(args?: Subset<T, Project$analyticsSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2601,6 +2705,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CostSnapshotScalarFieldEnum | CostSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * Project.analyticsSnapshots
+   */
+  export type Project$analyticsSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    where?: AnalyticsSnapshotWhereInput
+    orderBy?: AnalyticsSnapshotOrderByWithRelationInput | AnalyticsSnapshotOrderByWithRelationInput[]
+    cursor?: AnalyticsSnapshotWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AnalyticsSnapshotScalarFieldEnum | AnalyticsSnapshotScalarFieldEnum[]
   }
 
   /**
@@ -9078,6 +9206,1100 @@ export namespace Prisma {
 
 
   /**
+   * Model AnalyticsSnapshot
+   */
+
+  export type AggregateAnalyticsSnapshot = {
+    _count: AnalyticsSnapshotCountAggregateOutputType | null
+    _avg: AnalyticsSnapshotAvgAggregateOutputType | null
+    _sum: AnalyticsSnapshotSumAggregateOutputType | null
+    _min: AnalyticsSnapshotMinAggregateOutputType | null
+    _max: AnalyticsSnapshotMaxAggregateOutputType | null
+  }
+
+  export type AnalyticsSnapshotAvgAggregateOutputType = {
+    visits: number | null
+    signups: number | null
+  }
+
+  export type AnalyticsSnapshotSumAggregateOutputType = {
+    visits: number | null
+    signups: number | null
+  }
+
+  export type AnalyticsSnapshotMinAggregateOutputType = {
+    id: string | null
+    projectId: string | null
+    visits: number | null
+    signups: number | null
+    createdAt: Date | null
+  }
+
+  export type AnalyticsSnapshotMaxAggregateOutputType = {
+    id: string | null
+    projectId: string | null
+    visits: number | null
+    signups: number | null
+    createdAt: Date | null
+  }
+
+  export type AnalyticsSnapshotCountAggregateOutputType = {
+    id: number
+    projectId: number
+    visits: number
+    signups: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AnalyticsSnapshotAvgAggregateInputType = {
+    visits?: true
+    signups?: true
+  }
+
+  export type AnalyticsSnapshotSumAggregateInputType = {
+    visits?: true
+    signups?: true
+  }
+
+  export type AnalyticsSnapshotMinAggregateInputType = {
+    id?: true
+    projectId?: true
+    visits?: true
+    signups?: true
+    createdAt?: true
+  }
+
+  export type AnalyticsSnapshotMaxAggregateInputType = {
+    id?: true
+    projectId?: true
+    visits?: true
+    signups?: true
+    createdAt?: true
+  }
+
+  export type AnalyticsSnapshotCountAggregateInputType = {
+    id?: true
+    projectId?: true
+    visits?: true
+    signups?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AnalyticsSnapshotAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AnalyticsSnapshot to aggregate.
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsSnapshots to fetch.
+     */
+    orderBy?: AnalyticsSnapshotOrderByWithRelationInput | AnalyticsSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AnalyticsSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AnalyticsSnapshots
+    **/
+    _count?: true | AnalyticsSnapshotCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AnalyticsSnapshotAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AnalyticsSnapshotSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AnalyticsSnapshotMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AnalyticsSnapshotMaxAggregateInputType
+  }
+
+  export type GetAnalyticsSnapshotAggregateType<T extends AnalyticsSnapshotAggregateArgs> = {
+        [P in keyof T & keyof AggregateAnalyticsSnapshot]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAnalyticsSnapshot[P]>
+      : GetScalarType<T[P], AggregateAnalyticsSnapshot[P]>
+  }
+
+
+
+
+  export type AnalyticsSnapshotGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AnalyticsSnapshotWhereInput
+    orderBy?: AnalyticsSnapshotOrderByWithAggregationInput | AnalyticsSnapshotOrderByWithAggregationInput[]
+    by: AnalyticsSnapshotScalarFieldEnum[] | AnalyticsSnapshotScalarFieldEnum
+    having?: AnalyticsSnapshotScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AnalyticsSnapshotCountAggregateInputType | true
+    _avg?: AnalyticsSnapshotAvgAggregateInputType
+    _sum?: AnalyticsSnapshotSumAggregateInputType
+    _min?: AnalyticsSnapshotMinAggregateInputType
+    _max?: AnalyticsSnapshotMaxAggregateInputType
+  }
+
+  export type AnalyticsSnapshotGroupByOutputType = {
+    id: string
+    projectId: string
+    visits: number
+    signups: number
+    createdAt: Date
+    _count: AnalyticsSnapshotCountAggregateOutputType | null
+    _avg: AnalyticsSnapshotAvgAggregateOutputType | null
+    _sum: AnalyticsSnapshotSumAggregateOutputType | null
+    _min: AnalyticsSnapshotMinAggregateOutputType | null
+    _max: AnalyticsSnapshotMaxAggregateOutputType | null
+  }
+
+  type GetAnalyticsSnapshotGroupByPayload<T extends AnalyticsSnapshotGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AnalyticsSnapshotGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AnalyticsSnapshotGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AnalyticsSnapshotGroupByOutputType[P]>
+            : GetScalarType<T[P], AnalyticsSnapshotGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AnalyticsSnapshotSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    projectId?: boolean
+    visits?: boolean
+    signups?: boolean
+    createdAt?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["analyticsSnapshot"]>
+
+  export type AnalyticsSnapshotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    projectId?: boolean
+    visits?: boolean
+    signups?: boolean
+    createdAt?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["analyticsSnapshot"]>
+
+  export type AnalyticsSnapshotSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    projectId?: boolean
+    visits?: boolean
+    signups?: boolean
+    createdAt?: boolean
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["analyticsSnapshot"]>
+
+  export type AnalyticsSnapshotSelectScalar = {
+    id?: boolean
+    projectId?: boolean
+    visits?: boolean
+    signups?: boolean
+    createdAt?: boolean
+  }
+
+  export type AnalyticsSnapshotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "projectId" | "visits" | "signups" | "createdAt", ExtArgs["result"]["analyticsSnapshot"]>
+  export type AnalyticsSnapshotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type AnalyticsSnapshotIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type AnalyticsSnapshotIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+
+  export type $AnalyticsSnapshotPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AnalyticsSnapshot"
+    objects: {
+      project: Prisma.$ProjectPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      projectId: string
+      visits: number
+      signups: number
+      createdAt: Date
+    }, ExtArgs["result"]["analyticsSnapshot"]>
+    composites: {}
+  }
+
+  type AnalyticsSnapshotGetPayload<S extends boolean | null | undefined | AnalyticsSnapshotDefaultArgs> = $Result.GetResult<Prisma.$AnalyticsSnapshotPayload, S>
+
+  type AnalyticsSnapshotCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AnalyticsSnapshotFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AnalyticsSnapshotCountAggregateInputType | true
+    }
+
+  export interface AnalyticsSnapshotDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AnalyticsSnapshot'], meta: { name: 'AnalyticsSnapshot' } }
+    /**
+     * Find zero or one AnalyticsSnapshot that matches the filter.
+     * @param {AnalyticsSnapshotFindUniqueArgs} args - Arguments to find a AnalyticsSnapshot
+     * @example
+     * // Get one AnalyticsSnapshot
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AnalyticsSnapshotFindUniqueArgs>(args: SelectSubset<T, AnalyticsSnapshotFindUniqueArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AnalyticsSnapshot that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AnalyticsSnapshotFindUniqueOrThrowArgs} args - Arguments to find a AnalyticsSnapshot
+     * @example
+     * // Get one AnalyticsSnapshot
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AnalyticsSnapshotFindUniqueOrThrowArgs>(args: SelectSubset<T, AnalyticsSnapshotFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AnalyticsSnapshot that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotFindFirstArgs} args - Arguments to find a AnalyticsSnapshot
+     * @example
+     * // Get one AnalyticsSnapshot
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AnalyticsSnapshotFindFirstArgs>(args?: SelectSubset<T, AnalyticsSnapshotFindFirstArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AnalyticsSnapshot that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotFindFirstOrThrowArgs} args - Arguments to find a AnalyticsSnapshot
+     * @example
+     * // Get one AnalyticsSnapshot
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AnalyticsSnapshotFindFirstOrThrowArgs>(args?: SelectSubset<T, AnalyticsSnapshotFindFirstOrThrowArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AnalyticsSnapshots that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AnalyticsSnapshots
+     * const analyticsSnapshots = await prisma.analyticsSnapshot.findMany()
+     * 
+     * // Get first 10 AnalyticsSnapshots
+     * const analyticsSnapshots = await prisma.analyticsSnapshot.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const analyticsSnapshotWithIdOnly = await prisma.analyticsSnapshot.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AnalyticsSnapshotFindManyArgs>(args?: SelectSubset<T, AnalyticsSnapshotFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AnalyticsSnapshot.
+     * @param {AnalyticsSnapshotCreateArgs} args - Arguments to create a AnalyticsSnapshot.
+     * @example
+     * // Create one AnalyticsSnapshot
+     * const AnalyticsSnapshot = await prisma.analyticsSnapshot.create({
+     *   data: {
+     *     // ... data to create a AnalyticsSnapshot
+     *   }
+     * })
+     * 
+     */
+    create<T extends AnalyticsSnapshotCreateArgs>(args: SelectSubset<T, AnalyticsSnapshotCreateArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AnalyticsSnapshots.
+     * @param {AnalyticsSnapshotCreateManyArgs} args - Arguments to create many AnalyticsSnapshots.
+     * @example
+     * // Create many AnalyticsSnapshots
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AnalyticsSnapshotCreateManyArgs>(args?: SelectSubset<T, AnalyticsSnapshotCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AnalyticsSnapshots and returns the data saved in the database.
+     * @param {AnalyticsSnapshotCreateManyAndReturnArgs} args - Arguments to create many AnalyticsSnapshots.
+     * @example
+     * // Create many AnalyticsSnapshots
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AnalyticsSnapshots and only return the `id`
+     * const analyticsSnapshotWithIdOnly = await prisma.analyticsSnapshot.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AnalyticsSnapshotCreateManyAndReturnArgs>(args?: SelectSubset<T, AnalyticsSnapshotCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AnalyticsSnapshot.
+     * @param {AnalyticsSnapshotDeleteArgs} args - Arguments to delete one AnalyticsSnapshot.
+     * @example
+     * // Delete one AnalyticsSnapshot
+     * const AnalyticsSnapshot = await prisma.analyticsSnapshot.delete({
+     *   where: {
+     *     // ... filter to delete one AnalyticsSnapshot
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AnalyticsSnapshotDeleteArgs>(args: SelectSubset<T, AnalyticsSnapshotDeleteArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AnalyticsSnapshot.
+     * @param {AnalyticsSnapshotUpdateArgs} args - Arguments to update one AnalyticsSnapshot.
+     * @example
+     * // Update one AnalyticsSnapshot
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AnalyticsSnapshotUpdateArgs>(args: SelectSubset<T, AnalyticsSnapshotUpdateArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AnalyticsSnapshots.
+     * @param {AnalyticsSnapshotDeleteManyArgs} args - Arguments to filter AnalyticsSnapshots to delete.
+     * @example
+     * // Delete a few AnalyticsSnapshots
+     * const { count } = await prisma.analyticsSnapshot.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AnalyticsSnapshotDeleteManyArgs>(args?: SelectSubset<T, AnalyticsSnapshotDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AnalyticsSnapshots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AnalyticsSnapshots
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AnalyticsSnapshotUpdateManyArgs>(args: SelectSubset<T, AnalyticsSnapshotUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AnalyticsSnapshots and returns the data updated in the database.
+     * @param {AnalyticsSnapshotUpdateManyAndReturnArgs} args - Arguments to update many AnalyticsSnapshots.
+     * @example
+     * // Update many AnalyticsSnapshots
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AnalyticsSnapshots and only return the `id`
+     * const analyticsSnapshotWithIdOnly = await prisma.analyticsSnapshot.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AnalyticsSnapshotUpdateManyAndReturnArgs>(args: SelectSubset<T, AnalyticsSnapshotUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AnalyticsSnapshot.
+     * @param {AnalyticsSnapshotUpsertArgs} args - Arguments to update or create a AnalyticsSnapshot.
+     * @example
+     * // Update or create a AnalyticsSnapshot
+     * const analyticsSnapshot = await prisma.analyticsSnapshot.upsert({
+     *   create: {
+     *     // ... data to create a AnalyticsSnapshot
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AnalyticsSnapshot we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AnalyticsSnapshotUpsertArgs>(args: SelectSubset<T, AnalyticsSnapshotUpsertArgs<ExtArgs>>): Prisma__AnalyticsSnapshotClient<$Result.GetResult<Prisma.$AnalyticsSnapshotPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AnalyticsSnapshots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotCountArgs} args - Arguments to filter AnalyticsSnapshots to count.
+     * @example
+     * // Count the number of AnalyticsSnapshots
+     * const count = await prisma.analyticsSnapshot.count({
+     *   where: {
+     *     // ... the filter for the AnalyticsSnapshots we want to count
+     *   }
+     * })
+    **/
+    count<T extends AnalyticsSnapshotCountArgs>(
+      args?: Subset<T, AnalyticsSnapshotCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AnalyticsSnapshotCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AnalyticsSnapshot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AnalyticsSnapshotAggregateArgs>(args: Subset<T, AnalyticsSnapshotAggregateArgs>): Prisma.PrismaPromise<GetAnalyticsSnapshotAggregateType<T>>
+
+    /**
+     * Group by AnalyticsSnapshot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsSnapshotGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AnalyticsSnapshotGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AnalyticsSnapshotGroupByArgs['orderBy'] }
+        : { orderBy?: AnalyticsSnapshotGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AnalyticsSnapshotGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAnalyticsSnapshotGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AnalyticsSnapshot model
+   */
+  readonly fields: AnalyticsSnapshotFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AnalyticsSnapshot.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AnalyticsSnapshotClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AnalyticsSnapshot model
+   */
+  interface AnalyticsSnapshotFieldRefs {
+    readonly id: FieldRef<"AnalyticsSnapshot", 'String'>
+    readonly projectId: FieldRef<"AnalyticsSnapshot", 'String'>
+    readonly visits: FieldRef<"AnalyticsSnapshot", 'Int'>
+    readonly signups: FieldRef<"AnalyticsSnapshot", 'Int'>
+    readonly createdAt: FieldRef<"AnalyticsSnapshot", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AnalyticsSnapshot findUnique
+   */
+  export type AnalyticsSnapshotFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsSnapshot to fetch.
+     */
+    where: AnalyticsSnapshotWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsSnapshot findUniqueOrThrow
+   */
+  export type AnalyticsSnapshotFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsSnapshot to fetch.
+     */
+    where: AnalyticsSnapshotWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsSnapshot findFirst
+   */
+  export type AnalyticsSnapshotFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsSnapshot to fetch.
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsSnapshots to fetch.
+     */
+    orderBy?: AnalyticsSnapshotOrderByWithRelationInput | AnalyticsSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AnalyticsSnapshots.
+     */
+    cursor?: AnalyticsSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AnalyticsSnapshots.
+     */
+    distinct?: AnalyticsSnapshotScalarFieldEnum | AnalyticsSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * AnalyticsSnapshot findFirstOrThrow
+   */
+  export type AnalyticsSnapshotFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsSnapshot to fetch.
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsSnapshots to fetch.
+     */
+    orderBy?: AnalyticsSnapshotOrderByWithRelationInput | AnalyticsSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AnalyticsSnapshots.
+     */
+    cursor?: AnalyticsSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AnalyticsSnapshots.
+     */
+    distinct?: AnalyticsSnapshotScalarFieldEnum | AnalyticsSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * AnalyticsSnapshot findMany
+   */
+  export type AnalyticsSnapshotFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsSnapshots to fetch.
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsSnapshots to fetch.
+     */
+    orderBy?: AnalyticsSnapshotOrderByWithRelationInput | AnalyticsSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AnalyticsSnapshots.
+     */
+    cursor?: AnalyticsSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsSnapshots.
+     */
+    skip?: number
+    distinct?: AnalyticsSnapshotScalarFieldEnum | AnalyticsSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * AnalyticsSnapshot create
+   */
+  export type AnalyticsSnapshotCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AnalyticsSnapshot.
+     */
+    data: XOR<AnalyticsSnapshotCreateInput, AnalyticsSnapshotUncheckedCreateInput>
+  }
+
+  /**
+   * AnalyticsSnapshot createMany
+   */
+  export type AnalyticsSnapshotCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AnalyticsSnapshots.
+     */
+    data: AnalyticsSnapshotCreateManyInput | AnalyticsSnapshotCreateManyInput[]
+  }
+
+  /**
+   * AnalyticsSnapshot createManyAndReturn
+   */
+  export type AnalyticsSnapshotCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * The data used to create many AnalyticsSnapshots.
+     */
+    data: AnalyticsSnapshotCreateManyInput | AnalyticsSnapshotCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AnalyticsSnapshot update
+   */
+  export type AnalyticsSnapshotUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AnalyticsSnapshot.
+     */
+    data: XOR<AnalyticsSnapshotUpdateInput, AnalyticsSnapshotUncheckedUpdateInput>
+    /**
+     * Choose, which AnalyticsSnapshot to update.
+     */
+    where: AnalyticsSnapshotWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsSnapshot updateMany
+   */
+  export type AnalyticsSnapshotUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AnalyticsSnapshots.
+     */
+    data: XOR<AnalyticsSnapshotUpdateManyMutationInput, AnalyticsSnapshotUncheckedUpdateManyInput>
+    /**
+     * Filter which AnalyticsSnapshots to update
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * Limit how many AnalyticsSnapshots to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AnalyticsSnapshot updateManyAndReturn
+   */
+  export type AnalyticsSnapshotUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * The data used to update AnalyticsSnapshots.
+     */
+    data: XOR<AnalyticsSnapshotUpdateManyMutationInput, AnalyticsSnapshotUncheckedUpdateManyInput>
+    /**
+     * Filter which AnalyticsSnapshots to update
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * Limit how many AnalyticsSnapshots to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AnalyticsSnapshot upsert
+   */
+  export type AnalyticsSnapshotUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AnalyticsSnapshot to update in case it exists.
+     */
+    where: AnalyticsSnapshotWhereUniqueInput
+    /**
+     * In case the AnalyticsSnapshot found by the `where` argument doesn't exist, create a new AnalyticsSnapshot with this data.
+     */
+    create: XOR<AnalyticsSnapshotCreateInput, AnalyticsSnapshotUncheckedCreateInput>
+    /**
+     * In case the AnalyticsSnapshot was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AnalyticsSnapshotUpdateInput, AnalyticsSnapshotUncheckedUpdateInput>
+  }
+
+  /**
+   * AnalyticsSnapshot delete
+   */
+  export type AnalyticsSnapshotDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter which AnalyticsSnapshot to delete.
+     */
+    where: AnalyticsSnapshotWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsSnapshot deleteMany
+   */
+  export type AnalyticsSnapshotDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AnalyticsSnapshots to delete
+     */
+    where?: AnalyticsSnapshotWhereInput
+    /**
+     * Limit how many AnalyticsSnapshots to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AnalyticsSnapshot without action
+   */
+  export type AnalyticsSnapshotDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsSnapshot
+     */
+    select?: AnalyticsSnapshotSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsSnapshot
+     */
+    omit?: AnalyticsSnapshotOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsSnapshotInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -9170,6 +10392,17 @@ export namespace Prisma {
   };
 
   export type CostSnapshotScalarFieldEnum = (typeof CostSnapshotScalarFieldEnum)[keyof typeof CostSnapshotScalarFieldEnum]
+
+
+  export const AnalyticsSnapshotScalarFieldEnum: {
+    id: 'id',
+    projectId: 'projectId',
+    visits: 'visits',
+    signups: 'signups',
+    createdAt: 'createdAt'
+  };
+
+  export type AnalyticsSnapshotScalarFieldEnum = (typeof AnalyticsSnapshotScalarFieldEnum)[keyof typeof AnalyticsSnapshotScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -9289,6 +10522,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
     costSnapshots?: CostSnapshotListRelationFilter
+    analyticsSnapshots?: AnalyticsSnapshotListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -9300,6 +10534,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     changelog?: ChangeLogEntryOrderByRelationAggregateInput
     costSnapshots?: CostSnapshotOrderByRelationAggregateInput
+    analyticsSnapshots?: AnalyticsSnapshotOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -9314,6 +10549,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
     costSnapshots?: CostSnapshotListRelationFilter
+    analyticsSnapshots?: AnalyticsSnapshotListRelationFilter
   }, "id" | "name">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -9706,6 +10942,63 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"CostSnapshot"> | Date | string
   }
 
+  export type AnalyticsSnapshotWhereInput = {
+    AND?: AnalyticsSnapshotWhereInput | AnalyticsSnapshotWhereInput[]
+    OR?: AnalyticsSnapshotWhereInput[]
+    NOT?: AnalyticsSnapshotWhereInput | AnalyticsSnapshotWhereInput[]
+    id?: StringFilter<"AnalyticsSnapshot"> | string
+    projectId?: StringFilter<"AnalyticsSnapshot"> | string
+    visits?: IntFilter<"AnalyticsSnapshot"> | number
+    signups?: IntFilter<"AnalyticsSnapshot"> | number
+    createdAt?: DateTimeFilter<"AnalyticsSnapshot"> | Date | string
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }
+
+  export type AnalyticsSnapshotOrderByWithRelationInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    visits?: SortOrder
+    signups?: SortOrder
+    createdAt?: SortOrder
+    project?: ProjectOrderByWithRelationInput
+  }
+
+  export type AnalyticsSnapshotWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AnalyticsSnapshotWhereInput | AnalyticsSnapshotWhereInput[]
+    OR?: AnalyticsSnapshotWhereInput[]
+    NOT?: AnalyticsSnapshotWhereInput | AnalyticsSnapshotWhereInput[]
+    projectId?: StringFilter<"AnalyticsSnapshot"> | string
+    visits?: IntFilter<"AnalyticsSnapshot"> | number
+    signups?: IntFilter<"AnalyticsSnapshot"> | number
+    createdAt?: DateTimeFilter<"AnalyticsSnapshot"> | Date | string
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }, "id">
+
+  export type AnalyticsSnapshotOrderByWithAggregationInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    visits?: SortOrder
+    signups?: SortOrder
+    createdAt?: SortOrder
+    _count?: AnalyticsSnapshotCountOrderByAggregateInput
+    _avg?: AnalyticsSnapshotAvgOrderByAggregateInput
+    _max?: AnalyticsSnapshotMaxOrderByAggregateInput
+    _min?: AnalyticsSnapshotMinOrderByAggregateInput
+    _sum?: AnalyticsSnapshotSumOrderByAggregateInput
+  }
+
+  export type AnalyticsSnapshotScalarWhereWithAggregatesInput = {
+    AND?: AnalyticsSnapshotScalarWhereWithAggregatesInput | AnalyticsSnapshotScalarWhereWithAggregatesInput[]
+    OR?: AnalyticsSnapshotScalarWhereWithAggregatesInput[]
+    NOT?: AnalyticsSnapshotScalarWhereWithAggregatesInput | AnalyticsSnapshotScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AnalyticsSnapshot"> | string
+    projectId?: StringWithAggregatesFilter<"AnalyticsSnapshot"> | string
+    visits?: IntWithAggregatesFilter<"AnalyticsSnapshot"> | number
+    signups?: IntWithAggregatesFilter<"AnalyticsSnapshot"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"AnalyticsSnapshot"> | Date | string
+  }
+
   export type ProjectCreateInput = {
     id?: string
     name: string
@@ -9715,6 +11008,7 @@ export namespace Prisma {
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
     costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
+    analyticsSnapshots?: AnalyticsSnapshotCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -9726,6 +11020,7 @@ export namespace Prisma {
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
     costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
+    analyticsSnapshots?: AnalyticsSnapshotUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -9737,6 +11032,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
     costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
+    analyticsSnapshots?: AnalyticsSnapshotUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -9748,6 +11044,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
     costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
+    analyticsSnapshots?: AnalyticsSnapshotUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -10159,6 +11456,61 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AnalyticsSnapshotCreateInput = {
+    id?: string
+    visits?: number
+    signups?: number
+    createdAt?: Date | string
+    project: ProjectCreateNestedOneWithoutAnalyticsSnapshotsInput
+  }
+
+  export type AnalyticsSnapshotUncheckedCreateInput = {
+    id?: string
+    projectId: string
+    visits?: number
+    signups?: number
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsSnapshotUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutAnalyticsSnapshotsNestedInput
+  }
+
+  export type AnalyticsSnapshotUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsSnapshotCreateManyInput = {
+    id?: string
+    projectId: string
+    visits?: number
+    signups?: number
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsSnapshotUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsSnapshotUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -10217,6 +11569,12 @@ export namespace Prisma {
     none?: CostSnapshotWhereInput
   }
 
+  export type AnalyticsSnapshotListRelationFilter = {
+    every?: AnalyticsSnapshotWhereInput
+    some?: AnalyticsSnapshotWhereInput
+    none?: AnalyticsSnapshotWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -10227,6 +11585,10 @@ export namespace Prisma {
   }
 
   export type CostSnapshotOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AnalyticsSnapshotOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -10649,6 +12011,67 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type AnalyticsSnapshotCountOrderByAggregateInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    visits?: SortOrder
+    signups?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AnalyticsSnapshotAvgOrderByAggregateInput = {
+    visits?: SortOrder
+    signups?: SortOrder
+  }
+
+  export type AnalyticsSnapshotMaxOrderByAggregateInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    visits?: SortOrder
+    signups?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AnalyticsSnapshotMinOrderByAggregateInput = {
+    id?: SortOrder
+    projectId?: SortOrder
+    visits?: SortOrder
+    signups?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AnalyticsSnapshotSumOrderByAggregateInput = {
+    visits?: SortOrder
+    signups?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
   export type ChangeLogEntryCreateNestedManyWithoutProjectInput = {
     create?: XOR<ChangeLogEntryCreateWithoutProjectInput, ChangeLogEntryUncheckedCreateWithoutProjectInput> | ChangeLogEntryCreateWithoutProjectInput[] | ChangeLogEntryUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ChangeLogEntryCreateOrConnectWithoutProjectInput | ChangeLogEntryCreateOrConnectWithoutProjectInput[]
@@ -10663,6 +12086,13 @@ export namespace Prisma {
     connect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
   }
 
+  export type AnalyticsSnapshotCreateNestedManyWithoutProjectInput = {
+    create?: XOR<AnalyticsSnapshotCreateWithoutProjectInput, AnalyticsSnapshotUncheckedCreateWithoutProjectInput> | AnalyticsSnapshotCreateWithoutProjectInput[] | AnalyticsSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AnalyticsSnapshotCreateOrConnectWithoutProjectInput | AnalyticsSnapshotCreateOrConnectWithoutProjectInput[]
+    createMany?: AnalyticsSnapshotCreateManyProjectInputEnvelope
+    connect?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+  }
+
   export type ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<ChangeLogEntryCreateWithoutProjectInput, ChangeLogEntryUncheckedCreateWithoutProjectInput> | ChangeLogEntryCreateWithoutProjectInput[] | ChangeLogEntryUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ChangeLogEntryCreateOrConnectWithoutProjectInput | ChangeLogEntryCreateOrConnectWithoutProjectInput[]
@@ -10675,6 +12105,13 @@ export namespace Prisma {
     connectOrCreate?: CostSnapshotCreateOrConnectWithoutProjectInput | CostSnapshotCreateOrConnectWithoutProjectInput[]
     createMany?: CostSnapshotCreateManyProjectInputEnvelope
     connect?: CostSnapshotWhereUniqueInput | CostSnapshotWhereUniqueInput[]
+  }
+
+  export type AnalyticsSnapshotUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<AnalyticsSnapshotCreateWithoutProjectInput, AnalyticsSnapshotUncheckedCreateWithoutProjectInput> | AnalyticsSnapshotCreateWithoutProjectInput[] | AnalyticsSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AnalyticsSnapshotCreateOrConnectWithoutProjectInput | AnalyticsSnapshotCreateOrConnectWithoutProjectInput[]
+    createMany?: AnalyticsSnapshotCreateManyProjectInputEnvelope
+    connect?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -10721,6 +12158,20 @@ export namespace Prisma {
     deleteMany?: CostSnapshotScalarWhereInput | CostSnapshotScalarWhereInput[]
   }
 
+  export type AnalyticsSnapshotUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<AnalyticsSnapshotCreateWithoutProjectInput, AnalyticsSnapshotUncheckedCreateWithoutProjectInput> | AnalyticsSnapshotCreateWithoutProjectInput[] | AnalyticsSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AnalyticsSnapshotCreateOrConnectWithoutProjectInput | AnalyticsSnapshotCreateOrConnectWithoutProjectInput[]
+    upsert?: AnalyticsSnapshotUpsertWithWhereUniqueWithoutProjectInput | AnalyticsSnapshotUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: AnalyticsSnapshotCreateManyProjectInputEnvelope
+    set?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    disconnect?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    delete?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    connect?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    update?: AnalyticsSnapshotUpdateWithWhereUniqueWithoutProjectInput | AnalyticsSnapshotUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: AnalyticsSnapshotUpdateManyWithWhereWithoutProjectInput | AnalyticsSnapshotUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: AnalyticsSnapshotScalarWhereInput | AnalyticsSnapshotScalarWhereInput[]
+  }
+
   export type ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<ChangeLogEntryCreateWithoutProjectInput, ChangeLogEntryUncheckedCreateWithoutProjectInput> | ChangeLogEntryCreateWithoutProjectInput[] | ChangeLogEntryUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ChangeLogEntryCreateOrConnectWithoutProjectInput | ChangeLogEntryCreateOrConnectWithoutProjectInput[]
@@ -10747,6 +12198,20 @@ export namespace Prisma {
     update?: CostSnapshotUpdateWithWhereUniqueWithoutProjectInput | CostSnapshotUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: CostSnapshotUpdateManyWithWhereWithoutProjectInput | CostSnapshotUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: CostSnapshotScalarWhereInput | CostSnapshotScalarWhereInput[]
+  }
+
+  export type AnalyticsSnapshotUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<AnalyticsSnapshotCreateWithoutProjectInput, AnalyticsSnapshotUncheckedCreateWithoutProjectInput> | AnalyticsSnapshotCreateWithoutProjectInput[] | AnalyticsSnapshotUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AnalyticsSnapshotCreateOrConnectWithoutProjectInput | AnalyticsSnapshotCreateOrConnectWithoutProjectInput[]
+    upsert?: AnalyticsSnapshotUpsertWithWhereUniqueWithoutProjectInput | AnalyticsSnapshotUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: AnalyticsSnapshotCreateManyProjectInputEnvelope
+    set?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    disconnect?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    delete?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    connect?: AnalyticsSnapshotWhereUniqueInput | AnalyticsSnapshotWhereUniqueInput[]
+    update?: AnalyticsSnapshotUpdateWithWhereUniqueWithoutProjectInput | AnalyticsSnapshotUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: AnalyticsSnapshotUpdateManyWithWhereWithoutProjectInput | AnalyticsSnapshotUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: AnalyticsSnapshotScalarWhereInput | AnalyticsSnapshotScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -10907,6 +12372,28 @@ export namespace Prisma {
     upsert?: ProjectUpsertWithoutCostSnapshotsInput
     connect?: ProjectWhereUniqueInput
     update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutCostSnapshotsInput, ProjectUpdateWithoutCostSnapshotsInput>, ProjectUncheckedUpdateWithoutCostSnapshotsInput>
+  }
+
+  export type ProjectCreateNestedOneWithoutAnalyticsSnapshotsInput = {
+    create?: XOR<ProjectCreateWithoutAnalyticsSnapshotsInput, ProjectUncheckedCreateWithoutAnalyticsSnapshotsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutAnalyticsSnapshotsInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type ProjectUpdateOneRequiredWithoutAnalyticsSnapshotsNestedInput = {
+    create?: XOR<ProjectCreateWithoutAnalyticsSnapshotsInput, ProjectUncheckedCreateWithoutAnalyticsSnapshotsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutAnalyticsSnapshotsInput
+    upsert?: ProjectUpsertWithoutAnalyticsSnapshotsInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutAnalyticsSnapshotsInput, ProjectUpdateWithoutAnalyticsSnapshotsInput>, ProjectUncheckedUpdateWithoutAnalyticsSnapshotsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -11132,6 +12619,33 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type ChangeLogEntryCreateWithoutProjectInput = {
     id?: string
     provider: string
@@ -11176,6 +12690,29 @@ export namespace Prisma {
 
   export type CostSnapshotCreateManyProjectInputEnvelope = {
     data: CostSnapshotCreateManyProjectInput | CostSnapshotCreateManyProjectInput[]
+  }
+
+  export type AnalyticsSnapshotCreateWithoutProjectInput = {
+    id?: string
+    visits?: number
+    signups?: number
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsSnapshotUncheckedCreateWithoutProjectInput = {
+    id?: string
+    visits?: number
+    signups?: number
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsSnapshotCreateOrConnectWithoutProjectInput = {
+    where: AnalyticsSnapshotWhereUniqueInput
+    create: XOR<AnalyticsSnapshotCreateWithoutProjectInput, AnalyticsSnapshotUncheckedCreateWithoutProjectInput>
+  }
+
+  export type AnalyticsSnapshotCreateManyProjectInputEnvelope = {
+    data: AnalyticsSnapshotCreateManyProjectInput | AnalyticsSnapshotCreateManyProjectInput[]
   }
 
   export type ChangeLogEntryUpsertWithWhereUniqueWithoutProjectInput = {
@@ -11230,6 +12767,33 @@ export namespace Prisma {
     projectId?: StringFilter<"CostSnapshot"> | string
     costAmount?: DecimalFilter<"CostSnapshot"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFilter<"CostSnapshot"> | Date | string
+  }
+
+  export type AnalyticsSnapshotUpsertWithWhereUniqueWithoutProjectInput = {
+    where: AnalyticsSnapshotWhereUniqueInput
+    update: XOR<AnalyticsSnapshotUpdateWithoutProjectInput, AnalyticsSnapshotUncheckedUpdateWithoutProjectInput>
+    create: XOR<AnalyticsSnapshotCreateWithoutProjectInput, AnalyticsSnapshotUncheckedCreateWithoutProjectInput>
+  }
+
+  export type AnalyticsSnapshotUpdateWithWhereUniqueWithoutProjectInput = {
+    where: AnalyticsSnapshotWhereUniqueInput
+    data: XOR<AnalyticsSnapshotUpdateWithoutProjectInput, AnalyticsSnapshotUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type AnalyticsSnapshotUpdateManyWithWhereWithoutProjectInput = {
+    where: AnalyticsSnapshotScalarWhereInput
+    data: XOR<AnalyticsSnapshotUpdateManyMutationInput, AnalyticsSnapshotUncheckedUpdateManyWithoutProjectInput>
+  }
+
+  export type AnalyticsSnapshotScalarWhereInput = {
+    AND?: AnalyticsSnapshotScalarWhereInput | AnalyticsSnapshotScalarWhereInput[]
+    OR?: AnalyticsSnapshotScalarWhereInput[]
+    NOT?: AnalyticsSnapshotScalarWhereInput | AnalyticsSnapshotScalarWhereInput[]
+    id?: StringFilter<"AnalyticsSnapshot"> | string
+    projectId?: StringFilter<"AnalyticsSnapshot"> | string
+    visits?: IntFilter<"AnalyticsSnapshot"> | number
+    signups?: IntFilter<"AnalyticsSnapshot"> | number
+    createdAt?: DateTimeFilter<"AnalyticsSnapshot"> | Date | string
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -11468,6 +13032,7 @@ export namespace Prisma {
     lastActivityAt?: Date | string
     createdAt?: Date | string
     costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
+    analyticsSnapshots?: AnalyticsSnapshotCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutChangelogInput = {
@@ -11478,6 +13043,7 @@ export namespace Prisma {
     lastActivityAt?: Date | string
     createdAt?: Date | string
     costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
+    analyticsSnapshots?: AnalyticsSnapshotUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutChangelogInput = {
@@ -11504,6 +13070,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
+    analyticsSnapshots?: AnalyticsSnapshotUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutChangelogInput = {
@@ -11514,6 +13081,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
+    analyticsSnapshots?: AnalyticsSnapshotUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateWithoutCostSnapshotsInput = {
@@ -11524,6 +13092,7 @@ export namespace Prisma {
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
+    analyticsSnapshots?: AnalyticsSnapshotCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutCostSnapshotsInput = {
@@ -11534,6 +13103,7 @@ export namespace Prisma {
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
+    analyticsSnapshots?: AnalyticsSnapshotUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutCostSnapshotsInput = {
@@ -11560,6 +13130,7 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
+    analyticsSnapshots?: AnalyticsSnapshotUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutCostSnapshotsInput = {
@@ -11570,6 +13141,67 @@ export namespace Prisma {
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
+    analyticsSnapshots?: AnalyticsSnapshotUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectCreateWithoutAnalyticsSnapshotsInput = {
+    id?: string
+    name: string
+    status?: $Enums.ProjectStatus
+    frontendUrl?: string | null
+    lastActivityAt?: Date | string
+    createdAt?: Date | string
+    changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
+    costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutAnalyticsSnapshotsInput = {
+    id?: string
+    name: string
+    status?: $Enums.ProjectStatus
+    frontendUrl?: string | null
+    lastActivityAt?: Date | string
+    createdAt?: Date | string
+    changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
+    costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutAnalyticsSnapshotsInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutAnalyticsSnapshotsInput, ProjectUncheckedCreateWithoutAnalyticsSnapshotsInput>
+  }
+
+  export type ProjectUpsertWithoutAnalyticsSnapshotsInput = {
+    update: XOR<ProjectUpdateWithoutAnalyticsSnapshotsInput, ProjectUncheckedUpdateWithoutAnalyticsSnapshotsInput>
+    create: XOR<ProjectCreateWithoutAnalyticsSnapshotsInput, ProjectUncheckedCreateWithoutAnalyticsSnapshotsInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutAnalyticsSnapshotsInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutAnalyticsSnapshotsInput, ProjectUncheckedUpdateWithoutAnalyticsSnapshotsInput>
+  }
+
+  export type ProjectUpdateWithoutAnalyticsSnapshotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
+    costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutAnalyticsSnapshotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
+    costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ChangeLogEntryCreateManyProjectInput = {
@@ -11583,6 +13215,13 @@ export namespace Prisma {
   export type CostSnapshotCreateManyProjectInput = {
     id?: string
     costAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsSnapshotCreateManyProjectInput = {
+    id?: string
+    visits?: number
+    signups?: number
     createdAt?: Date | string
   }
 
@@ -11625,6 +13264,27 @@ export namespace Prisma {
   export type CostSnapshotUncheckedUpdateManyWithoutProjectInput = {
     id?: StringFieldUpdateOperationsInput | string
     costAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsSnapshotUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsSnapshotUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsSnapshotUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visits?: IntFieldUpdateOperationsInput | number
+    signups?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

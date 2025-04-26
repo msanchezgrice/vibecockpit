@@ -177,6 +177,14 @@ exports.Prisma.CostSnapshotScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AnalyticsSnapshotScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  visits: 'visits',
+  signups: 'signups',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -216,7 +224,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   VerificationToken: 'VerificationToken',
   ChangeLogEntry: 'ChangeLogEntry',
-  CostSnapshot: 'CostSnapshot'
+  CostSnapshot: 'CostSnapshot',
+  AnalyticsSnapshot: 'AnalyticsSnapshot'
 };
 
 /**

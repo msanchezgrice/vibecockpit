@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, ProjectStatus } from '@/generated/prisma';
+import { PrismaClient, ProjectStatus, CostSnapshot, AnalyticsSnapshot } from '@/generated/prisma';
 import { z, ZodError } from 'zod';
 
 const prisma = new PrismaClient();
@@ -36,14 +36,19 @@ export default async function handler(
               orderBy: { createdAt: 'desc' },
               take: 1,
             },
+            analyticsSnapshots: { // Include the latest analytics snapshot
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+            },
           },
         });
-        // Map the result slightly to make accessing the snapshot easier on the client
-        const projectsWithCost = projects.map(p => ({
+        // Map the result slightly to make accessing snapshots easier on the client
+        const projectsWithData = projects.map(p => ({
             ...p,
             latestCostSnapshot: p.costSnapshots[0] ?? null,
+            latestAnalyticsSnapshot: p.analyticsSnapshots[0] ?? null,
         }));
-        res.status(200).json(projectsWithCost);
+        res.status(200).json(projectsWithData);
       } catch (error) {
         console.error('Failed to fetch projects:', error);
         res.status(500).json({ message: 'Failed to fetch projects' });

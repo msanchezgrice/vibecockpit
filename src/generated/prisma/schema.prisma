@@ -15,14 +15,15 @@ datasource db {
 }
 
 model Project {
-  id             String           @id @default(uuid())
-  name           String           @unique
-  status         ProjectStatus    @default(design)
-  frontendUrl    String?          @map("frontend_url")
-  lastActivityAt DateTime         @default(now()) @map("last_activity_at")
-  createdAt      DateTime         @default(now()) @map("created_at")
-  changelog      ChangeLogEntry[]
-  costSnapshots  CostSnapshot[]
+  id                 String              @id @default(uuid())
+  name               String              @unique
+  status             ProjectStatus       @default(design)
+  frontendUrl        String?             @map("frontend_url")
+  lastActivityAt     DateTime            @default(now()) @map("last_activity_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  changelog          ChangeLogEntry[]
+  costSnapshots      CostSnapshot[]
+  analyticsSnapshots AnalyticsSnapshot[]
 }
 
 enum ProjectStatus {
@@ -110,4 +111,17 @@ model CostSnapshot {
 
   @@index([projectId, createdAt(sort: Desc)])
   @@map("cost_snapshots")
+}
+
+model AnalyticsSnapshot {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  visits    Int      @default(0)
+  signups   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt(sort: Desc)])
+  @@map("analytics_snapshots")
 }
