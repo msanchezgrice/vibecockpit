@@ -8,7 +8,8 @@ const prisma = new PrismaClient();
 
 // Schema to validate query parameters
 const querySchema = z.object({
-  projectId: z.string().uuid({ message: "Invalid Project ID format" }),
+  // projectId: z.string().uuid({ message: "Invalid Project ID format" }),
+  projectId: z.string().min(1, { message: "Project ID cannot be empty" }), // Relaxed validation
 });
 
 export default async function handler(
