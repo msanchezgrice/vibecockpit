@@ -119,6 +119,8 @@ exports.Prisma.ProjectScalarFieldEnum = {
   name: 'name',
   status: 'status',
   frontendUrl: 'frontendUrl',
+  vercelProjectId: 'vercelProjectId',
+  githubRepo: 'githubRepo',
   lastActivityAt: 'lastActivityAt',
   createdAt: 'createdAt'
 };

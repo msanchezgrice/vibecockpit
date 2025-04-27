@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, ProjectStatus } from '@/generated/prisma';
+import { PrismaClient, ProjectStatus, Prisma } from '@/generated/prisma';
 import { z, ZodError } from 'zod';
 
 const prisma = new PrismaClient();
@@ -56,16 +56,18 @@ export default async function handler(
       } catch (error) {
         if (error instanceof ZodError) {
           res.status(400).json({ message: 'Invalid input', errors: error.errors });
-        } else {
+        } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
           console.error(`Failed to update project ${id}:`, error);
-           // Check for specific Prisma errors if needed (e.g., P2025 Record not found)
-          if ((error as any).code === 'P2002') { // Unique constraint violation (e.g., name)
+          if (error.code === 'P2002') {
              res.status(409).json({ message: 'A project with this name already exists' });
-          } else if ((error as any).code === 'P2025') {
+          } else if (error.code === 'P2025') {
              res.status(404).json({ message: 'Project not found' });
           } else {
              res.status(500).json({ message: 'Failed to update project' });
           }
+        } else {
+           console.error(`Unexpected error updating project ${id}:`, error);
+          res.status(500).json({ message: 'Failed to update project' });
         }
       }
       break;

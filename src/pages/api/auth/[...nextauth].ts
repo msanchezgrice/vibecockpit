@@ -39,9 +39,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, user }) {
       // Send properties to the client, like an access_token from a provider.
-      // Potentially add user ID to session here if needed
       if (session.user) {
-        (session.user as any).id = user.id; // Add user ID to session
+        session.user.id = user.id; // Now type-safe
       }
       return session;
     },

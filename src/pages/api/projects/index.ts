@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, ProjectStatus, CostSnapshot, AnalyticsSnapshot } from '@/generated/prisma';
+import { PrismaClient, Prisma } from '@/generated/prisma';
 import { z, ZodError } from 'zod';
 
 const prisma = new PrismaClient();
@@ -70,17 +70,17 @@ export default async function handler(
         res.status(201).json(newProject);
       } catch (error) {
         if (error instanceof ZodError) {
-          // Validation error
           res.status(400).json({ message: 'Invalid input', errors: error.errors });
-        } else {
-          // Other errors (e.g., database unique constraint)
+        } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
           console.error('Failed to create project:', error);
-          // Check for specific Prisma errors if needed
-          if ((error as any).code === 'P2002') { // Unique constraint violation (e.g., name)
+          if (error.code === 'P2002') {
              res.status(409).json({ message: 'A project with this name already exists' });
           } else {
              res.status(500).json({ message: 'Failed to create project' });
           }
+        } else {
+          console.error('Unexpected error creating project:', error);
+          res.status(500).json({ message: 'Failed to create project' });
         }
       }
       break;

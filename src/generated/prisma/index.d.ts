@@ -1628,6 +1628,8 @@ export namespace Prisma {
     name: string | null
     status: $Enums.ProjectStatus | null
     frontendUrl: string | null
+    vercelProjectId: string | null
+    githubRepo: string | null
     lastActivityAt: Date | null
     createdAt: Date | null
   }
@@ -1637,6 +1639,8 @@ export namespace Prisma {
     name: string | null
     status: $Enums.ProjectStatus | null
     frontendUrl: string | null
+    vercelProjectId: string | null
+    githubRepo: string | null
     lastActivityAt: Date | null
     createdAt: Date | null
   }
@@ -1646,6 +1650,8 @@ export namespace Prisma {
     name: number
     status: number
     frontendUrl: number
+    vercelProjectId: number
+    githubRepo: number
     lastActivityAt: number
     createdAt: number
     _all: number
@@ -1657,6 +1663,8 @@ export namespace Prisma {
     name?: true
     status?: true
     frontendUrl?: true
+    vercelProjectId?: true
+    githubRepo?: true
     lastActivityAt?: true
     createdAt?: true
   }
@@ -1666,6 +1674,8 @@ export namespace Prisma {
     name?: true
     status?: true
     frontendUrl?: true
+    vercelProjectId?: true
+    githubRepo?: true
     lastActivityAt?: true
     createdAt?: true
   }
@@ -1675,6 +1685,8 @@ export namespace Prisma {
     name?: true
     status?: true
     frontendUrl?: true
+    vercelProjectId?: true
+    githubRepo?: true
     lastActivityAt?: true
     createdAt?: true
     _all?: true
@@ -1757,6 +1769,8 @@ export namespace Prisma {
     name: string
     status: $Enums.ProjectStatus
     frontendUrl: string | null
+    vercelProjectId: string | null
+    githubRepo: string | null
     lastActivityAt: Date
     createdAt: Date
     _count: ProjectCountAggregateOutputType | null
@@ -1783,6 +1797,8 @@ export namespace Prisma {
     name?: boolean
     status?: boolean
     frontendUrl?: boolean
+    vercelProjectId?: boolean
+    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
     changelog?: boolean | Project$changelogArgs<ExtArgs>
@@ -1796,6 +1812,8 @@ export namespace Prisma {
     name?: boolean
     status?: boolean
     frontendUrl?: boolean
+    vercelProjectId?: boolean
+    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["project"]>
@@ -1805,6 +1823,8 @@ export namespace Prisma {
     name?: boolean
     status?: boolean
     frontendUrl?: boolean
+    vercelProjectId?: boolean
+    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["project"]>
@@ -1814,11 +1834,13 @@ export namespace Prisma {
     name?: boolean
     status?: boolean
     frontendUrl?: boolean
+    vercelProjectId?: boolean
+    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "status" | "frontendUrl" | "lastActivityAt" | "createdAt", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "status" | "frontendUrl" | "vercelProjectId" | "githubRepo" | "lastActivityAt" | "createdAt", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     changelog?: boolean | Project$changelogArgs<ExtArgs>
     costSnapshots?: boolean | Project$costSnapshotsArgs<ExtArgs>
@@ -1840,6 +1862,8 @@ export namespace Prisma {
       name: string
       status: $Enums.ProjectStatus
       frontendUrl: string | null
+      vercelProjectId: string | null
+      githubRepo: string | null
       lastActivityAt: Date
       createdAt: Date
     }, ExtArgs["result"]["project"]>
@@ -2272,6 +2296,8 @@ export namespace Prisma {
     readonly name: FieldRef<"Project", 'String'>
     readonly status: FieldRef<"Project", 'ProjectStatus'>
     readonly frontendUrl: FieldRef<"Project", 'String'>
+    readonly vercelProjectId: FieldRef<"Project", 'String'>
+    readonly githubRepo: FieldRef<"Project", 'String'>
     readonly lastActivityAt: FieldRef<"Project", 'DateTime'>
     readonly createdAt: FieldRef<"Project", 'DateTime'>
   }
@@ -10315,6 +10341,8 @@ export namespace Prisma {
     name: 'name',
     status: 'status',
     frontendUrl: 'frontendUrl',
+    vercelProjectId: 'vercelProjectId',
+    githubRepo: 'githubRepo',
     lastActivityAt: 'lastActivityAt',
     createdAt: 'createdAt'
   };
@@ -10518,6 +10546,8 @@ export namespace Prisma {
     name?: StringFilter<"Project"> | string
     status?: EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
     frontendUrl?: StringNullableFilter<"Project"> | string | null
+    vercelProjectId?: StringNullableFilter<"Project"> | string | null
+    githubRepo?: StringNullableFilter<"Project"> | string | null
     lastActivityAt?: DateTimeFilter<"Project"> | Date | string
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
@@ -10530,6 +10560,8 @@ export namespace Prisma {
     name?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrderInput | SortOrder
+    vercelProjectId?: SortOrderInput | SortOrder
+    githubRepo?: SortOrderInput | SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
     changelog?: ChangeLogEntryOrderByRelationAggregateInput
@@ -10545,6 +10577,8 @@ export namespace Prisma {
     NOT?: ProjectWhereInput | ProjectWhereInput[]
     status?: EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
     frontendUrl?: StringNullableFilter<"Project"> | string | null
+    vercelProjectId?: StringNullableFilter<"Project"> | string | null
+    githubRepo?: StringNullableFilter<"Project"> | string | null
     lastActivityAt?: DateTimeFilter<"Project"> | Date | string
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
@@ -10557,6 +10591,8 @@ export namespace Prisma {
     name?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrderInput | SortOrder
+    vercelProjectId?: SortOrderInput | SortOrder
+    githubRepo?: SortOrderInput | SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
     _count?: ProjectCountOrderByAggregateInput
@@ -10572,6 +10608,8 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Project"> | string
     status?: EnumProjectStatusWithAggregatesFilter<"Project"> | $Enums.ProjectStatus
     frontendUrl?: StringNullableWithAggregatesFilter<"Project"> | string | null
+    vercelProjectId?: StringNullableWithAggregatesFilter<"Project"> | string | null
+    githubRepo?: StringNullableWithAggregatesFilter<"Project"> | string | null
     lastActivityAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
   }
@@ -11004,6 +11042,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
@@ -11016,6 +11056,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
@@ -11028,6 +11070,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
@@ -11040,6 +11084,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
@@ -11052,6 +11098,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
   }
@@ -11061,6 +11109,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11070,6 +11120,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11597,6 +11649,8 @@ export namespace Prisma {
     name?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrder
+    vercelProjectId?: SortOrder
+    githubRepo?: SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -11606,6 +11660,8 @@ export namespace Prisma {
     name?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrder
+    vercelProjectId?: SortOrder
+    githubRepo?: SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -11615,6 +11671,8 @@ export namespace Prisma {
     name?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrder
+    vercelProjectId?: SortOrder
+    githubRepo?: SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -13029,6 +13087,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
@@ -13040,6 +13100,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
@@ -13067,6 +13129,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
@@ -13078,6 +13142,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
@@ -13089,6 +13155,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
@@ -13100,6 +13168,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
@@ -13127,6 +13197,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
@@ -13138,6 +13210,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
@@ -13149,6 +13223,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
@@ -13160,6 +13236,8 @@ export namespace Prisma {
     name: string
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
+    vercelProjectId?: string | null
+    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
@@ -13187,6 +13265,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
@@ -13198,6 +13278,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput

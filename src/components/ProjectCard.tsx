@@ -11,9 +11,8 @@ import {
 } from '@/components/ui/select';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Use navigation router for App Router
-import NotesDrawer from './NotesDrawer'; // Import the drawer
-import { DollarSign, Users, BarChartBig } from 'lucide-react'; // Import icons
+import NotesDrawer from './NotesDrawer';
+import { DollarSign, BarChartBig } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project & { 
@@ -37,7 +36,6 @@ function formatCurrency(amount: string | number | null | undefined): string {
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
-  const router = useRouter();
   const [currentStatus, setCurrentStatus] = useState(project.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,13 +65,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
       const updatedProject: Project = await response.json();
       setCurrentStatus(updatedProject.status);
-      // Optionally: Refresh server-side props if needed, though local state update is often enough
-      // router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Status update failed:', err);
-      setError(err.message);
-      // Revert local state on error
-      // Note: This simple revert might not be ideal in complex scenarios
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(message);
       setCurrentStatus(project.status);
     } finally {
       setIsUpdating(false);

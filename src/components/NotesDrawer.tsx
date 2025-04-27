@@ -52,9 +52,10 @@ export default function NotesDrawer({ projectId }: NotesDrawerProps) {
       // Optionally close drawer or refresh data elsewhere
       setTimeout(() => setSuccessMessage(null), 3000); // Clear success message after 3s
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to save note:', err);
-      setError(err.message);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(message);
     } finally {
       setIsSaving(false);
     }

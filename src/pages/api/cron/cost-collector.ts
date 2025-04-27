@@ -1,8 +1,44 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@/generated/prisma';
-import { NextResponse } from 'next/server'; // Using NextResponse for cleaner responses
 
 const prisma = new PrismaClient();
+
+const VERCEL_API_URL = 'https://api.vercel.com';
+const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+
+// Helper function to fetch Vercel usage
+async function getVercelProjectUsage(projectId: string): Promise<{ cost: number } | null> {
+  if (!VERCEL_TOKEN) {
+    console.warn('VERCEL_TOKEN is not set. Skipping Vercel cost fetch.');
+    return null;
+  }
+
+  const url = `${VERCEL_API_URL}/v9/projects/${projectId}/usage`;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${VERCEL_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch Vercel usage for ${projectId}: ${response.status} ${response.statusText}`);
+      // Log body for more details if needed
+      // const errorBody = await response.text();
+      // console.error('Vercel API Error Body:', errorBody);
+      return null;
+    }
+
+    const data = await response.json();
+    // The usage endpoint returns cost directly for Pro plans, or needs calculation for others.
+    // We'll assume `data.cost` exists for simplicity.
+    // See: https://vercel.com/docs/rest-api/endpoints/projects#get-project-usage-metrics
+    return { cost: data.cost ?? 0 }; // Default to 0 if cost isn't directly available
+  } catch (error) {
+    console.error(`Error fetching Vercel usage for ${projectId}:`, error);
+    return null;
+  }
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,30 +60,33 @@ export default async function handler(
 
   try {
     const projects = await prisma.project.findMany({
-      select: { id: true }, // Only fetch IDs
+      where: { vercelProjectId: { not: null } }, // Only fetch projects with a Vercel ID
+      select: { id: true, vercelProjectId: true },
     });
 
     if (projects.length === 0) {
-      console.log('No projects found to snapshot costs for.');
-      return res.status(200).json({ message: 'No projects found' });
+      console.log('No projects with Vercel IDs found to snapshot costs for.');
+      return res.status(200).json({ message: 'No projects with Vercel IDs found' });
     }
 
-    const snapshotPromises = projects.map((project) => {
-      // Simulate fetching cost - generate random cost between 5 and 100
-      const randomCost = Math.random() * (100 - 5) + 5;
-      
-      return prisma.costSnapshot.create({
+    let createdCount = 0;
+    for (const project of projects) {
+      if (!project.vercelProjectId) continue;
+
+      const usage = await getVercelProjectUsage(project.vercelProjectId);
+      if (usage === null) continue; // Skip if fetch failed
+
+      await prisma.costSnapshot.create({
         data: {
           projectId: project.id,
-          costAmount: randomCost, // Prisma handles Decimal conversion
+          costAmount: usage.cost,
         },
       });
-    });
+      createdCount++;
+    }
 
-    const results = await Promise.all(snapshotPromises);
-
-    console.log(`Created ${results.length} cost snapshots.`);
-    return res.status(200).json({ message: `Created ${results.length} cost snapshots.` });
+    console.log(`Created ${createdCount} cost snapshots.`);
+    return res.status(200).json({ message: `Created ${createdCount} cost snapshots.` });
 
   } catch (error) {
     console.error('Cost collector cron job failed:', error);
