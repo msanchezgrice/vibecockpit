@@ -15,6 +15,7 @@ import NotesDrawer from './NotesDrawer';
 import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
 import { EditProjectDialog } from './EditProjectDialog';
 import { formatDateTime } from '@/lib/utils';
+import { ChecklistPreview } from './ChecklistPreview';
 
 interface ProjectCardProps {
   project: Project & { 
@@ -202,6 +203,11 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               </p>
             </div>
           </div>
+
+          {/* Conditionally render Checklist Preview */}
+          {project.status === 'prep_launch' && (
+            <ChecklistPreview projectId={project.id} />
+          )}
 
           {/* Add Changelog Display */}
           {project.changelog && project.changelog.length > 0 && (
