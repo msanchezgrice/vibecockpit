@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from 'lucide-react';
+import { AskAIDrawer } from './AskAIDrawer';
 
 interface ChecklistModalProps {
   projectId: string;
@@ -38,6 +39,12 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
   };
 
   const progress = data ? calculateProgress(data.completed_tasks, data.total_tasks) : 0;
+
+  const handleAcceptAIDraft = (taskId: string, draft: string) => {
+      console.log(`Accepted draft for task ${taskId}:`, draft);
+      // TODO: Implement logic to save the accepted draft later (Phase UI-4)
+      // Maybe update local state for immediate feedback?
+  };
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
@@ -90,9 +97,12 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                                 <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs px-1.5 py-0.5">AI</Badge>
                              )}
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs h-7">
-                                Ask AI {/* Placeholder - will trigger drawer later */}
-                            </Button>
+                            <AskAIDrawer 
+                                taskId={task.id} 
+                                taskTitle={task.title} 
+                                initialHint={task.ai_help_hint} 
+                                onAccept={handleAcceptAIDraft} 
+                            />
                         </li>
                     ))}
                 </ul>
