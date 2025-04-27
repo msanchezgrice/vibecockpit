@@ -26,6 +26,8 @@ export function AddProjectDialog() {
   const [frontendUrl, setFrontendUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [vercelId, setVercelId] = useState('');
+  const [githubRepo, setGithubRepo] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,13 +139,25 @@ export function AddProjectDialog() {
                     <Label htmlFor="vercelProjectId" className="text-right">
                      Vercel ID
                     </Label>
-                    <Input id="vercelProjectId" placeholder="(Optional)" className="col-span-3" disabled={isLoading}/>
+                    <Input 
+                        id="vercelProjectId" 
+                        placeholder="(Optional)" 
+                        className="col-span-3" 
+                        value={vercelId}
+                        onChange={(e) => setVercelId(e.target.value)}
+                        disabled={isLoading}/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="githubRepo" className="text-right">
                     GitHub Repo
                     </Label>
-                    <Input id="githubRepo" placeholder="owner/repo (Optional)" className="col-span-3" disabled={isLoading}/>
+                    <Input 
+                        id="githubRepo" 
+                        placeholder="owner/repo (Optional)" 
+                        className="col-span-3" 
+                        value={githubRepo}
+                        onChange={(e) => setGithubRepo(e.target.value)}
+                        disabled={isLoading}/>
                 </div>
             </div>
             {error && <p className="text-sm text-red-500 mb-4 px-1">Error: {error}</p>}
