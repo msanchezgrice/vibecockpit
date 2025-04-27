@@ -4,6 +4,6 @@ CREATE TABLE "Project" (
     "name" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'design',
     "frontend_url" TEXT,
-    "last_activity_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "last_activity_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

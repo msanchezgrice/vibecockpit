@@ -1,4 +1,13 @@
 -- CreateTable
+CREATE TABLE "users" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT,
+    "email" TEXT,
+    "email_verified" TIMESTAMP(3),
+    "image" TEXT
+);
+
+-- CreateTable
 CREATE TABLE "accounts" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "user_id" TEXT NOT NULL,
@@ -14,7 +23,7 @@ CREATE TABLE "accounts" (
     "session_state" TEXT,
     "oauth_token" TEXT,
     "oauth_token_secret" TEXT,
-    CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -22,24 +31,15 @@ CREATE TABLE "sessions" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "session_token" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "expires" DATETIME NOT NULL,
-    CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "users" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT,
-    "email" TEXT,
-    "email_verified" DATETIME,
-    "image" TEXT
+    "expires" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "verification_tokens" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
-    "expires" DATETIME NOT NULL
+    "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateIndex
