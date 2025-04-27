@@ -23,8 +23,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2, Pencil, Trash2 } from 'lucide-react';
 import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Define the expected prop type, including relations
 // Although we only edit Project fields, passing the full type helps
@@ -51,6 +62,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const [githubRepo, setGithubRepo] = useState(project.githubRepo ?? '');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Effect to reset form if project prop changes (though unlikely here)
@@ -124,6 +136,34 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     }
   };
 
+  // Handle Delete
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, { 
+        method: 'DELETE', 
+      });
+
+      if (!response.ok) {
+         const result = await response.json().catch(() => ({})); // Try parsing error, default empty
+        throw new Error(result.message || 'Failed to delete project');
+      }
+
+      // Success
+      setIsOpen(false); // Close edit dialog
+      // Alert dialog closes automatically on Action click
+      router.refresh(); // Refresh dashboard list
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('Failed to delete project:', err);
+      setError(message); // Display error within the main dialog for now
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -183,14 +223,42 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                 </div>
             </div>
             {error && <p className="text-sm text-red-500 mb-4 px-1">Error: {error}</p>}
-            <DialogFooter>
-                <DialogClose asChild>
-                    <Button type="button" variant="secondary" disabled={isLoading}>Cancel</Button>
-                </DialogClose>
-                <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLoading ? 'Saving...' : 'Save Changes'}
-                </Button>
+            <DialogFooter className="sm:justify-between pt-4">
+                 {/* Delete Button wrapped in Alert Dialog */}
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button type="button" variant="destructive" disabled={isLoading || isDeleting}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete Project
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the project
+                            and all associated data (notes, snapshots, etc.).
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                           {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isDeleting ? 'Deleting...' : 'Yes, delete project'}
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Save/Cancel Buttons */}
+                <div className="flex gap-2 justify-end"> 
+                    <DialogClose asChild>
+                        <Button type="button" variant="secondary" disabled={isLoading || isDeleting}>Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isLoading || isDeleting}>
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isLoading ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                </div>
             </DialogFooter>
         </form>
       </DialogContent>

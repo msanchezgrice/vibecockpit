@@ -72,10 +72,32 @@ export default async function handler(
       }
       break;
 
+    case 'DELETE':
+      try {
+        // Add cascading delete via Prisma schema, so related data is also removed
+        await prisma.project.delete({
+          where: { id },
+        });
+        res.status(204).end(); // 204 No Content on successful deletion
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          if (error.code === 'P2025') { // Record to delete not found
+             res.status(404).json({ message: 'Project not found' });
+          } else {
+             console.error(`Failed to delete project ${id} (Prisma Error):`, error);
+             res.status(500).json({ message: 'Failed to delete project' });
+          }
+        } else {
+          console.error(`Unexpected error deleting project ${id}:`, error);
+          res.status(500).json({ message: 'Failed to delete project' });
+        }
+      }
+      break;
+
     // Add GET by ID and DELETE later if needed
 
     default:
-      res.setHeader('Allow', ['PATCH']);
+      res.setHeader('Allow', ['PATCH', 'DELETE']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 } 
