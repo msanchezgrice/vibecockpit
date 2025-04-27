@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 const VERCEL_API_URL = 'https://api.vercel.com';
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 // Helper function to fetch Vercel usage
 async function getVercelProjectUsage(projectId: string): Promise<{ cost: number } | null> {
@@ -44,12 +45,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // IMPORTANT: Add authentication check for production cron jobs!
-  // Example: Check Authorization header for a secret bearer token
-  // const token = req.headers.authorization?.split(' ')[1];
-  // if (token !== process.env.CRON_SECRET) {
-  //   return res.status(401).json({ message: 'Unauthorized' });
-  // }
+  // Check Cron Secret Authorization
+  if (req.headers.authorization !== `Bearer ${CRON_SECRET}`) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');

@@ -7,6 +7,7 @@ const VERCEL_API_URL = 'https://api.vercel.com';
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 // Helper function to fetch Vercel "visits" (using usage endpoint as proxy)
 async function getVercelProjectVisits(projectId: string): Promise<number | null> {
@@ -78,7 +79,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // IMPORTANT: Add authentication check for production cron jobs!
+  // Check Cron Secret Authorization
+  if (req.headers.authorization !== `Bearer ${CRON_SECRET}`) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');

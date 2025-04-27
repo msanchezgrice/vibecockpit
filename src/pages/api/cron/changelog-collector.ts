@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 const GITHUB_API_URL = 'https://api.github.com';
 const GITHUB_PAT = process.env.GITHUB_PAT;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 interface GitHubCommit {
   sha: string;
@@ -58,7 +59,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // ... (Auth check) ...
+  // Check Cron Secret Authorization
+  if (req.headers.authorization !== `Bearer ${CRON_SECRET}`) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');

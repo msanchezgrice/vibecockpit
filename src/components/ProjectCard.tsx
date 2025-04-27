@@ -12,7 +12,7 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
-import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal } from 'lucide-react';
+import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project & { 
@@ -137,6 +137,38 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 </Link>
               ) : (
                 <p className="text-sm text-muted-foreground italic">Not set</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <ExternalLink className="h-5 w-5 text-muted-foreground" />
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none">Vercel Project</p>
+              {project.vercelProjectId && (
+                <Link
+                  href={`https://vercel.com/${process.env.NEXT_PUBLIC_VERCEL_TEAM_ID ?? '_'}/${project.vercelProjectId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:underline break-all"
+                >
+                  {project.vercelProjectId} (View on Vercel)
+                </Link>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <Github className="h-5 w-5 text-muted-foreground" />
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none">GitHub Repo</p>
+              {project.githubRepo && (
+                <Link
+                  href={`https://github.com/${project.githubRepo}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:underline break-all"
+                >
+                  {project.githubRepo}
+                </Link>
               )}
             </div>
           </div>
