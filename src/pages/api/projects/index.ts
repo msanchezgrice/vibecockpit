@@ -64,6 +64,10 @@ export default async function handler(
     case 'POST':
       try {
         const validatedData = createProjectSchema.parse(req.body);
+        
+        // --- DEBUG LOG --- 
+        console.log("Data received by POST /api/projects:", validatedData);
+        // --- END DEBUG LOG ---
 
         const newProject = await prisma.project.create({
           data: {
