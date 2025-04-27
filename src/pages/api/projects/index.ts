@@ -63,21 +63,21 @@ export default async function handler(
 
     case 'POST':
       try {
+        // Validate required fields and known optional ones
         const validatedData = createProjectSchema.parse(req.body);
         
-        // --- DEBUG LOG --- 
-        console.log("Data received by POST /api/projects:", validatedData);
-        // --- END DEBUG LOG ---
+        // Log the raw body as well for comparison
+        console.log("Raw body received by POST /api/projects:", req.body);
+        console.log("Validated data by POST /api/projects:", validatedData);
 
+        // Use validated data for required/formatted fields, but access original body for potentially stripped optional fields
         const newProject = await prisma.project.create({
           data: {
-            name: validatedData.name,
-            description: validatedData.description,
-            frontendUrl: validatedData.frontendUrl || null,
-            vercelProjectId: validatedData.vercelProjectId,
-            githubRepo: validatedData.githubRepo,
-            // status defaults to 'design'
-            // Associate with user later: user: { connect: { id: userId } }
+            name: validatedData.name, // Use validated name
+            description: req.body.description || null, // Use raw body value
+            frontendUrl: validatedData.frontendUrl || null, // Use validated/formatted URL
+            vercelProjectId: req.body.vercelProjectId || null, // Use raw body value
+            githubRepo: req.body.githubRepo || null, // Use raw body value
           },
         });
         res.status(201).json(newProject);
