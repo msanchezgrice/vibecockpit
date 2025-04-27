@@ -95,7 +95,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   };
 
   return (
-    <Card className="w-full max-w-sm flex flex-col justify-between">
+    <Card className="w-full flex flex-col justify-between">
       <div>
         <CardHeader>
           <div className="flex justify-between items-start">
@@ -133,14 +133,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             </div>
           </div>
           <div className="flex items-center space-x-4 rounded-md border p-4">
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 space-y-1 overflow-hidden">
               <p className="text-sm font-medium leading-none">Frontend URL</p>
               {project.frontendUrl ? (
                 <Link
                   href={project.frontendUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline break-all"
+                  className="text-sm text-blue-500 hover:underline block truncate"
                 >
                   {project.frontendUrl}
                 </Link>
@@ -151,14 +151,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </div>
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <ExternalLink className="h-5 w-5 text-muted-foreground" />
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 space-y-1 overflow-hidden">
               <p className="text-sm font-medium leading-none">Vercel Project</p>
               {project.vercelProjectId && (
                 <Link
                   href={`https://vercel.com/${process.env.NEXT_PUBLIC_VERCEL_TEAM_ID ?? '_'}/${project.vercelProjectId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline break-all"
+                  className="text-sm text-blue-500 hover:underline block truncate"
                 >
                   {project.vercelProjectId} (View on Vercel)
                 </Link>
@@ -167,14 +167,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </div>
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <Github className="h-5 w-5 text-muted-foreground" />
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 space-y-1 overflow-hidden">
               <p className="text-sm font-medium leading-none">GitHub Repo</p>
               {project.githubRepo && (
                 <Link
                   href={`https://github.com/${project.githubRepo}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline break-all"
+                  className="text-sm text-blue-500 hover:underline block truncate"
                 >
                   {project.githubRepo}
                 </Link>
@@ -218,7 +218,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                     <div className="mt-1">
                         <ProviderIcon provider={entry.provider} />
                     </div>
-                    <div className="flex-1 space-y-0.5">
+                    <div className="flex-1 space-y-0.5 overflow-hidden">
                       <p className="text-sm text-muted-foreground truncate" title={formatChangelogMessage(entry)}>
                         {formatChangelogMessage(entry)}
                       </p>
