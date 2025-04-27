@@ -7,6 +7,7 @@ import { Project, CostSnapshot, AnalyticsSnapshot } from '@/generated/prisma';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import React from 'react';
+import { AddProjectDialog } from '@/components/AddProjectDialog';
 
 // Define ProjectWithData including potential null snapshots
 export type ProjectWithData = Project & {
@@ -69,12 +70,9 @@ export default async function DashboardPage() {
         <ProjectList projectsPromise={projectsPromise} />
       </React.Suspense>
 
-      {/* Add Project Button (Placeholder) */}
-      {/* We will add functionality later */}
+      {/* Add Project Button */}
       <div className="mt-8">
-        <button className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700">
-          Add New Project
-        </button>
+        <AddProjectDialog />
       </div>
 
        <Link href="/" className="mt-12 text-blue-500 hover:underline">
