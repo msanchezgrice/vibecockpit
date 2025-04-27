@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
       type: "oauth",
       authorization: {
         url: "https://vercel.com/oauth/authorize",
-        params: { scope: "projects:read offline_access" }, // Request project read scope and offline access
+        params: { scope: "projects:read" }, // Simplified scope
       },
       token: "https://api.vercel.com/v2/oauth/access_token",
       userinfo: "https://api.vercel.com/v2/user",
