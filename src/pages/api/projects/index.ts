@@ -9,7 +9,12 @@ const prisma = new PrismaClient();
 // Zod schema for creating a project
 const createProjectSchema = z.object({
   name: z.string().min(1, { message: 'Project name cannot be empty' }),
+  description: z.string().optional(),
   frontendUrl: z.string().url({ message: 'Invalid URL format' }).optional().or(z.literal('')),
+  vercelProjectId: z.string().optional(),
+  githubRepo: z.string().regex(/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/, {
+    message: 'GitHub Repo must be in format owner/repo'
+  }).optional(),
   // status defaults to 'design' in the database schema
 });
 
@@ -63,7 +68,10 @@ export default async function handler(
         const newProject = await prisma.project.create({
           data: {
             name: validatedData.name,
-            frontendUrl: validatedData.frontendUrl || null, // Store null if empty string
+            description: validatedData.description,
+            frontendUrl: validatedData.frontendUrl || null,
+            vercelProjectId: validatedData.vercelProjectId,
+            githubRepo: validatedData.githubRepo,
             // status defaults to 'design'
             // Associate with user later: user: { connect: { id: userId } }
           },

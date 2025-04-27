@@ -16,11 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from 'lucide-react';
+import { Textarea } from "@/components/ui/textarea";
 
 export function AddProjectDialog() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [description, setDescription] = useState('');
   const [frontendUrl, setFrontendUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export function AddProjectDialog() {
         },
         body: JSON.stringify({ 
             name: projectName,
+            description: description || undefined,
             frontendUrl: frontendUrl || undefined,
          }),
       });
@@ -62,6 +65,7 @@ export function AddProjectDialog() {
 
       setIsOpen(false);
       setProjectName('');
+      setDescription('');
       setFrontendUrl('');
       router.refresh();
 
@@ -102,6 +106,20 @@ export function AddProjectDialog() {
                     />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right">
+                    Description
+                    </Label>
+                    <Textarea
+                        id="description"
+                        placeholder="(Optional) A brief description of the project."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="col-span-3" 
+                        rows={3}
+                        disabled={isLoading}
+                    />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="frontendUrl" className="text-right">
                     Frontend URL
                     </Label>
@@ -114,6 +132,18 @@ export function AddProjectDialog() {
                         className="col-span-3" 
                         disabled={isLoading}
                     />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="vercelProjectId" className="text-right">
+                     Vercel ID
+                    </Label>
+                    <Input id="vercelProjectId" placeholder="(Optional)" className="col-span-3" disabled={isLoading}/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="githubRepo" className="text-right">
+                    GitHub Repo
+                    </Label>
+                    <Input id="githubRepo" placeholder="owner/repo (Optional)" className="col-span-3" disabled={isLoading}/>
                 </div>
             </div>
             {error && <p className="text-sm text-red-500 mb-4 px-1">Error: {error}</p>}

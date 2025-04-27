@@ -98,6 +98,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       <div>
         <CardHeader>
           <CardTitle>{project.name}</CardTitle>
+          {project.description && (
+            <CardDescription className="pt-1">{project.description}</CardDescription>
+          )}
           <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">

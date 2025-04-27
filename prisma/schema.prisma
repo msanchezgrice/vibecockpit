@@ -17,6 +17,7 @@ datasource db {
 model Project {
   id             String   @id @default(uuid())
   name           String   @unique
+  description    String?
   status         ProjectStatus @default(design)
   frontendUrl    String?  @map("frontend_url")
   vercelProjectId String?   @map("vercel_project_id")
