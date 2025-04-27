@@ -35,9 +35,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Pencil, Trash2, MessageSquareText, GitCommitHorizontal } from 'lucide-react';
+import { Loader2, Pencil, Trash2, MessageSquareText, GitCommitHorizontal, Check, ChevronsUpDown } from 'lucide-react';
 import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
 import { formatDateTime } from '@/lib/utils'; // Assuming formatDateTime is reusable
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 // Define the expected prop type
 type ProjectWithRelations = Project & { 
@@ -65,6 +68,16 @@ function formatChangelogMessage(entry: ChangeLogEntry) {
     return entry.message;
  }
 
+// Add types for fetched lists
+interface VercelProjectOption {
+  id: string;
+  name: string;
+}
+interface GitHubRepoOption {
+  id: number;
+  full_name: string; // owner/repo
+}
+
 export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -78,6 +91,15 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const [githubRepo, setGithubRepo] = useState(project.githubRepo ?? '');
   const [newNoteText, setNewNoteText] = useState('');
   
+  // State for Connect flows
+  const [vercelProjects, setVercelProjects] = useState<VercelProjectOption[]>([]);
+  const [githubRepos, setGithubRepos] = useState<GitHubRepoOption[]>([]);
+  const [loadingVercel, setLoadingVercel] = useState(false);
+  const [loadingGitHub, setLoadingGitHub] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [popoverOpenVercel, setPopoverOpenVercel] = useState(false);
+  const [popoverOpenGitHub, setPopoverOpenGitHub] = useState(false);
+
   // Action States
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -160,6 +182,44 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     }
   };
 
+  // Fetch Vercel Projects
+  const fetchVercelProjects = async () => {
+    setLoadingVercel(true);
+    setConnectError(null);
+    try {
+      const res = await fetch('/api/vercel/projects');
+      if (!res.ok) throw new Error('Failed to fetch Vercel projects');
+      const data = await res.json();
+      setVercelProjects(data);
+      setPopoverOpenVercel(true); // Open popover on successful fetch
+    } catch (err) {
+      setConnectError(err instanceof Error ? err.message : 'Vercel fetch error');
+    } finally {
+      setLoadingVercel(false);
+    }
+  };
+
+  // Fetch GitHub Repos
+  const fetchGitHubRepos = async () => {
+    setLoadingGitHub(true);
+    setConnectError(null);
+    try {
+      const res = await fetch('/api/github/repos');
+      if (!res.ok) throw new Error('Failed to fetch GitHub repos');
+      const data = await res.json();
+      setGithubRepos(data);
+       setPopoverOpenGitHub(true); // Open popover on successful fetch
+    } catch (err) {
+      setConnectError(err instanceof Error ? err.message : 'GitHub fetch error');
+    } finally {
+      setLoadingGitHub(false);
+    }
+  };
+
+  // Find display names for selected items
+  const selectedVercelProjectName = vercelProjects.find(p => p.id === vercelId)?.name ?? vercelId;
+  const selectedGitHubRepoName = githubRepos.find(r => r.full_name === githubRepo)?.full_name ?? githubRepo;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -205,13 +265,100 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor={`edit-vercelId-${project.id}`} className="text-right">Vercel ID</Label>
-                    <Input id={`edit-vercelId-${project.id}`} placeholder="(Optional)" className="col-span-3" value={vercelId} onChange={(e) => setVercelId(e.target.value)} disabled={isSaving}/> 
+                    <Popover open={popoverOpenVercel} onOpenChange={setPopoverOpenVercel}>
+                        <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={popoverOpenVercel}
+                            className="col-span-3 justify-between"
+                            onClick={!vercelProjects.length ? fetchVercelProjects : undefined}
+                            disabled={loadingVercel || isSaving}
+                        >
+                            {loadingVercel ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {vercelId ? selectedVercelProjectName : "Select or Connect..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
+                        <Command>
+                            <CommandInput placeholder="Search project..." />
+                            <CommandList>
+                                <CommandEmpty>No projects found.</CommandEmpty>
+                                <CommandGroup>
+                                {vercelProjects.map((vp) => (
+                                    <CommandItem
+                                    key={vp.id}
+                                    value={vp.id} // Use ID for value
+                                    onSelect={(currentValue) => {
+                                        setVercelId(currentValue === vercelId ? "" : currentValue)
+                                        setPopoverOpenVercel(false)
+                                    }}
+                                    >
+                                    <Check
+                                        className={cn(
+                                        "mr-2 h-4 w-4",
+                                        vercelId === vp.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
+                                    {vp.name}
+                                    </CommandItem>
+                                ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                        </PopoverContent>
+                    </Popover>
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor={`edit-ghRepo-${project.id}`} className="text-right">GitHub Repo</Label>
-                    <Input id={`edit-ghRepo-${project.id}`} placeholder="owner/repo (Optional)" className="col-span-3" value={githubRepo} onChange={(e) => setGithubRepo(e.target.value)} disabled={isSaving}/>
+                    <Label className="text-right">GitHub Repo</Label>
+                     <Popover open={popoverOpenGitHub} onOpenChange={setPopoverOpenGitHub}>
+                        <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={popoverOpenGitHub}
+                            className="col-span-3 justify-between"
+                             onClick={!githubRepos.length ? fetchGitHubRepos : undefined}
+                            disabled={loadingGitHub || isSaving}
+                        >
+                           {loadingGitHub ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {githubRepo ? selectedGitHubRepoName : "Select or Connect..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
+                         <Command>
+                            <CommandInput placeholder="Search repo..." />
+                            <CommandList>
+                                <CommandEmpty>No repositories found.</CommandEmpty>
+                                <CommandGroup>
+                                {githubRepos.map((repo) => (
+                                    <CommandItem
+                                    key={repo.id}
+                                    value={repo.full_name} // Use full_name for value
+                                    onSelect={(currentValue) => {
+                                        setGithubRepo(currentValue === githubRepo ? "" : currentValue)
+                                        setPopoverOpenGitHub(false)
+                                    }}
+                                    >
+                                     <Check
+                                        className={cn(
+                                        "mr-2 h-4 w-4",
+                                        githubRepo === repo.full_name ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
+                                    {repo.full_name}
+                                    </CommandItem>
+                                ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                        </PopoverContent>
+                    </Popover>
                 </div>
-                 {error && <p className="text-sm text-red-500 col-span-4">Error saving: {error}</p>} 
+                 {connectError && <p className="text-sm text-red-500 col-span-4">Connection Error: {connectError}</p>} 
+                 {error && <p className="text-sm text-red-500 col-span-4">Save Error: {error}</p>} 
 
                  {/* --- Changelog / Notes --- */} 
                  <div className="col-span-4 border-t pt-4 mt-4">
