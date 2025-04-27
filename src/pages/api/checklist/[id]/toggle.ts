@@ -15,6 +15,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log(`[API] Received request for ${req.method} ${req.url}`);
   const session = await getServerSession(req, res, authOptions);
   const { id: checklistItemId } = req.query; // Checklist item ID from URL
 

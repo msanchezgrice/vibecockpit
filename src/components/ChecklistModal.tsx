@@ -46,6 +46,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
   const progress = data ? calculateProgress(data.completed_tasks, data.total_tasks) : 0;
 
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
+    console.log(`[ChecklistModal] Toggling task ${taskId} from ${currentStatus} to ${!currentStatus}`);
     setIsUpdatingTask(taskId);
     setToggleError(null);
     try {
@@ -56,11 +57,13 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
       });
       const result = await response.json();
       if (!response.ok) {
+        console.error(`[ChecklistModal] Toggle API failed for ${taskId}:`, result);
         throw new Error(result.message || 'Failed to toggle task');
       }
+      console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, result);
       router.refresh();
     } catch(err) {
-      console.error("Failed to toggle task:", err);
+      console.error(`[ChecklistModal] Error in handleToggleTask for ${taskId}:`, err);
       setToggleError(`Failed for task ${taskId}: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsUpdatingTask(null);
@@ -68,7 +71,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
   };
 
   const handleAcceptAIDraft = async (taskId: string, draft: string) => {
-    console.log(`Saving draft for task ${taskId}:`, draft);
+    console.log(`[ChecklistModal] Saving draft for task ${taskId}`);
 
     try {
       const response = await fetch(`/api/checklist/${taskId}/ai-draft`, {
@@ -78,11 +81,12 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
       });
       const result = await response.json();
       if (!response.ok) {
+        console.error(`[ChecklistModal] Save Draft API failed for ${taskId}:`, result);
         throw new Error(result.message || 'Failed to save AI draft');
       }
-      console.log('AI Draft saved successfully');
+      console.log(`[ChecklistModal] Save Draft API success for ${taskId}:`, result);
     } catch(err) {
-      console.error("Failed to save AI draft:", err);
+      console.error(`[ChecklistModal] Error in handleAcceptAIDraft for ${taskId}:`, err);
     }
   };
 
