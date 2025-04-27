@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
 import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
+import { EditProjectDialog } from './EditProjectDialog';
 
 interface ProjectCardProps {
   project: Project & { 
@@ -97,11 +98,16 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     <Card className="w-full max-w-sm flex flex-col justify-between">
       <div>
         <CardHeader>
-          <CardTitle>{project.name}</CardTitle>
-          {project.description && (
-            <CardDescription className="pt-1">{project.description}</CardDescription>
-          )}
-          <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
+          <div className="flex justify-between items-start">
+            <div className="flex-1 mr-2">
+              <CardTitle>{project.name}</CardTitle>
+              {project.description && (
+                <CardDescription className="pt-1 break-words">{project.description}</CardDescription>
+              )}
+              <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
+            </div>
+            <EditProjectDialog project={project} />
+          </div>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="flex items-center space-x-4 rounded-md border p-4">
