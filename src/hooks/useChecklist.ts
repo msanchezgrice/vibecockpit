@@ -45,13 +45,14 @@ export function useChecklist(projectId: string): { data: ChecklistData | null, i
         return res.json();
       })
       .then(fetchedData => {
+        console.log('[useChecklist] Fetched data:', fetchedData);
         if (isMounted) {
           setData(fetchedData as ChecklistData);
           setIsLoading(false);
         }
       })
       .catch(err => {
-         console.error("Failed to fetch checklist:", err);
+         console.error("[useChecklist] Failed to fetch checklist:", err);
         if (isMounted) {
           setError(err instanceof Error ? err : new Error('Failed to load checklist'));
           setIsLoading(false);
