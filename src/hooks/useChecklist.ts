@@ -14,43 +14,52 @@ export interface ChecklistData {
   completed_tasks: number;
 }
 
-// Mock hook implementation
+// Hook implementation using fetch
 export function useChecklist(projectId: string): { data: ChecklistData | null, isLoading: boolean, error: Error | null } {
   const [data, setData] = useState<ChecklistData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Simulate fetching data
+    if (!projectId) {
+        setIsLoading(false);
+        setData(null); // No project ID, no data
+        return;
+    }
+
     setIsLoading(true);
     setError(null);
-    
-    // Only return mock data for a specific project ID for testing, or remove check
-    // if (projectId !== 'some-test-project-id') { 
-    //     setData(null);
-    //     setIsLoading(false);
-    //     return;
-    // }
 
-    // Simulate network delay
-    const timer = setTimeout(() => {
-        // Sample Data
-        const mockData: ChecklistData = {
-            tasks: [
-                { id: 't1', title: 'Configure DNS', is_complete: true },
-                { id: 't2', title: 'Set up monitoring', is_complete: true },
-                { id: 't3', title: 'Run performance audit', is_complete: false },
-                { id: 't4', title: 'Final stakeholder sign-off', is_complete: false, ai_help_hint: 'Draft an email...' },
-                { id: 't5', title: 'Schedule social media posts', is_complete: false },
-            ],
-            total_tasks: 12, // Example total
-            completed_tasks: 2 // Example completed
-        };
-        setData(mockData);
-        setIsLoading(false);
-    }, 500); // 0.5 second delay
+    let isMounted = true; // Prevent state update on unmounted component
 
-    return () => clearTimeout(timer); // Cleanup timer on unmount
+    fetch(`/api/checklist?projectId=${encodeURIComponent(projectId)}`)
+      .then(res => {
+        if (!res.ok) {
+          // Try to parse error message from API
+          return res.json().then(errData => {
+             throw new Error(errData.message || `HTTP error! status: ${res.status}`);
+          }).catch(() => {
+             throw new Error(`HTTP error! status: ${res.status}`);
+          });
+        }
+        return res.json();
+      })
+      .then(fetchedData => {
+        if (isMounted) {
+          setData(fetchedData as ChecklistData);
+          setIsLoading(false);
+        }
+      })
+      .catch(err => {
+         console.error("Failed to fetch checklist:", err);
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Failed to load checklist'));
+          setIsLoading(false);
+          setData(null);
+        }
+      });
+
+    return () => { isMounted = false }; // Cleanup function
 
   }, [projectId]); // Re-run if projectId changes
 

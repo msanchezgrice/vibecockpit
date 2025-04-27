@@ -29,6 +29,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
 
   // Handle state internally based on props
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
+
   useEffect(() => {
     setIsModalOpen(isOpen);
   }, [isOpen]);
@@ -40,10 +41,23 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
 
   const progress = data ? calculateProgress(data.completed_tasks, data.total_tasks) : 0;
 
-  const handleAcceptAIDraft = (taskId: string, draft: string) => {
-      console.log(`Accepted draft for task ${taskId}:`, draft);
-      // TODO: Implement logic to save the accepted draft later (Phase UI-4)
-      // Maybe update local state for immediate feedback?
+  const handleAcceptAIDraft = async (taskId: string, draft: string) => {
+      console.log(`Saving draft for task ${taskId}:`, draft);
+
+      try {
+          const response = await fetch(`/api/checklist/${taskId}/ai-draft`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ draft: draft }),
+          });
+          const result = await response.json();
+          if (!response.ok) {
+              throw new Error(result.message || 'Failed to save AI draft');
+          }
+          console.log('AI Draft saved successfully');
+      } catch(err) {
+           console.error("Failed to save AI draft:", err);
+      }
   };
 
   return (

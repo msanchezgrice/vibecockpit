@@ -191,6 +191,17 @@ exports.Prisma.AnalyticsSnapshotScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ChecklistItemScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  title: 'title',
+  is_complete: 'is_complete',
+  ai_help_hint: 'ai_help_hint',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -232,7 +243,8 @@ exports.Prisma.ModelName = {
   VerificationToken: 'VerificationToken',
   ChangeLogEntry: 'ChangeLogEntry',
   CostSnapshot: 'CostSnapshot',
-  AnalyticsSnapshot: 'AnalyticsSnapshot'
+  AnalyticsSnapshot: 'AnalyticsSnapshot',
+  ChecklistItem: 'ChecklistItem'
 };
 
 /**
