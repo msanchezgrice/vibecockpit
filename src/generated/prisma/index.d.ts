@@ -12430,6 +12430,7 @@ export namespace Prisma {
 
   export type ChecklistItemWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    projectId_order?: ChecklistItemProjectIdOrderCompoundUniqueInput
     AND?: ChecklistItemWhereInput | ChecklistItemWhereInput[]
     OR?: ChecklistItemWhereInput[]
     NOT?: ChecklistItemWhereInput | ChecklistItemWhereInput[]
@@ -12441,7 +12442,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ChecklistItem"> | Date | string
     updatedAt?: DateTimeFilter<"ChecklistItem"> | Date | string
     project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
-  }, "id">
+  }, "id" | "projectId_order">
 
   export type ChecklistItemOrderByWithAggregationInput = {
     id?: SortOrder
@@ -13683,6 +13684,11 @@ export namespace Prisma {
   export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type ChecklistItemProjectIdOrderCompoundUniqueInput = {
+    projectId: string
+    order: number
   }
 
   export type ChecklistItemCountOrderByAggregateInput = {
