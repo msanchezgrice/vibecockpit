@@ -17,11 +17,11 @@ datasource db {
 model Project {
   id                 String              @id @default(uuid())
   name               String              @unique
-  description        String?
+  // description    String?   // Commented out
   status             ProjectStatus       @default(design)
   frontendUrl        String?             @map("frontend_url")
-  vercelProjectId    String?             @map("vercel_project_id")
-  githubRepo         String?             @map("github_repo")
+  // vercelProjectId    String?   @map("vercel_project_id") // Commented out
+  // githubRepo         String?   @map("github_repo") // Commented out
   lastActivityAt     DateTime            @default(now()) @map("last_activity_at")
   createdAt          DateTime            @default(now()) @map("created_at")
   changelog          ChangeLogEntry[]
@@ -31,6 +31,7 @@ model Project {
 
 enum ProjectStatus {
   design
+  prep_launch
   launched
   paused
   retired

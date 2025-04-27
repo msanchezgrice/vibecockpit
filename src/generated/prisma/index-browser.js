@@ -120,11 +120,8 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.ProjectScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  description: 'description',
   status: 'status',
   frontendUrl: 'frontendUrl',
-  vercelProjectId: 'vercelProjectId',
-  githubRepo: 'githubRepo',
   lastActivityAt: 'lastActivityAt',
   createdAt: 'createdAt'
 };
@@ -218,6 +215,7 @@ exports.Prisma.JsonNullValueFilter = {
 };
 exports.ProjectStatus = exports.$Enums.ProjectStatus = {
   design: 'design',
+  prep_launch: 'prep_launch',
   launched: 'launched',
   paused: 'paused',
   retired: 'retired'

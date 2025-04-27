@@ -60,6 +60,7 @@ export type AnalyticsSnapshot = $Result.DefaultSelection<Prisma.$AnalyticsSnapsh
 export namespace $Enums {
   export const ProjectStatus: {
   design: 'design',
+  prep_launch: 'prep_launch',
   launched: 'launched',
   paused: 'paused',
   retired: 'retired'
@@ -1626,11 +1627,8 @@ export namespace Prisma {
   export type ProjectMinAggregateOutputType = {
     id: string | null
     name: string | null
-    description: string | null
     status: $Enums.ProjectStatus | null
     frontendUrl: string | null
-    vercelProjectId: string | null
-    githubRepo: string | null
     lastActivityAt: Date | null
     createdAt: Date | null
   }
@@ -1638,11 +1636,8 @@ export namespace Prisma {
   export type ProjectMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    description: string | null
     status: $Enums.ProjectStatus | null
     frontendUrl: string | null
-    vercelProjectId: string | null
-    githubRepo: string | null
     lastActivityAt: Date | null
     createdAt: Date | null
   }
@@ -1650,11 +1645,8 @@ export namespace Prisma {
   export type ProjectCountAggregateOutputType = {
     id: number
     name: number
-    description: number
     status: number
     frontendUrl: number
-    vercelProjectId: number
-    githubRepo: number
     lastActivityAt: number
     createdAt: number
     _all: number
@@ -1664,11 +1656,8 @@ export namespace Prisma {
   export type ProjectMinAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     status?: true
     frontendUrl?: true
-    vercelProjectId?: true
-    githubRepo?: true
     lastActivityAt?: true
     createdAt?: true
   }
@@ -1676,11 +1665,8 @@ export namespace Prisma {
   export type ProjectMaxAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     status?: true
     frontendUrl?: true
-    vercelProjectId?: true
-    githubRepo?: true
     lastActivityAt?: true
     createdAt?: true
   }
@@ -1688,11 +1674,8 @@ export namespace Prisma {
   export type ProjectCountAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     status?: true
     frontendUrl?: true
-    vercelProjectId?: true
-    githubRepo?: true
     lastActivityAt?: true
     createdAt?: true
     _all?: true
@@ -1773,11 +1756,8 @@ export namespace Prisma {
   export type ProjectGroupByOutputType = {
     id: string
     name: string
-    description: string | null
     status: $Enums.ProjectStatus
     frontendUrl: string | null
-    vercelProjectId: string | null
-    githubRepo: string | null
     lastActivityAt: Date
     createdAt: Date
     _count: ProjectCountAggregateOutputType | null
@@ -1802,11 +1782,8 @@ export namespace Prisma {
   export type ProjectSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    description?: boolean
     status?: boolean
     frontendUrl?: boolean
-    vercelProjectId?: boolean
-    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
     changelog?: boolean | Project$changelogArgs<ExtArgs>
@@ -1818,11 +1795,8 @@ export namespace Prisma {
   export type ProjectSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    description?: boolean
     status?: boolean
     frontendUrl?: boolean
-    vercelProjectId?: boolean
-    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["project"]>
@@ -1830,11 +1804,8 @@ export namespace Prisma {
   export type ProjectSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    description?: boolean
     status?: boolean
     frontendUrl?: boolean
-    vercelProjectId?: boolean
-    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["project"]>
@@ -1842,16 +1813,13 @@ export namespace Prisma {
   export type ProjectSelectScalar = {
     id?: boolean
     name?: boolean
-    description?: boolean
     status?: boolean
     frontendUrl?: boolean
-    vercelProjectId?: boolean
-    githubRepo?: boolean
     lastActivityAt?: boolean
     createdAt?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "status" | "frontendUrl" | "vercelProjectId" | "githubRepo" | "lastActivityAt" | "createdAt", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "status" | "frontendUrl" | "lastActivityAt" | "createdAt", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     changelog?: boolean | Project$changelogArgs<ExtArgs>
     costSnapshots?: boolean | Project$costSnapshotsArgs<ExtArgs>
@@ -1871,11 +1839,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      description: string | null
       status: $Enums.ProjectStatus
       frontendUrl: string | null
-      vercelProjectId: string | null
-      githubRepo: string | null
       lastActivityAt: Date
       createdAt: Date
     }, ExtArgs["result"]["project"]>
@@ -2306,11 +2271,8 @@ export namespace Prisma {
   interface ProjectFieldRefs {
     readonly id: FieldRef<"Project", 'String'>
     readonly name: FieldRef<"Project", 'String'>
-    readonly description: FieldRef<"Project", 'String'>
     readonly status: FieldRef<"Project", 'ProjectStatus'>
     readonly frontendUrl: FieldRef<"Project", 'String'>
-    readonly vercelProjectId: FieldRef<"Project", 'String'>
-    readonly githubRepo: FieldRef<"Project", 'String'>
     readonly lastActivityAt: FieldRef<"Project", 'DateTime'>
     readonly createdAt: FieldRef<"Project", 'DateTime'>
   }
@@ -10371,11 +10333,8 @@ export namespace Prisma {
   export const ProjectScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    description: 'description',
     status: 'status',
     frontendUrl: 'frontendUrl',
-    vercelProjectId: 'vercelProjectId',
-    githubRepo: 'githubRepo',
     lastActivityAt: 'lastActivityAt',
     createdAt: 'createdAt'
   };
@@ -10619,11 +10578,8 @@ export namespace Prisma {
     NOT?: ProjectWhereInput | ProjectWhereInput[]
     id?: StringFilter<"Project"> | string
     name?: StringFilter<"Project"> | string
-    description?: StringNullableFilter<"Project"> | string | null
     status?: EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
     frontendUrl?: StringNullableFilter<"Project"> | string | null
-    vercelProjectId?: StringNullableFilter<"Project"> | string | null
-    githubRepo?: StringNullableFilter<"Project"> | string | null
     lastActivityAt?: DateTimeFilter<"Project"> | Date | string
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
@@ -10634,11 +10590,8 @@ export namespace Prisma {
   export type ProjectOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrderInput | SortOrder
     status?: SortOrder
     frontendUrl?: SortOrderInput | SortOrder
-    vercelProjectId?: SortOrderInput | SortOrder
-    githubRepo?: SortOrderInput | SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
     changelog?: ChangeLogEntryOrderByRelationAggregateInput
@@ -10652,11 +10605,8 @@ export namespace Prisma {
     AND?: ProjectWhereInput | ProjectWhereInput[]
     OR?: ProjectWhereInput[]
     NOT?: ProjectWhereInput | ProjectWhereInput[]
-    description?: StringNullableFilter<"Project"> | string | null
     status?: EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
     frontendUrl?: StringNullableFilter<"Project"> | string | null
-    vercelProjectId?: StringNullableFilter<"Project"> | string | null
-    githubRepo?: StringNullableFilter<"Project"> | string | null
     lastActivityAt?: DateTimeFilter<"Project"> | Date | string
     createdAt?: DateTimeFilter<"Project"> | Date | string
     changelog?: ChangeLogEntryListRelationFilter
@@ -10667,11 +10617,8 @@ export namespace Prisma {
   export type ProjectOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrderInput | SortOrder
     status?: SortOrder
     frontendUrl?: SortOrderInput | SortOrder
-    vercelProjectId?: SortOrderInput | SortOrder
-    githubRepo?: SortOrderInput | SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
     _count?: ProjectCountOrderByAggregateInput
@@ -10685,11 +10632,8 @@ export namespace Prisma {
     NOT?: ProjectScalarWhereWithAggregatesInput | ProjectScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Project"> | string
     name?: StringWithAggregatesFilter<"Project"> | string
-    description?: StringNullableWithAggregatesFilter<"Project"> | string | null
     status?: EnumProjectStatusWithAggregatesFilter<"Project"> | $Enums.ProjectStatus
     frontendUrl?: StringNullableWithAggregatesFilter<"Project"> | string | null
-    vercelProjectId?: StringNullableWithAggregatesFilter<"Project"> | string | null
-    githubRepo?: StringNullableWithAggregatesFilter<"Project"> | string | null
     lastActivityAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
   }
@@ -11120,11 +11064,8 @@ export namespace Prisma {
   export type ProjectCreateInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
@@ -11135,11 +11076,8 @@ export namespace Prisma {
   export type ProjectUncheckedCreateInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
@@ -11150,11 +11088,8 @@ export namespace Prisma {
   export type ProjectUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
@@ -11165,11 +11100,8 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
@@ -11180,11 +11112,8 @@ export namespace Prisma {
   export type ProjectCreateManyInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
   }
@@ -11192,11 +11121,8 @@ export namespace Prisma {
   export type ProjectUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11204,11 +11130,8 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11665,6 +11588,13 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type EnumProjectStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
+  }
+
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -11678,13 +11608,6 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type EnumProjectStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -11736,11 +11659,8 @@ export namespace Prisma {
   export type ProjectCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrder
-    vercelProjectId?: SortOrder
-    githubRepo?: SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -11748,11 +11668,8 @@ export namespace Prisma {
   export type ProjectMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrder
-    vercelProjectId?: SortOrder
-    githubRepo?: SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -11760,11 +11677,8 @@ export namespace Prisma {
   export type ProjectMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     status?: SortOrder
     frontendUrl?: SortOrder
-    vercelProjectId?: SortOrder
-    githubRepo?: SortOrder
     lastActivityAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -11787,6 +11701,16 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type EnumProjectStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProjectStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProjectStatusFilter<$PrismaModel>
+    _max?: NestedEnumProjectStatusFilter<$PrismaModel>
+  }
+
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -11803,16 +11727,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type EnumProjectStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProjectStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumProjectStatusFilter<$PrismaModel>
-    _max?: NestedEnumProjectStatusFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -12280,12 +12194,12 @@ export namespace Prisma {
     set?: string
   }
 
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
-  }
-
   export type EnumProjectStatusFieldUpdateOperationsInput = {
     set?: $Enums.ProjectStatus
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -12572,6 +12486,13 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type NestedEnumProjectStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -12584,13 +12505,6 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedEnumProjectStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -12632,6 +12546,16 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProjectStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProjectStatusFilter<$PrismaModel>
+    _max?: NestedEnumProjectStatusFilter<$PrismaModel>
+  }
+
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -12658,16 +12582,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProjectStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumProjectStatusFilter<$PrismaModel>
-    _max?: NestedEnumProjectStatusFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -13199,11 +13113,8 @@ export namespace Prisma {
   export type ProjectCreateWithoutChangelogInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     costSnapshots?: CostSnapshotCreateNestedManyWithoutProjectInput
@@ -13213,11 +13124,8 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutChangelogInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     costSnapshots?: CostSnapshotUncheckedCreateNestedManyWithoutProjectInput
@@ -13243,11 +13151,8 @@ export namespace Prisma {
   export type ProjectUpdateWithoutChangelogInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     costSnapshots?: CostSnapshotUpdateManyWithoutProjectNestedInput
@@ -13257,11 +13162,8 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutChangelogInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     costSnapshots?: CostSnapshotUncheckedUpdateManyWithoutProjectNestedInput
@@ -13271,11 +13173,8 @@ export namespace Prisma {
   export type ProjectCreateWithoutCostSnapshotsInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
@@ -13285,11 +13184,8 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutCostSnapshotsInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
@@ -13315,11 +13211,8 @@ export namespace Prisma {
   export type ProjectUpdateWithoutCostSnapshotsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
@@ -13329,11 +13222,8 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutCostSnapshotsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
@@ -13343,11 +13233,8 @@ export namespace Prisma {
   export type ProjectCreateWithoutAnalyticsSnapshotsInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryCreateNestedManyWithoutProjectInput
@@ -13357,11 +13244,8 @@ export namespace Prisma {
   export type ProjectUncheckedCreateWithoutAnalyticsSnapshotsInput = {
     id?: string
     name: string
-    description?: string | null
     status?: $Enums.ProjectStatus
     frontendUrl?: string | null
-    vercelProjectId?: string | null
-    githubRepo?: string | null
     lastActivityAt?: Date | string
     createdAt?: Date | string
     changelog?: ChangeLogEntryUncheckedCreateNestedManyWithoutProjectInput
@@ -13387,11 +13271,8 @@ export namespace Prisma {
   export type ProjectUpdateWithoutAnalyticsSnapshotsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUpdateManyWithoutProjectNestedInput
@@ -13401,11 +13282,8 @@ export namespace Prisma {
   export type ProjectUncheckedUpdateWithoutAnalyticsSnapshotsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     frontendUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    vercelProjectId?: NullableStringFieldUpdateOperationsInput | string | null
-    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     changelog?: ChangeLogEntryUncheckedUpdateManyWithoutProjectNestedInput
