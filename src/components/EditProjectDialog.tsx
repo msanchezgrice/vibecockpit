@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetClose
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,7 +46,7 @@ type ProjectWithRelations = Project & {
     changelog: ChangeLogEntry[];
 };
 
-interface EditProjectSheetProps {
+interface EditProjectDialogProps {
   project: ProjectWithRelations;
 }
 
@@ -65,7 +65,7 @@ function formatChangelogMessage(entry: ChangeLogEntry) {
     return entry.message;
  }
 
-export function EditProjectSheet({ project }: EditProjectSheetProps) {
+export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   
@@ -161,25 +161,25 @@ export function EditProjectSheet({ project }: EditProjectSheetProps) {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}> 
-      <SheetTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
         <Button variant="ghost" size="icon"> 
           <Pencil className="h-4 w-4" />
           <span className="sr-only">Edit Project</span>
         </Button>
-      </SheetTrigger>
-      <SheetContent className="w-[80vw] sm:w-[70vw] lg:max-w-3xl flex flex-col"> {/* Wider sheet */}
-        <SheetHeader className="pr-6">
-          <SheetTitle>Edit Project: {projectName}</SheetTitle>
-          <SheetDescription>View details, make changes, and add notes.</SheetDescription>
-        </SheetHeader>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="pr-6">
+          <DialogTitle>Edit Project: {projectName}</DialogTitle>
+          <DialogDescription>View details, make changes, and add notes.</DialogDescription>
+        </DialogHeader>
 
         {/* Hero Image Placeholder */}
         <div className="h-32 bg-muted rounded-md my-4 flex items-center justify-center text-muted-foreground">
             Hero Image Placeholder
         </div>
 
-        <ScrollArea className="flex-grow pr-6"> {/* Scrollable main content */}
+        <ScrollArea className="flex-grow pr-6">
             <div className="grid gap-4 py-4">
                 {/* --- Edit Fields --- */} 
                  <div className="grid grid-cols-4 items-center gap-4">
@@ -266,14 +266,13 @@ export function EditProjectSheet({ project }: EditProjectSheetProps) {
             </div>
         </ScrollArea>
 
-        <SheetFooter className="mt-auto pt-4 border-t sm:justify-between"> {/* Footer stick to bottom */}
+        <DialogFooter className="mt-auto pt-4 border-t sm:justify-between">
             <AlertDialog>
                  <AlertDialogTrigger asChild>
                     <Button type="button" variant="destructive" disabled={isSaving || isDeleting}>
                         <Trash2 className="mr-2 h-4 w-4" /> Delete Project
                     </Button>
                  </AlertDialogTrigger>
-                 {/* ... AlertDialogContent for Delete ... */} 
                   <AlertDialogContent>
                     <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -292,16 +291,16 @@ export function EditProjectSheet({ project }: EditProjectSheetProps) {
                 </AlertDialogContent>
             </AlertDialog>
             <div className="flex gap-2 justify-end">
-                <SheetClose asChild>
+                <DialogClose asChild>
                     <Button type="button" variant="secondary" disabled={isSaving || isDeleting}>Cancel</Button>
-                </SheetClose>
-                <Button type="button" onClick={() => handleSaveChanges()} disabled={isSaving || isDeleting}> {/* Change to type="button" and use onClick */} 
+                </DialogClose>
+                <Button type="button" onClick={() => handleSaveChanges()} disabled={isSaving || isDeleting}>
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isSaving ? 'Saving...' : 'Save Changes'}
                 </Button>
             </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 } 

@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
 import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
-import { EditProjectSheet } from './EditProjectSheet';
+import { EditProjectDialog } from './EditProjectDialog';
 import { formatDateTime } from '@/lib/utils';
 
 interface ProjectCardProps {
@@ -101,7 +101,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               )}
               <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
             </div>
-            <EditProjectSheet project={project} />
+            <EditProjectDialog project={project} />
           </div>
         </CardHeader>
         <CardContent className="grid gap-4">

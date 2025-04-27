@@ -11,6 +11,9 @@ const updateProjectSchema = z.object({
   name: z.string().min(1).optional(),
   status: z.nativeEnum(ProjectStatus).optional(),
   frontendUrl: z.string().url().optional().or(z.literal('')),
+  description: z.string().optional(),
+  vercelProjectId: z.string().optional().or(z.literal('')),
+  githubRepo: z.string().optional().or(z.literal('')),
 });
 
 export default async function handler(
@@ -37,34 +40,21 @@ export default async function handler(
         // Validate the shape of incoming data
         const validatedData = updateProjectSchema.parse(req.body);
         console.log("Validated PATCH data:", validatedData);
-        console.log("Raw PATCH body:", req.body);
 
-        // Construct the payload carefully
-        // Start with explicitly validated/formatted fields if necessary
-        const updatePayload: Prisma.ProjectUpdateInput = {}; 
-        if (validatedData.name !== undefined) {
-            updatePayload.name = validatedData.name;
-        }
-        if (validatedData.status !== undefined) {
-            updatePayload.status = validatedData.status;
-        }
-        if (validatedData.frontendUrl !== undefined) {
-            updatePayload.frontendUrl = validatedData.frontendUrl || null;
-        }
-        
-        // Add other optional fields ONLY if they were actually present in the raw request body
-        // This prevents accidentally setting them to null if they weren't sent
-        if (req.body.description !== undefined) {
-            updatePayload.description = req.body.description || null;
-        }
-        if (req.body.vercelProjectId !== undefined) {
-            updatePayload.vercelProjectId = req.body.vercelProjectId || null;
-        }
-        if (req.body.githubRepo !== undefined) {
-            updatePayload.githubRepo = req.body.githubRepo || null;
-        }
+        // Construct the payload directly from validated data
+        // Zod handles optional fields; set empty strings to null for DB
+        const updatePayload: Prisma.ProjectUpdateInput = {
+            name: validatedData.name, // Will be undefined if not sent
+            description: validatedData.description === '' ? null : validatedData.description, // Allow clearing
+            status: validatedData.status,
+            frontendUrl: validatedData.frontendUrl === '' ? null : validatedData.frontendUrl,
+            vercelProjectId: validatedData.vercelProjectId === '' ? null : validatedData.vercelProjectId, // Allow clearing
+            githubRepo: validatedData.githubRepo === '' ? null : validatedData.githubRepo, // Allow clearing
+        };
 
-        // Prevent sending empty update payload
+        // Remove undefined fields so Prisma doesn't try to update them
+        Object.keys(updatePayload).forEach(key => updatePayload[key as keyof typeof updatePayload] === undefined && delete updatePayload[key as keyof typeof updatePayload]);
+
         if (Object.keys(updatePayload).length === 0) {
              return res.status(400).json({ message: 'No valid update data provided' });
         }
