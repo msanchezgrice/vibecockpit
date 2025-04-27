@@ -13,7 +13,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
 import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
-import { EditProjectDialog } from './EditProjectDialog';
+import { EditProjectSheet } from './EditProjectSheet';
+import { formatDateTime } from '@/lib/utils';
 
 interface ProjectCardProps {
   project: Project & { 
@@ -23,12 +24,6 @@ interface ProjectCardProps {
     analyticsSnapshots: AnalyticsSnapshot[]; 
     changelog: ChangeLogEntry[];
   };
-}
-
-// Helper to format date/time
-function formatDateTime(date: Date | string | null): string {
-  if (!date) return 'N/A';
-  return new Date(date).toLocaleString();
 }
 
 // Helper to format currency
@@ -106,7 +101,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               )}
               <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
             </div>
-            <EditProjectDialog project={project} />
+            <EditProjectSheet project={project} />
           </div>
         </CardHeader>
         <CardContent className="grid gap-4">
