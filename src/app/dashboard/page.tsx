@@ -3,20 +3,21 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import Link from 'next/link';
 import { LoginButton, LogoutButton } from './authButtons';
 import ProjectCard from '@/components/ProjectCard';
-import { Project, CostSnapshot, AnalyticsSnapshot } from '@/generated/prisma';
+import { Project, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import React from 'react';
 import { AddProjectDialog } from '@/components/AddProjectDialog';
 
-// Define ProjectWithData including potential null snapshots
-export type ProjectWithData = Project & {
-  latestCostSnapshot?: CostSnapshot | null;
-  latestAnalyticsSnapshot?: AnalyticsSnapshot | null;
+// Define ProjectWithData including relations fetched
+export type ProjectWithRelations = Project & {
+  costSnapshots: CostSnapshot[]; // Will contain 0 or 1 entry
+  analyticsSnapshots: AnalyticsSnapshot[]; // Will contain 0 or 1 entry
+  changelog: ChangeLogEntry[]; // Will contain 0 to 3 entries
 };
 
-// Revert to original function fetching from API
-async function getProjects(cookie: string | null): Promise<ProjectWithData[]> {
+// Update fetch function return type
+async function getProjects(cookie: string | null): Promise<ProjectWithRelations[]> {
   if (!cookie) return [];
   const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/projects`;
   try {
@@ -29,7 +30,7 @@ async function getProjects(cookie: string | null): Promise<ProjectWithData[]> {
       }
       throw new Error(`Failed to fetch projects: ${response.statusText}`);
     }
-    return response.json();
+    return response.json(); // API now returns ProjectWithRelations structure
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
@@ -89,7 +90,7 @@ function LoadingProjects() {
 }
 
 // Component to render the list after data is fetched
-async function ProjectList({ projectsPromise }: { projectsPromise: Promise<ProjectWithData[]> }) {
+async function ProjectList({ projectsPromise }: { projectsPromise: Promise<ProjectWithRelations[]> }) {
   const projects = await projectsPromise;
   return (
     <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

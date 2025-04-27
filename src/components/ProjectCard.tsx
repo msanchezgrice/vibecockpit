@@ -1,6 +1,6 @@
 'use client';
 
-import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot } from '@/generated/prisma';
+import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -12,12 +12,15 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
-import { DollarSign, BarChartBig } from 'lucide-react';
+import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project & { 
     latestCostSnapshot?: CostSnapshot | null;
     latestAnalyticsSnapshot?: AnalyticsSnapshot | null; 
+    costSnapshots: CostSnapshot[]; 
+    analyticsSnapshots: AnalyticsSnapshot[]; 
+    changelog: ChangeLogEntry[];
   };
 }
 
@@ -35,12 +38,19 @@ function formatCurrency(amount: string | number | null | undefined): string {
   return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
+// Helper to render provider icon
+function ProviderIcon({ provider }: { provider: string }) {
+    if (provider === 'note') return <MessageSquareText className="h-4 w-4 text-muted-foreground" />;
+    if (provider === 'github_commit') return <GitCommitHorizontal className="h-4 w-4 text-muted-foreground" />;
+    return null;
+}
+
 export default function ProjectCard({ project }: ProjectCardProps) {
   const [currentStatus, setCurrentStatus] = useState(project.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const latestCost = project.latestCostSnapshot?.costAmount;
-  const latestAnalytics = project.latestAnalyticsSnapshot;
+  const latestCost = project.costSnapshots[0]?.costAmount;
+  const latestAnalytics = project.analyticsSnapshots[0];
 
   const handleStatusChange = async (newStatus: ProjectStatus) => {
     if (newStatus === currentStatus || isUpdating) {
@@ -73,6 +83,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  // Format changelog message (simple example: take first line)
+  const formatChangelogMessage = (entry: ChangeLogEntry) => {
+     if (entry.provider === 'github_commit') {
+         return entry.message.split('\n')[1] || entry.message; // Show message after SHA
+     }
+     return entry.message;
   };
 
   return (
@@ -130,7 +148,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 {formatCurrency(latestCost as unknown as string | null)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Snapshot taken: {formatDateTime(project.latestCostSnapshot?.createdAt ?? null)}
+                Snapshot taken: {formatDateTime(project.costSnapshots[0]?.createdAt ?? null)}
               </p>
             </div>
           </div>
@@ -148,6 +166,30 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               </p>
             </div>
           </div>
+
+          {/* Add Changelog Display */}
+          {project.changelog && project.changelog.length > 0 && (
+            <div className="space-y-2 border-t pt-4 mt-4">
+              <h4 className="text-sm font-medium leading-none mb-2">Recent Activity</h4>
+              <ul className="space-y-3">
+                {project.changelog.map((entry) => (
+                  <li key={entry.id} className="flex items-start space-x-3">
+                    <div className="mt-1">
+                        <ProviderIcon provider={entry.provider} />
+                    </div>
+                    <div className="flex-1 space-y-0.5">
+                      <p className="text-sm text-muted-foreground truncate" title={formatChangelogMessage(entry)}>
+                        {formatChangelogMessage(entry)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateTime(entry.createdAt)}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </CardContent>
       </div>
       <CardFooter className="flex justify-between items-center">

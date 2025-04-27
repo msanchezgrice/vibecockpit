@@ -32,23 +32,24 @@ export default async function handler(
         const projects = await prisma.project.findMany({
           orderBy: { createdAt: 'desc' },
           include: {
-            costSnapshots: { // Include the latest cost snapshot
+            costSnapshots: {
               orderBy: { createdAt: 'desc' },
               take: 1,
             },
-            analyticsSnapshots: { // Include the latest analytics snapshot
+            analyticsSnapshots: {
                 orderBy: { createdAt: 'desc' },
                 take: 1,
+            },
+            changelog: { // Include latest changelog entries
+                orderBy: { createdAt: 'desc' },
+                take: 3, // Fetch the latest 3 entries
             },
           },
         });
         // Map the result slightly to make accessing snapshots easier on the client
-        const projectsWithData = projects.map(p => ({
-            ...p,
-            latestCostSnapshot: p.costSnapshots[0] ?? null,
-            latestAnalyticsSnapshot: p.analyticsSnapshots[0] ?? null,
-        }));
-        res.status(200).json(projectsWithData);
+        // No longer need to map snapshots here as the include does it.
+        // We can rename the type if needed, but the structure is Project + relations
+        res.status(200).json(projects); // Send the full structure
       } catch (error) {
         console.error('Failed to fetch projects:', error);
         res.status(500).json({ message: 'Failed to fetch projects' });
