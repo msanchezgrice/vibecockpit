@@ -1,237 +1,65 @@
-# Vibe-Cockpit – Phased Development Road-map
-_(Next .js 15 • Prisma • Supabase • Vercel)_
+# Sprint 02 – Public-Ready Polish  
+_(Landing page • Brand styling • Thumbnails • Self-serve integrations)_
 
-Cursor will work best if we tackle one phase per branch → pull-request → merge.  
-Each phase lists:
-
-1. **Goal** – the one new user-visible capability.  
-2. **What to build** – specific files / edits.  
-3. **How to test** – Jest/Playwright cases or manual steps.  
-4. **Done when** – acceptance criteria.
+We keep the same rhythm as Sprint 01: **one branch per phase ➜ PR ➜ merge after tests pass**.  
+Each phase ends with acceptance tests (some automated, some manual) so Cursor can “green-light” before moving on.
 
 ---
 
-## Phase 0 – Bootstrap & CI
-
-| Task | File(s) |
-|------|---------|
-| Scaffold project | `pnpm create next-app vibe-cockpit --ts --tailwind` |
-| Add deps | `pnpm add prisma @prisma/client @supabase/supabase-js next-auth zod lucide-react @testing-library/react vitest` |
-| Init Prisma & Supabase | `npx prisma init` → creates `schema.prisma`; run `supabase init`. |
-| Add GitHub CI | `.github/workflows/ci.yml` running `pnpm test` + `pnpm lint` |
-
-**Tests**  
-- `src/__tests__/sanity.test.ts`  
-  ```ts
-  import { expect, it } from 'vitest';
-  it('sanity', () => expect(2 + 2).toBe(4));
-
-Done when pnpm test & pnpm next build are green locally and on GitHub Actions.
-
-⸻
-
-Phase 1 – Schema v1 & Seeder
-
-Goal
-
-Database can store Project rows with status enum.
-
-Build
-	•	Flesh out schema.prisma for Project †.
-	•	Add prisma/seed.ts to insert two dummy projects.
-	•	Run npx prisma migrate dev --name init and commit generated SQL.
-
-†
-
-model Project {
-  id             String   @id @default(uuid())
-  name           String
-  status         ProjectStatus @default(design)
-  frontendUrl    String?  @map("frontend_url")
-  lastActivityAt DateTime @default(now()) @map("last_activity_at")
-  createdAt      DateTime @default(now()) @map("created_at")
-}
-
-enum ProjectStatus {
-  design
-  launched
-  paused
-  retired
-}
-
-Tests
-	•	src/__tests__/projectModel.test.ts
-	1.	Use @prisma/client with a SQLite memory URL.
-	2.	Insert a row, read it back, expect status design.
-
-Done when
-
-pnpm test passes & npx prisma studio shows seeded rows.
-
-⸻
-
-Phase 2 – GitHub OAuth & Session
-
-Goal
-
-User can sign in with GitHub; getServerSession returns their profile.
-
-Build
-	•	pages/api/auth/[...nextauth].ts with GitHub provider.
-	•	Add /dashboard route that prints session.user?.email.
-	•	Store GitHub access token in adapterUser.oauthToken.
-
-Tests
-	•	Manual: run pnpm dev, log in, see email printed.
-	•	Automated: Playwright headless login test using [next-auth test helper].
-
-Done when
-
-Email renders after sign-in; logout hides it.
-
-⸻
-
-Phase 3 – Project CRUD API
-
-Goal
-
-REST endpoints create/read/update Project.
-
-Build
-	•	pages/api/projects/index.ts (POST, GET).
-	•	pages/api/projects/[id].ts (PATCH).
-	•	Validation with zod.
-
-Tests
-	•	Vitest + Supertest: hit POST, expect 201; hit GET, expect array length +1.
-
-Done when
-
-Local fetches in DevTools return correct JSON.
-
-⸻
-
-Phase 4 – Dashboard (List + Card skeleton)
-
-Goal
-
-Render cards for each project with status pill and live links.
-
-Build
-	•	components/ProjectCard.tsx (use shadcn <Card>).
-	•	app/dashboard/page.tsx queries /api/projects.
-	•	Status dropdown triggers PATCH.
-
-Tests
-	•	React Testing Library: render card, click dropdown, mock fetch, expect UI update.
-	•	Manual: create two projects then reload dashboard.
-
-Done when
-
-Card list shows, status persists after reload.
-
-⸻
-
-Phase 5 – Notes & ChangelogEntry
-
-Goal
-
-Inline notes modal saves markdown & versions it.
-
-Build
-	•	Extend schema with ChangeLogEntry table (provider "note").
-	•	components/NotesDrawer.tsx with <textarea> autosave.
-	•	API: POST /projects/:id/changelog.
-
-Tests
-	1.	Unit: save note → DB row count +1.
-	2.	UI: modal opens, edits, closes, text preview updates.
-
-Done when
-
-Note displays on card & new entry appears in DB.
-
-⸻
-
-Phase 6 – CostSnapshot nightly cron
-
-Goal
-
-Spend $/mo column appears.
-
-Build
-	•	Add CostSnapshot model.
-	•	vercel/jobs/cost-collector.ts (Scheduled Function “35 0 * * *”).
-	•	Fake implementation returns random costs for dev.
-
-Tests
-	•	Unit: job writes one snapshot per project.
-	•	Manual: after job, dashboard shows spend value.
-
-Done when
-
-Spend renders & updates after each job run.
-
-⸻
-
-Phase 7 – AnalyticsSnapshot (Visits / Sign-ups)
-
-Goal
-
-Traffic metrics visible.
-
-Build
-	•	AnalyticsSnapshot model.
-	•	vercel/jobs/analytics-collector.ts using mocked numbers (Math.random).
-	•	Card row shows “123 visits ∙ 4 sign-ups”.
-
-Tests
-	•	Unit: collector writes row.
-	•	UI: metrics appear.
-
-Done when
-
-Values display & update nightly.
-
-⸻
-
-Phase 8 – Vercel, Supabase & GitHub Integrations (real APIs)
-
-Goal
-
-Replace mock collectors with live data.
-
-Build
-	1.	Vercel Usage API – costs + visits (needs VERCEL_TOKEN).
-	2.	Supabase Admin API – sign-ups (/auth/users?from=).
-	3.	GitHub Commits – last 5 push messages into ChangeLogEntry.
-
-Tests
-	•	Unit mocks HTTP responses; assert parsing.
-	•	Manual: deploy to Vercel Preview, flip a dummy commit, see changelog row.
-
-Done when
-
-Real numbers show on production deploy.
-
-⸻
-
-Phase 9 – Polish & Production Launch
-
-Goal
-
-App is stable on main, live at vibe-cockpit.vercel.app.
-
-Build
-	•	Empty states, skeleton loaders.
-	•	Error boundary.
-	•	README.md with setup doc.
-	•	Lighthouse pass > 90.
-
-Tests
-	•	Playwright end-to-end: sign in, create project, edit note, status change.
-	•	Vercel Preview link auto-comment on PR (GitHub Action).
-
-Done when
-
-Merge PR → Vercel Production deploy green & passing e2e.
+## Phase L1 – Marketing Landing Page
+
+|   |   |
+|---|---|
+| **Goal** | Signed-out users hit a marketing page (`/`) with hero, features, and **“Sign in with GitHub”** CTA. |
+| **Files to create / edit** |<br>• `app/(marketing)/layout.tsx` – minimalist header/footer.<br>• `app/(marketing)/page.tsx` – hero section + 3-step “How it works” grid (Tailwind + shadcn `<Card>`).<br>• `app/(protected)/layout.tsx` – wrap existing dashboard, only accessible when `useSession()` is truthy.<br>• `middleware.ts` – route signed-in users from `/` ➜ `/dashboard`.<br>• `public/og-landing.png` – hero illustration (optional). |
+| **Tests** | 1. **Playwright** `e2e/landing.spec.ts`<br>&nbsp;&nbsp;a. Visit `/` (not logged in) ⇒ see “Sign in with GitHub”.<br>&nbsp;&nbsp;b. Click CTA ⇒ URL begins `/api/auth/signin`.<br>2. **Manual**: After login, navigating back to `/` redirects to `/dashboard`. |
+| **Done when** | Tests pass locally; branch merged into `main`; GitHub Actions CI green. |
+
+---
+
+## Phase L2 – Brand Theme & Dark-Mode
+
+|   |   |
+|---|---|
+| **Goal** | Establish a simple design-system: primary colour, grey scale, dark-mode toggle. |
+| **Tasks** |<br>• **Tailwind** `tailwind.config.ts`: add `colors.primary`, `colors.background`, etc.<br>• Create `components/ui/ThemeToggle.tsx` (uses `next-themes`).<br>• Swap shadcn default button to use `bg-primary`. |
+| **Tests** | 1. **RTL / Jest** `ThemeToggle.test.tsx` – clicking switch toggles `class="dark"` on `<html>`.  <br>2. **Manual**: Dark-mode persists after page refresh. |
+| **Done when** | Navbar shows logo + theme toggle; visual brand no longer looks like vanilla Next.js. |
+
+---
+
+## Phase L3 – Thumbnail / Favicon Fetcher
+
+|   |   |
+|---|---|
+| **Goal** | Each project card displays a 64 × 64 thumbnail (favicon or screenshot) next to its title. |
+| **Backend Changes** |<br>• **Prisma**: add `thumbnailUrl String?` to `Project` + migration.<br>• Scheduled function `thumbnail-collector.ts` (`0 2 * * *`) loops projects w/ `frontendUrl`, fetches:<br>&nbsp;&nbsp;a. try `https://www.google.com/s2/favicons?sz=64&domain_url={url}`.<br>&nbsp;&nbsp;b. else hit `https://image.thum.io/get/og/{url}`.<br>&nbsp;&nbsp;c. `prisma.project.update({ thumbnailUrl })`. |
+| **Frontend** | In `ProjectCard.tsx` render `<Image src={thumbnailUrl ?? '/default-icon.svg'} …/>`. |
+| **Tests** | 1. **Unit** `thumbnailCollector.test.ts` – mock fetch, expect correct URL stored.<br>2. **Manual**: Run collector locally (`curl POST /api/cron/thumbnail`) then reload dashboard → images appear. |
+| **Done when** | Dashboard visually shows thumbnails for at least one real project; CI passes. |
+
+---
+
+## Phase L4 – “Connect GitHub & Vercel” Wizard
+
+|   |   |
+|---|---|
+| **Goal** | Replace manual Prisma edits: user can attach a repo & Vercel project from the UI; IDs saved on `Project`. |
+| **Schema Update** |<br>• `Repository.gitRepoId` already exists – ensure nullable.<br>• `Project.vercelProjectId String?` (if not present). |
+| **Frontend** |<br>• New route `app/projects/[id]/settings.tsx` – modal with two sections:<br>&nbsp;&nbsp;**GitHub** – “Connect” button → hits `/api/github/repos` to list repos via stored OAuth token; user picks one, we save `{owner/repo, repoId}`.<br>&nbsp;&nbsp;**Vercel** – “Connect” button → call `/api/vercel/projects`; pick one → save `vercelProjectId`.<br>• Show ✓ when linked; disable button. |
+| **API Routes** | `/api/github/repos` & `/api/vercel/projects` – server-side fetch using user’s stored tokens; return JSON list `{id, name}`. |
+| **Tests** | 1. **Vitest** mocks GitHub API → expect `/api/github/repos` returns array.<br>2. **Playwright** `e2e/connect.spec.ts` – open settings, link fake repo (mock fetch), save → value visible on card without page reload. |
+| **Done when** | For a real project you can click **Connect**, choose repo & Vercel project, and after next nightly cron the card populates commit & cost data. |
+
+---
+
+## How to work (repeatable loop)
+
+1. **`git checkout -b phase-Lx`**  
+2. Implement tasks – use Cursor’s *Generate Code* / *Refactor* helpers.  
+3. **`pnpm test`** + run Playwright (`pnpm exec playwright test`).  
+4. **Commit** ➜ `git push origin phase-Lx` ➜ open PR.  
+5. CI passes → merge.  
+6. Go to next phase.
+
+Happy shipping! ✨

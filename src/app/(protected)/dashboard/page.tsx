@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import Link from 'next/link';
-import { LoginButton, LogoutButton } from './authButtons';
+import { LoginButton, LogoutButton } from '@/components/authButtons';
 import ProjectCard from '@/components/ProjectCard';
 import { Project, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
 import { headers } from 'next/headers';
