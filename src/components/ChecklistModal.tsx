@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useChecklist } from '@/hooks/useChecklist';
 import {
   Dialog, DialogContent, DialogDescription, 
@@ -25,7 +26,10 @@ const calculateProgress = (completed: number, total: number): number => {
 };
 
 export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistModalProps) {
+  const router = useRouter();
   const { data, isLoading, error } = useChecklist(projectId);
+  const [isUpdatingTask, setIsUpdatingTask] = useState<string | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   // Handle state internally based on props
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -41,23 +45,45 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
 
   const progress = data ? calculateProgress(data.completed_tasks, data.total_tasks) : 0;
 
-  const handleAcceptAIDraft = async (taskId: string, draft: string) => {
-      console.log(`Saving draft for task ${taskId}:`, draft);
-
-      try {
-          const response = await fetch(`/api/checklist/${taskId}/ai-draft`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ draft: draft }),
-          });
-          const result = await response.json();
-          if (!response.ok) {
-              throw new Error(result.message || 'Failed to save AI draft');
-          }
-          console.log('AI Draft saved successfully');
-      } catch(err) {
-           console.error("Failed to save AI draft:", err);
+  const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
+    setIsUpdatingTask(taskId);
+    setToggleError(null);
+    try {
+      const response = await fetch(`/api/checklist/${taskId}/toggle`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_complete: !currentStatus }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to toggle task');
       }
+      router.refresh();
+    } catch(err) {
+      console.error("Failed to toggle task:", err);
+      setToggleError(`Failed for task ${taskId}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsUpdatingTask(null);
+    }
+  };
+
+  const handleAcceptAIDraft = async (taskId: string, draft: string) => {
+    console.log(`Saving draft for task ${taskId}:`, draft);
+
+    try {
+      const response = await fetch(`/api/checklist/${taskId}/ai-draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft: draft }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to save AI draft');
+      }
+      console.log('AI Draft saved successfully');
+    } catch(err) {
+      console.error("Failed to save AI draft:", err);
+    }
   };
 
   return (
@@ -101,8 +127,8 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                              <Checkbox 
                                 id={`task-${task.id}`} 
                                 checked={task.is_complete}
-                                // onClick={() => handleToggleTask(task.id, task.is_complete)} // Add later
-                                // disabled={isUpdatingTask === task.id}
+                                onCheckedChange={() => handleToggleTask(task.id, task.is_complete)}
+                                disabled={isUpdatingTask === task.id}
                              />
                              <label htmlFor={`task-${task.id}`} className={`text-sm ${task.is_complete ? 'text-muted-foreground line-through' : ''}`}>
                                 {task.title}
@@ -111,6 +137,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                                 <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs px-1.5 py-0.5">AI</Badge>
                              )}
                             </div>
+                            {isUpdatingTask === task.id && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>}
                             <AskAIDrawer 
                                 taskId={task.id} 
                                 taskTitle={task.title} 
@@ -121,7 +148,8 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                     ))}
                 </ul>
             )}
-             {data && data.tasks.length === 0 && (
+            {toggleError && <p className="text-xs text-red-500 mt-2 text-center">{toggleError}</p>}
+            {data && data.tasks.length === 0 && (
                 <p className="text-center text-muted-foreground p-6">No checklist items found.</p>
             )}
           </div>
