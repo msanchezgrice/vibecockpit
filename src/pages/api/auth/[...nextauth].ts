@@ -12,6 +12,29 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     }),
+    {
+      id: "vercel",
+      name: "Vercel",
+      type: "oauth",
+      authorization: {
+        url: "https://vercel.com/oauth/authorize",
+        params: { scope: "projects:read offline_access" }, // Request project read scope and offline access
+      },
+      token: "https://api.vercel.com/v2/oauth/access_token",
+      userinfo: "https://api.vercel.com/v2/user",
+      clientId: process.env.VERCEL_CLIENT_ID as string,
+      clientSecret: process.env.VERCEL_CLIENT_SECRET as string,
+      profile(profile) {
+        // Map Vercel profile data to NextAuth User model
+        // Adjust based on actual Vercel /v2/user response structure
+        return {
+          id: profile.id || profile.uid, // Use id or uid from Vercel user object
+          name: profile.name,
+          email: profile.email,
+          image: profile.avatar,
+        };
+      },
+    },
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
