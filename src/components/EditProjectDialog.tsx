@@ -41,7 +41,6 @@ import { formatDateTime } from '@/lib/utils'; // Assuming formatDateTime is reus
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { signIn, useSession } from 'next-auth/react'; // Import useSession and signIn
 
 // Define the expected prop type
 type ProjectWithRelations = Project & { 
@@ -70,10 +69,6 @@ function formatChangelogMessage(entry: ChangeLogEntry) {
  }
 
 // Add types for fetched lists
-interface VercelProjectOption {
-  id: string;
-  name: string;
-}
 interface GitHubRepoOption {
   id: number;
   full_name: string; // owner/repo
@@ -81,7 +76,6 @@ interface GitHubRepoOption {
 
 export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const router = useRouter();
-  const { status: sessionStatus } = useSession(); // Only get status
   const [isOpen, setIsOpen] = useState(false);
   
   // Form State
@@ -94,15 +88,10 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const [newNoteText, setNewNoteText] = useState('');
   
   // State for Connect flows
-  const [vercelProjects, setVercelProjects] = useState<VercelProjectOption[]>([]);
   const [githubRepos, setGithubRepos] = useState<GitHubRepoOption[]>([]);
-  const [loadingVercel, setLoadingVercel] = useState(false);
   const [loadingGitHub, setLoadingGitHub] = useState(false);
-  const [connectError, setConnectError] = useState<string | null>(null);
-  const [popoverOpenVercel, setPopoverOpenVercel] = useState(false);
   const [popoverOpenGitHub, setPopoverOpenGitHub] = useState(false);
-  const [isVercelLinked, setIsVercelLinked] = useState(false); // Track Vercel link status
-  const [checkingLinkStatus, setCheckingLinkStatus] = useState(true);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
   // Action States
   const [isSaving, setIsSaving] = useState(false);
@@ -110,26 +99,6 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [noteError, setNoteError] = useState<string | null>(null);
-
-  // Check linked status on mount/session change
-  useEffect(() => {
-      if (sessionStatus === 'authenticated') {
-          // Check if a Vercel account exists for this user
-          // NOTE: This requires an API endpoint or fetching accounts client-side (less secure)
-          // For now, we'll simulate this check. Replace with actual check later.
-          const simulateCheck = async () => {
-              setCheckingLinkStatus(true);
-              // TODO: Implement API route like /api/auth/linked-accounts
-              // For now, assume NOT linked unless we find the project ID already set
-              setIsVercelLinked(!!project.vercelProjectId);
-              setCheckingLinkStatus(false);
-          };
-          simulateCheck();
-      } else if (sessionStatus === 'unauthenticated') {
-          setIsVercelLinked(false);
-          setCheckingLinkStatus(false);
-      }
-  }, [sessionStatus, project.vercelProjectId]);
 
   // Reset state when sheet opens/closes or project changes
   useEffect(() => {
@@ -207,23 +176,6 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     }
   };
 
-  // Fetch Vercel Projects
-  const fetchVercelProjects = async () => {
-    setLoadingVercel(true);
-    setConnectError(null);
-    try {
-      const res = await fetch('/api/vercel/projects');
-      if (!res.ok) throw new Error('Failed to fetch Vercel projects');
-      const data = await res.json();
-      setVercelProjects(data);
-      setPopoverOpenVercel(true); // Open popover on successful fetch
-    } catch (err) {
-      setConnectError(err instanceof Error ? err.message : 'Vercel fetch error');
-    } finally {
-      setLoadingVercel(false);
-    }
-  };
-
   // Fetch GitHub Repos
   const fetchGitHubRepos = async () => {
     setLoadingGitHub(true);
@@ -242,7 +194,6 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   };
 
   // Find display names for selected items
-  const selectedVercelProjectName = vercelProjects.find(p => p.id === vercelId)?.name ?? vercelId;
   const selectedGitHubRepoName = githubRepos.find(r => r.full_name === githubRepo)?.full_name ?? githubRepo;
 
   return (
@@ -289,62 +240,9 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                     <Input id={`edit-feUrl-${project.id}`} type="url" placeholder="https://... (Optional)" value={frontendUrl} onChange={(e) => setFrontendUrl(e.target.value)} className="col-span-3" disabled={isSaving}/>
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Vercel Project</Label>
-                    {isVercelLinked ? (
-                        <Popover open={popoverOpenVercel} onOpenChange={setPopoverOpenVercel}>
-                            <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                className="col-span-3 justify-between"
-                                onClick={!vercelProjects.length ? fetchVercelProjects : undefined}
-                                disabled={loadingVercel || isSaving}
-                            >
-                                {loadingVercel ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                {vercelId ? selectedVercelProjectName : "Select Project..."}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
-                            <Command>
-                                <CommandInput placeholder="Search project..." />
-                                <CommandList>
-                                    <CommandEmpty>No projects found.</CommandEmpty>
-                                    <CommandGroup>
-                                    {vercelProjects.map((vp) => (
-                                        <CommandItem
-                                        key={vp.id}
-                                        value={vp.id} // Use ID for value
-                                        onSelect={(currentValue) => {
-                                            setVercelId(currentValue === vercelId ? "" : currentValue)
-                                            setPopoverOpenVercel(false)
-                                        }}
-                                        >
-                                        <Check
-                                            className={cn(
-                                            "mr-2 h-4 w-4",
-                                            vercelId === vp.id ? "opacity-100" : "opacity-0"
-                                            )}
-                                        />
-                                        {vp.name}
-                                        </CommandItem>
-                                    ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                            </PopoverContent>
-                        </Popover>
-                    ) : (
-                         <Button 
-                             type="button" 
-                             className="col-span-3" 
-                             onClick={() => signIn('vercel')} // Trigger Vercel OAuth flow
-                             disabled={checkingLinkStatus || sessionStatus !== 'authenticated'}
-                         >
-                           {checkingLinkStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                            Connect Vercel Account
-                         </Button>
-                    )}
+                    <Label htmlFor={`edit-vercelId-${project.id}`} className="text-right">Vercel ID</Label>
+                     {/* Simple Input, assumes user already connected account */}
+                    <Input id={`edit-vercelId-${project.id}`} placeholder="Enter Vercel Project ID (Optional)" className="col-span-3" value={vercelId} onChange={(e) => setVercelId(e.target.value)} disabled={isSaving}/> 
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">GitHub Repo</Label>

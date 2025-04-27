@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import React from 'react';
 import { AddProjectDialog } from '@/components/AddProjectDialog';
+import { VercelConnectPrompt } from '@/components/VercelConnectPrompt';
 
 // Define ProjectWithData including relations fetched
 export type ProjectWithRelations = Project & {
@@ -51,6 +52,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 md:p-12 lg:p-24">
+      <VercelConnectPrompt />
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Project Dashboard</h1>
         <div>
