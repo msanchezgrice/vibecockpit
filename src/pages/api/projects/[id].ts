@@ -34,18 +34,42 @@ export default async function handler(
   switch (req.method) {
     case 'PATCH':
       try {
+        // Validate the shape of incoming data
         const validatedData = updateProjectSchema.parse(req.body);
+        console.log("Validated PATCH data:", validatedData);
+        console.log("Raw PATCH body:", req.body);
 
-        // Prevent sending empty update payload
-        if (Object.keys(validatedData).length === 0) {
-             return res.status(400).json({ message: 'No update data provided' });
+        // Construct the payload carefully
+        // Start with explicitly validated/formatted fields if necessary
+        const updatePayload: Prisma.ProjectUpdateInput = {}; 
+        if (validatedData.name !== undefined) {
+            updatePayload.name = validatedData.name;
+        }
+        if (validatedData.status !== undefined) {
+            updatePayload.status = validatedData.status;
+        }
+        if (validatedData.frontendUrl !== undefined) {
+            updatePayload.frontendUrl = validatedData.frontendUrl || null;
+        }
+        
+        // Add other optional fields ONLY if they were actually present in the raw request body
+        // This prevents accidentally setting them to null if they weren't sent
+        if (req.body.description !== undefined) {
+            updatePayload.description = req.body.description || null;
+        }
+        if (req.body.vercelProjectId !== undefined) {
+            updatePayload.vercelProjectId = req.body.vercelProjectId || null;
+        }
+        if (req.body.githubRepo !== undefined) {
+            updatePayload.githubRepo = req.body.githubRepo || null;
         }
 
-        // Handle potential empty string for frontendUrl
-        const updatePayload = {
-            ...validatedData,
-            ...(validatedData.frontendUrl === '' && { frontendUrl: null }),
-        };
+        // Prevent sending empty update payload
+        if (Object.keys(updatePayload).length === 0) {
+             return res.status(400).json({ message: 'No valid update data provided' });
+        }
+        
+        console.log("Data being passed to prisma.project.update:", updatePayload);
 
         const updatedProject = await prisma.project.update({
           where: { id },

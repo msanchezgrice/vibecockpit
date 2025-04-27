@@ -66,19 +66,23 @@ export default async function handler(
         // Validate required fields and known optional ones
         const validatedData = createProjectSchema.parse(req.body);
         
-        // Log the raw body as well for comparison
+        // Log the raw body and validated data
         console.log("Raw body received by POST /api/projects:", req.body);
         console.log("Validated data by POST /api/projects:", validatedData);
 
-        // Use validated data for required/formatted fields, but access original body for potentially stripped optional fields
+        // --- More specific debug logging ---
+        const dataToSave = {
+            name: validatedData.name, 
+            description: req.body.description || null,
+            frontendUrl: validatedData.frontendUrl || null,
+            vercelProjectId: req.body.vercelProjectId || null,
+            githubRepo: req.body.githubRepo || null,
+        };
+        console.log("Data being passed to prisma.project.create:", dataToSave);
+        // --- End specific debug logging ---
+
         const newProject = await prisma.project.create({
-          data: {
-            name: validatedData.name, // Use validated name
-            description: req.body.description || null, // Use raw body value
-            frontendUrl: validatedData.frontendUrl || null, // Use validated/formatted URL
-            vercelProjectId: req.body.vercelProjectId || null, // Use raw body value
-            githubRepo: req.body.githubRepo || null, // Use raw body value
-          },
+          data: dataToSave, // Use the prepared object
         });
         res.status(201).json(newProject);
       } catch (error) {
