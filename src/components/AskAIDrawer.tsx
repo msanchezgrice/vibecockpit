@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -30,28 +30,44 @@ export function AskAIDrawer({
 }: AskAIDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [aiDraft, setAiDraft] = useState(initialHint ?? 'Could not generate hint.');
+  const [aiDraft, setAiDraft] = useState(initialHint ?? 'Loading draft...');
   const [error, setError] = useState<string | null>(null);
 
-  // Mock AI generation
-  const handleRegenerate = async () => {
+  const fetchAIDraft = useCallback(async (isRegenerate = false) => {
     setIsLoading(true);
     setError(null);
-    try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 750));
-        // Generate slightly different mock text
-        const newDraft = `Here's another idea for "${taskTitle}": Strategy ${Math.floor(Math.random() * 100)}.
+    if (!isRegenerate) {
+        setAiDraft(initialHint ?? 'Generating draft...');
+    } else {
+        setAiDraft('Regenerating draft...');
+    }
 
-${initialHint ? `Original hint was: ${initialHint}` : 'No initial hint provided.'}`;
-        setAiDraft(newDraft);
+    try {
+        const response = await fetch(`/api/ai/tasks/${taskId}/draft`, {
+            method: 'POST',
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to fetch/generate AI draft');
+        }
+        setAiDraft(result.ai_help_hint || result.ai_image_prompt || 'No suggestion available.'); 
     } catch (err: unknown) {
-        console.error("Regeneration failed:", err);
-        setError(err instanceof Error ? err.message : 'Failed to regenerate');
+        console.error("AI Draft fetch/generation failed:", err);
+        const message = err instanceof Error ? err.message : 'Failed to process AI request';
+        setError(message);
+        setAiDraft(initialHint ?? 'Error loading draft.');
     } finally {
         setIsLoading(false);
     }
-  };
+  }, [taskId, initialHint]);
+
+  useEffect(() => {
+    if (isOpen && taskId) {
+      fetchAIDraft();
+    }
+  }, [isOpen, taskId, fetchAIDraft]);
+
+  const handleRegenerate = () => fetchAIDraft(true);
 
   const handleAccept = () => {
     onAccept(taskId, aiDraft); // Pass accepted draft back
@@ -75,8 +91,8 @@ ${initialHint ? `Original hint was: ${initialHint}` : 'No initial hint provided.
         
         <div className="p-4 flex-grow overflow-y-auto"> {/* Scrollable content */}
             <Textarea
-              readOnly // Make textarea read-only to display draft
-              value={isLoading ? 'Generating...' : aiDraft}
+              readOnly
+              value={isLoading ? 'Loading...' : aiDraft}
               className="h-full min-h-[200px] text-sm bg-muted/50"
               rows={10}
             />

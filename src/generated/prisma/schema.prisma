@@ -133,14 +133,15 @@ model AnalyticsSnapshot {
 
 // Add ChecklistItem model
 model ChecklistItem {
-  id           String   @id @default(cuid())
-  projectId    String   @map("project_id")
-  title        String
-  is_complete  Boolean  @default(false) @map("is_complete")
-  ai_help_hint String?  @map("ai_help_hint") // Store the AI draft/hint
-  order        Int      @default(0) // For ordering tasks
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(cuid())
+  projectId       String   @map("project_id")
+  title           String
+  is_complete     Boolean  @default(false) @map("is_complete")
+  ai_help_hint    String?  @map("ai_help_hint") // Store the AI draft/hint
+  ai_image_prompt String?  @map("ai_image_prompt") // Added for image prompts
+  order           Int      @default(0) // For ordering tasks
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 

@@ -10509,6 +10509,7 @@ export namespace Prisma {
     title: string | null
     is_complete: boolean | null
     ai_help_hint: string | null
+    ai_image_prompt: string | null
     order: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -10520,6 +10521,7 @@ export namespace Prisma {
     title: string | null
     is_complete: boolean | null
     ai_help_hint: string | null
+    ai_image_prompt: string | null
     order: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -10531,6 +10533,7 @@ export namespace Prisma {
     title: number
     is_complete: number
     ai_help_hint: number
+    ai_image_prompt: number
     order: number
     createdAt: number
     updatedAt: number
@@ -10552,6 +10555,7 @@ export namespace Prisma {
     title?: true
     is_complete?: true
     ai_help_hint?: true
+    ai_image_prompt?: true
     order?: true
     createdAt?: true
     updatedAt?: true
@@ -10563,6 +10567,7 @@ export namespace Prisma {
     title?: true
     is_complete?: true
     ai_help_hint?: true
+    ai_image_prompt?: true
     order?: true
     createdAt?: true
     updatedAt?: true
@@ -10574,6 +10579,7 @@ export namespace Prisma {
     title?: true
     is_complete?: true
     ai_help_hint?: true
+    ai_image_prompt?: true
     order?: true
     createdAt?: true
     updatedAt?: true
@@ -10672,6 +10678,7 @@ export namespace Prisma {
     title: string
     is_complete: boolean
     ai_help_hint: string | null
+    ai_image_prompt: string | null
     order: number
     createdAt: Date
     updatedAt: Date
@@ -10702,6 +10709,7 @@ export namespace Prisma {
     title?: boolean
     is_complete?: boolean
     ai_help_hint?: boolean
+    ai_image_prompt?: boolean
     order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10714,6 +10722,7 @@ export namespace Prisma {
     title?: boolean
     is_complete?: boolean
     ai_help_hint?: boolean
+    ai_image_prompt?: boolean
     order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10726,6 +10735,7 @@ export namespace Prisma {
     title?: boolean
     is_complete?: boolean
     ai_help_hint?: boolean
+    ai_image_prompt?: boolean
     order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10738,12 +10748,13 @@ export namespace Prisma {
     title?: boolean
     is_complete?: boolean
     ai_help_hint?: boolean
+    ai_image_prompt?: boolean
     order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ChecklistItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "projectId" | "title" | "is_complete" | "ai_help_hint" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["checklistItem"]>
+  export type ChecklistItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "projectId" | "title" | "is_complete" | "ai_help_hint" | "ai_image_prompt" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["checklistItem"]>
   export type ChecklistItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     project?: boolean | ProjectDefaultArgs<ExtArgs>
   }
@@ -10765,6 +10776,7 @@ export namespace Prisma {
       title: string
       is_complete: boolean
       ai_help_hint: string | null
+      ai_image_prompt: string | null
       order: number
       createdAt: Date
       updatedAt: Date
@@ -11197,6 +11209,7 @@ export namespace Prisma {
     readonly title: FieldRef<"ChecklistItem", 'String'>
     readonly is_complete: FieldRef<"ChecklistItem", 'Boolean'>
     readonly ai_help_hint: FieldRef<"ChecklistItem", 'String'>
+    readonly ai_image_prompt: FieldRef<"ChecklistItem", 'String'>
     readonly order: FieldRef<"ChecklistItem", 'Int'>
     readonly createdAt: FieldRef<"ChecklistItem", 'DateTime'>
     readonly updatedAt: FieldRef<"ChecklistItem", 'DateTime'>
@@ -11732,6 +11745,7 @@ export namespace Prisma {
     title: 'title',
     is_complete: 'is_complete',
     ai_help_hint: 'ai_help_hint',
+    ai_image_prompt: 'ai_image_prompt',
     order: 'order',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -12410,6 +12424,7 @@ export namespace Prisma {
     title?: StringFilter<"ChecklistItem"> | string
     is_complete?: BoolFilter<"ChecklistItem"> | boolean
     ai_help_hint?: StringNullableFilter<"ChecklistItem"> | string | null
+    ai_image_prompt?: StringNullableFilter<"ChecklistItem"> | string | null
     order?: IntFilter<"ChecklistItem"> | number
     createdAt?: DateTimeFilter<"ChecklistItem"> | Date | string
     updatedAt?: DateTimeFilter<"ChecklistItem"> | Date | string
@@ -12422,6 +12437,7 @@ export namespace Prisma {
     title?: SortOrder
     is_complete?: SortOrder
     ai_help_hint?: SortOrderInput | SortOrder
+    ai_image_prompt?: SortOrderInput | SortOrder
     order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12438,6 +12454,7 @@ export namespace Prisma {
     title?: StringFilter<"ChecklistItem"> | string
     is_complete?: BoolFilter<"ChecklistItem"> | boolean
     ai_help_hint?: StringNullableFilter<"ChecklistItem"> | string | null
+    ai_image_prompt?: StringNullableFilter<"ChecklistItem"> | string | null
     order?: IntFilter<"ChecklistItem"> | number
     createdAt?: DateTimeFilter<"ChecklistItem"> | Date | string
     updatedAt?: DateTimeFilter<"ChecklistItem"> | Date | string
@@ -12450,6 +12467,7 @@ export namespace Prisma {
     title?: SortOrder
     is_complete?: SortOrder
     ai_help_hint?: SortOrderInput | SortOrder
+    ai_image_prompt?: SortOrderInput | SortOrder
     order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12469,6 +12487,7 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"ChecklistItem"> | string
     is_complete?: BoolWithAggregatesFilter<"ChecklistItem"> | boolean
     ai_help_hint?: StringNullableWithAggregatesFilter<"ChecklistItem"> | string | null
+    ai_image_prompt?: StringNullableWithAggregatesFilter<"ChecklistItem"> | string | null
     order?: IntWithAggregatesFilter<"ChecklistItem"> | number
     createdAt?: DateTimeWithAggregatesFilter<"ChecklistItem"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ChecklistItem"> | Date | string
@@ -13016,6 +13035,7 @@ export namespace Prisma {
     title: string
     is_complete?: boolean
     ai_help_hint?: string | null
+    ai_image_prompt?: string | null
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13028,6 +13048,7 @@ export namespace Prisma {
     title: string
     is_complete?: boolean
     ai_help_hint?: string | null
+    ai_image_prompt?: string | null
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13038,6 +13059,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13050,6 +13072,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13061,6 +13084,7 @@ export namespace Prisma {
     title: string
     is_complete?: boolean
     ai_help_hint?: string | null
+    ai_image_prompt?: string | null
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13071,6 +13095,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13082,6 +13107,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13697,6 +13723,7 @@ export namespace Prisma {
     title?: SortOrder
     is_complete?: SortOrder
     ai_help_hint?: SortOrder
+    ai_image_prompt?: SortOrder
     order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13712,6 +13739,7 @@ export namespace Prisma {
     title?: SortOrder
     is_complete?: SortOrder
     ai_help_hint?: SortOrder
+    ai_image_prompt?: SortOrder
     order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -13723,6 +13751,7 @@ export namespace Prisma {
     title?: SortOrder
     is_complete?: SortOrder
     ai_help_hint?: SortOrder
+    ai_image_prompt?: SortOrder
     order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14469,6 +14498,7 @@ export namespace Prisma {
     title: string
     is_complete?: boolean
     ai_help_hint?: string | null
+    ai_image_prompt?: string | null
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14479,6 +14509,7 @@ export namespace Prisma {
     title: string
     is_complete?: boolean
     ai_help_hint?: string | null
+    ai_image_prompt?: string | null
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14600,6 +14631,7 @@ export namespace Prisma {
     title?: StringFilter<"ChecklistItem"> | string
     is_complete?: BoolFilter<"ChecklistItem"> | boolean
     ai_help_hint?: StringNullableFilter<"ChecklistItem"> | string | null
+    ai_image_prompt?: StringNullableFilter<"ChecklistItem"> | string | null
     order?: IntFilter<"ChecklistItem"> | number
     createdAt?: DateTimeFilter<"ChecklistItem"> | Date | string
     updatedAt?: DateTimeFilter<"ChecklistItem"> | Date | string
@@ -15165,6 +15197,7 @@ export namespace Prisma {
     title: string
     is_complete?: boolean
     ai_help_hint?: string | null
+    ai_image_prompt?: string | null
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15238,6 +15271,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15248,6 +15282,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15258,6 +15293,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     is_complete?: BoolFieldUpdateOperationsInput | boolean
     ai_help_hint?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_image_prompt?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

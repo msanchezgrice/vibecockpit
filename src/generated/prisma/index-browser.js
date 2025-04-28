@@ -197,6 +197,7 @@ exports.Prisma.ChecklistItemScalarFieldEnum = {
   title: 'title',
   is_complete: 'is_complete',
   ai_help_hint: 'ai_help_hint',
+  ai_image_prompt: 'ai_image_prompt',
   order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
