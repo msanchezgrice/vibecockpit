@@ -91,10 +91,11 @@ export function AskAIDrawer({
         
         <div className="p-4 flex-grow overflow-y-auto"> {/* Scrollable content */}
             <Textarea
-              readOnly
               value={isLoading ? 'Loading...' : aiDraft}
+              onChange={(e) => setAiDraft(e.target.value)}
               className="h-full min-h-[200px] text-sm bg-muted/50"
               rows={10}
+              disabled={isLoading}
             />
             {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
         </div>
