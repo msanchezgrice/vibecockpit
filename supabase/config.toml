@@ -307,10 +307,8 @@ s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
 
-# Define the functions directory correctly ONCE
+# This is the only [functions] block that should exist
 [functions]
 directory = "functions"
-# verify_jwt = false # Keep commented unless needed
-# import_map = "functions/import_map.json" # Update path if used
-
-# Remove any duplicate or incorrectly formatted [functions] sections
+# verify_jwt = false
+# import_map = "functions/import_map.json"
