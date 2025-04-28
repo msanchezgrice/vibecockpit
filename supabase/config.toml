@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "Vibeprojectcockpit"
+project_id = "zscifcljgkzltnxrlzlp"
 
 [api]
 enabled = true
@@ -10,9 +10,9 @@ enabled = true
 port = 54321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
-schemas = ["public", "graphql_public"]
+schemas = ["public", "storage", "graphql_public"]
 # Extra schemas to add to the search_path of every request.
-extra_search_path = ["public", "extensions"]
+extra_search_path = ["public"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
 max_rows = 1000
@@ -306,3 +306,55 @@ s3_region = "env(S3_REGION)"
 s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
+
+[functions]
+# Set the directory for Edge Functions
+# Defaults to "supabase/functions" if not set
+directory = "functions" # Point to the new root-level directory
+
+# Set this to true if you want Functions to be verified with JWT
+# verify_jwt = true
+# Import map file (optional)
+# import_map = "supabase/functions/import_map.json"
+
+# [auth]
+# Email confirmations MUST be enabled for Auth to work.
+# enable_email_confirmations = false
+# Enable email provider for Auth.
+# enable_email_provider = true
+# Site URL used as redirect base URL for Magic Link and Recovery URLs.
+# Use localhost for local development.
+# site_url = "http://localhost:3000"
+# Additional redirect URLs. Always include the Site URL.
+# For example, if you want to redirect to an Expo app: "com.supabase://**"
+# additional_redirect_urls = ["http://localhost:3000"]
+# Allow insecure auto confirmation of emails. Don't ship this to production.
+# insecure_email_auto_confirm = false
+# Duration before rate limit errors are returned (default: 30 seconds).
+# rate_limit_header_duration = 30
+# Select specific providers to enable:
+# enabled_providers = ["apple", "azure", "bitbucket", "discord", "facebook", "figma", "github", "gitlab", "google", "keycloak", "linkedin", "notion", "slack", "spotify", "twitch", "twitter", "workos"]
+# Customize email templates
+# mailer_otp_template = "supabase/templates/mailer_otp.html"
+
+# [auth.email.template.invite]
+# subject = "You have been invited"
+# content_path = "supabase/templates/invite.html"
+
+# [auth.sms]
+# Enable SMS provider for Auth.
+# enable_sms_provider = false
+# Use a custom SMS template for OTP.
+# template = "Your code is {{ .Code }}"
+
+# [auth.hook.custom_access_token]
+# URI of the Hook.
+# uri = "postgres/custom_access_token_hook.sql"
+# Enable the custom token hook.
+# enable_hook = false
+
+# [analytics]
+# Enable Supabase Analytics.
+# enabled = false
+# Vector client function for generating embeddings.
+# vector_client = "pgvector/stored_function.sql"
