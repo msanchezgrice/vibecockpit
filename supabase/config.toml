@@ -309,6 +309,8 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 
 # This is the only [functions] block that should exist
 [functions]
-directory = "functions"
-# verify_jwt = false
-# import_map = "functions/import_map.json"
+  # Define settings for the 'launch-checklist' function
+  [functions.launch-checklist]
+    # Optional settings like verify_jwt or import_map could go here if needed
+    # Example: verify_jwt = false
+    # Example: import_map = "functions/import_map.json"

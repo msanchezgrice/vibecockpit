@@ -1,7 +1,13 @@
-import { serve } from "jsr:@std/http/server";
+import { serve } from "jsr:@std/http";
 import { OpenAI } from "npm:openai@^4"; // Import OpenAI SDK
 import { createClient } from 'npm:@supabase/supabase-js@2'; // Import Supabase client
-import { corsHeaders } from '../_shared/cors.ts'; // Assuming shared CORS headers
+// import { corsHeaders } from '../_shared/cors.ts'; // Removed incorrect import
+
+// Define standard CORS headers directly
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 console.log("launch-checklist function booting up...");
 
