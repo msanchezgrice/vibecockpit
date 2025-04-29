@@ -10,27 +10,26 @@ const openai = new OpenAI({
   apiKey: Deno.env.get("OPENAI_API_KEY"),
 });
 
-// Define the expected OpenAI function call schema
+// Define the expected OpenAI function call schema for task recommendation
 const fnSchema = {
   type: 'function' as const, // Add type assertion
   function: {
-      name: 'generate_launch_checklist',
-      description: 'Generate a 10-step launch checklist for a SaaS product.',
+      name: 'recommend_next_tasks', // Changed name
+      description: 'Recommend the 5 most relevant next tasks for a project preparing to launch.', // Changed description
       parameters: {
         type: 'object',
         properties: {
-          tasks: { 
+          tasks: {
             type: 'array',
-            description: 'List of launch checklist tasks.',
-            items: { 
-                type:'object', 
-                properties:{ 
-                    title:{ type:'string', description: 'Concise title of the checklist task.' }, 
-                    description:{ type:'string', description: 'Optional brief description of the task.' }, 
-                    ai_help_hint:{ type:'string', description: 'Optional hint for AI assistance later.' } 
-                }, 
-                required:['title'] 
-            } 
+            description: 'List of ~5 recommended next tasks.', // Changed description
+            items: {
+                type:'object',
+                properties:{
+                    title:{ type:'string', description: 'Concise title of the recommended task.' }, // Kept title
+                    reasoning:{ type:'string', description: 'Brief reasoning for why this task is recommended now.' } // Added reasoning
+                },
+                required:['title', 'reasoning'] // Made reasoning required
+            }
           }
         },
         required:['tasks']
@@ -38,10 +37,9 @@ const fnSchema = {
   }
 };
 
-interface ChecklistTaskData {
+interface RecommendedTaskData { // Renamed interface
     title: string;
-    description?: string;
-    ai_help_hint?: string;
+    reasoning: string; // Changed field
 }
 
 serve(async (req) => {
@@ -52,26 +50,58 @@ serve(async (req) => {
   }
 
   try {
-    // Ensure Supabase client is initialized correctly (requires env vars)
+    // Initialize Supabase client (ensure env vars are set)
     const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
         { auth: { persistSession: false } }
     );
 
-    const { project_id, category } = await req.json();
-    console.log(`Generating checklist for project: ${project_id}, category: ${category}`);
+    const { project_id } = await req.json(); // Only expect project_id now
+    console.log(`Generating task recommendations for project: ${project_id}`);
 
-    if (!project_id || !category) {
-        throw new Error("Missing project_id or category in request body");
+    if (!project_id) {
+        throw new Error("Missing project_id in request body");
     }
 
-    // 1. Call OpenAI
+    // --- Fetch Project Details ---
+    const { data: projectData, error: projectError } = await supabaseAdmin
+        .from('Project') // Use the actual table name (check casing if needed)
+        .select('name, description, frontendUrl:frontend_url, githubRepo:github_repo, status') // Select necessary fields, mapping snake_case
+        .eq('id', project_id)
+        .single(); // Expect only one project
+
+    if (projectError) {
+        console.error("Supabase project fetch error:", projectError);
+        throw new Error(`Database error fetching project details: ${projectError.message}`);
+    }
+    if (!projectData) {
+        throw new Error(`Project with ID ${project_id} not found.`);
+    }
+    console.log("Fetched project data:", projectData);
+    // --- End Fetch Project Details ---
+
+
+    // --- Construct New OpenAI Prompt ---
+    const promptContent = `
+Analyze the following project information for a project currently in the 'prep_launch' status:
+- Name: ${projectData.name}
+- Description: ${projectData.description || 'Not provided'}
+- Website URL: ${projectData.frontendUrl || 'Not provided'}
+- GitHub Repo: ${projectData.githubRepo || 'Not provided'}
+
+Based *only* on this information, recommend the 5 most relevant and actionable next tasks to focus on for successfully launching this project. Provide a concise title and a brief reasoning for each task.
+    `.trim();
+    // --- End Construct New OpenAI Prompt ---
+
+
+    // 1. Call OpenAI with new prompt and schema
+    console.log("Sending request to OpenAI...");
     const rsp = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // Use a suitable model like gpt-3.5-turbo or gpt-4
-      messages: [{ role:'user', content:`Generate a 10-step launch checklist (tasks only) for a ${category} web application named 'Example Project' (replace name later). Include brief descriptions and AI help hints for some tasks.` }],
-      tools: [fnSchema],
-      tool_choice: { type:'function', function: { name: 'generate_launch_checklist' } }, // Correct tool_choice structure
+      model: 'gpt-3.5-turbo', // Or 'gpt-4' if preferred
+      messages: [{ role:'user', content: promptContent }], // Use the new prompt
+      tools: [fnSchema], // Use the updated schema
+      tool_choice: { type:'function', function: { name: 'recommend_next_tasks' } }, // Use the new function name
     });
 
     // 2. Parse Response
@@ -80,20 +110,20 @@ serve(async (req) => {
 
     if (!functionCall?.arguments) {
       console.error("OpenAI response missing function call arguments:", rsp);
-      throw new Error('Failed to parse checklist from OpenAI response.');
+      throw new Error('Failed to parse recommendations from OpenAI response.');
     }
 
     console.log("Raw OpenAI arguments:", functionCall.arguments);
-    let parsedTasks: { tasks: ChecklistTaskData[] };
+    let parsedTasks: { tasks: RecommendedTaskData[] }; // Use updated interface
     try {
        parsedTasks = JSON.parse(functionCall.arguments);
     } catch (parseError) {
         console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
         throw new Error("Invalid JSON format received from OpenAI.");
     }
-    
+
     const tasks = parsedTasks.tasks;
-    console.log(`Received ${tasks?.length ?? 0} tasks from OpenAI.`);
+    console.log(`Received ${tasks?.length ?? 0} recommended tasks from OpenAI.`);
 
     if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
         throw new Error("No valid tasks received from OpenAI.");
@@ -103,14 +133,13 @@ serve(async (req) => {
     const checklistItemsToInsert = tasks.map((task, index) => ({
       projectId: project_id, // Link to the project
       title: task.title,
-      // description: task.description, // Add if description is in your schema
-      ai_help_hint: task.ai_help_hint,
+      ai_help_hint: task.reasoning, // Map reasoning to ai_help_hint
       order: index + 1, // Simple ordering
       is_complete: false, // Default to not complete
     }));
 
     // 4. Insert into Database
-    console.log(`Attempting to insert ${checklistItemsToInsert.length} checklist items...`);
+    console.log(`Attempting to insert ${checklistItemsToInsert.length} recommended tasks...`);
     const { data: insertedData, error: insertError } = await supabaseAdmin
       .from('checklist_items') // Use the actual table name
       .insert(checklistItemsToInsert)
@@ -121,7 +150,7 @@ serve(async (req) => {
       throw new Error(`Database error inserting checklist items: ${insertError.message}`);
     }
 
-    console.log(`Successfully inserted ${insertedData?.length ?? 0} checklist items.`);
+    console.log(`Successfully inserted ${insertedData?.length ?? 0} recommended tasks.`);
 
     // Return success response
     return new Response(JSON.stringify({ success: true, count: insertedData?.length ?? 0 }), {
