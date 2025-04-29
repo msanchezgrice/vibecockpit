@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, Prisma } from '@/generated/prisma';
+// import { PrismaClient, Prisma } from '@/generated/prisma'; // Comment/Remove PrismaClient if not needed
+import { Prisma, ProjectStatus } from '@/generated/prisma'; // Ensure Prisma and ProjectStatus are imported
 import { z, ZodError } from 'zod';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma'; // Import shared instance
 
 // Zod schema for creating a project
 const createProjectSchema = z.object({
@@ -77,6 +77,7 @@ export default async function handler(
             frontendUrl: validatedData.frontendUrl || null,
             vercelProjectId: req.body.vercelProjectId || null,
             githubRepo: req.body.githubRepo || null,
+            status: ProjectStatus.prep_launch,
         };
         console.log("Data being passed to prisma.project.create:", dataToSave);
         // --- End specific debug logging ---
