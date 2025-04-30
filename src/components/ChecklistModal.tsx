@@ -27,7 +27,7 @@ const calculateProgress = (completed: number, total: number): number => {
 
 export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistModalProps) {
   const router = useRouter();
-  const { data, isLoading, error } = useChecklist(projectId);
+  const { data, isLoading, error, refetch, setData } = useChecklist(projectId);
   const [isUpdatingTask, setIsUpdatingTask] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
 
@@ -62,9 +62,38 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
 
       // Only attempt to parse JSON if the response is OK and likely has content
       if (response.ok) {
-        const result = await response.json(); 
-        console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, result); 
-        router.refresh();
+        const updatedItem = await response.json(); 
+        console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, updatedItem); 
+        
+        // --- Manual State Update --- 
+        setData(currentData => {
+           if (!currentData) return null; // Should not happen if toggle is possible
+           
+           // Find index and create new tasks array
+           const taskIndex = currentData.tasks.findIndex(t => t.id === taskId);
+           if (taskIndex === -1) return currentData; // Task not found?
+           
+           const newTasks = [
+              ...currentData.tasks.slice(0, taskIndex),
+              updatedItem, // Insert the updated item from API response
+              ...currentData.tasks.slice(taskIndex + 1),
+           ];
+
+           // Recalculate counts
+           const newCompletedCount = newTasks.filter(t => t.is_complete).length;
+
+           // Return NEW state object
+           return {
+              ...currentData,
+              tasks: newTasks,
+              completed_tasks: newCompletedCount,
+              // total_tasks presumably doesn't change on toggle
+           };
+        });
+        // --- End Manual State Update ---
+
+        // refetch(); // No longer strictly needed for immediate UI update, but can keep for consistency
+
       } else {
         // Try to parse error message if not ok
         let errorResult = { message: 'Failed to toggle task' };

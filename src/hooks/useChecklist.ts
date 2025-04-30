@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // Mock data structure - adjust as needed when backend is ready
 export interface ChecklistTask {
@@ -15,27 +15,33 @@ export interface ChecklistData {
 }
 
 // Hook implementation using fetch
-export function useChecklist(projectId: string): { data: ChecklistData | null, isLoading: boolean, error: Error | null } {
+export function useChecklist(projectId: string): {
+  data: ChecklistData | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
+  setData: React.Dispatch<React.SetStateAction<ChecklistData | null>>;
+} {
   const [data, setData] = useState<ChecklistData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
+  // Wrap fetch logic in a useCallback to ensure stable function reference
+  const fetchData = useCallback(() => {
     if (!projectId) {
-        setIsLoading(false);
-        setData(null); // No project ID, no data
-        return;
+      setIsLoading(false);
+      setData(null); // No project ID, no data
+      setError(null);
+      return;
     }
 
+    console.log('[useChecklist] Fetching data...'); // Log fetch start
     setIsLoading(true);
     setError(null);
-
-    let isMounted = true; // Prevent state update on unmounted component
 
     fetch(`/api/checklist?projectId=${encodeURIComponent(projectId)}`)
       .then(res => {
         if (!res.ok) {
-          // Try to parse error message from API
           return res.json().then(errData => {
              throw new Error(errData.message || `HTTP error! status: ${res.status}`);
           }).catch(() => {
@@ -45,24 +51,25 @@ export function useChecklist(projectId: string): { data: ChecklistData | null, i
         return res.json();
       })
       .then(fetchedData => {
-        console.log('[useChecklist] Fetched data:', fetchedData);
-        if (isMounted) {
-          setData(fetchedData as ChecklistData);
-          setIsLoading(false);
-        }
+        console.log('[useChecklist] Fetched data successful:', fetchedData);
+        setData(fetchedData as ChecklistData);
       })
       .catch(err => {
-         console.error("[useChecklist] Failed to fetch checklist:", err);
-        if (isMounted) {
-          setError(err instanceof Error ? err : new Error('Failed to load checklist'));
-          setIsLoading(false);
-          setData(null);
-        }
+        console.error("[useChecklist] Failed to fetch checklist:", err);
+        setError(err instanceof Error ? err : new Error('Failed to load checklist'));
+        setData(null);
+      })
+      .finally(() => {
+        setIsLoading(false); // Ensure loading is set to false in both success and error cases
       });
+    // Note: isMounted cleanup is generally not needed with useCallback/useEffect correctly used
+  }, [projectId]); // Dependency: only refetch automatically if projectId changes
 
-    return () => { isMounted = false }; // Cleanup function
+  // Initial fetch on mount or when projectId changes
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]); // Depend on the stable fetchData function
 
-  }, [projectId]); // Re-run if projectId changes
-
-  return { data, isLoading, error };
+  // Return state, refetch function, AND setData function
+  return { data, isLoading, error, refetch: fetchData, setData };
 } 
