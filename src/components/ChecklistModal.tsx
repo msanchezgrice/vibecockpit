@@ -48,25 +48,39 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
     console.log(`[ChecklistModal] Toggling task ${taskId} from ${currentStatus} to ${!currentStatus}`);
     setIsUpdatingTask(taskId);
-    setToggleError(null);
+    setToggleError(null); // Clear previous errors
+    let response: Response | null = null; // Declare response variable
     try {
-      const response = await fetch(`/api/checklist/${taskId}/toggle`, {
+      response = await fetch(`/api/checklist/${taskId}/toggle`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_complete: !currentStatus }),
       });
-      const result = await response.json();
-      if (!response.ok) {
-        console.error(`[ChecklistModal] Toggle API failed for ${taskId}:`, result);
-        throw new Error(result.message || 'Failed to toggle task');
+
+      console.log(`[ChecklistModal] API response status for ${taskId}: ${response.status}`);
+      console.log(`[ChecklistModal] API response ok for ${taskId}: ${response.ok}`);
+
+      // Only attempt to parse JSON if the response is OK and likely has content
+      if (response.ok) {
+        const result = await response.json(); 
+        console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, result); 
+        router.refresh();
+      } else {
+        // Try to parse error message if not ok
+        let errorResult = { message: 'Failed to toggle task' };
+        try {
+          errorResult = await response.json();
+        } catch (jsonError) {
+            console.warn(`[ChecklistModal] Could not parse JSON from error response for ${taskId}:`, jsonError);
+        }
+        console.error(`[ChecklistModal] Toggle API failed for ${taskId}:`, errorResult);
+        throw new Error(errorResult.message || 'Failed to toggle task'); 
       }
-      console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, result);
-      router.refresh();
     } catch(err) {
-      console.error(`[ChecklistModal] Error in handleToggleTask for ${taskId}:`, err);
-      setToggleError(`Failed for task ${taskId}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error(`[ChecklistModal] Error in handleToggleTask for ${taskId}. Response status: ${response?.status}`, err);
+      setToggleError(`Failed for task ${taskId}: ${err instanceof Error ? err.message : 'Unknown error'}`); 
     } finally {
-      setIsUpdatingTask(null);
+      setIsUpdatingTask(null); // Stop showing loader
     }
   };
 
