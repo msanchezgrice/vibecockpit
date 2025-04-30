@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // Removed unused import
 import { useChecklist } from '@/hooks/useChecklist';
 import {
   Dialog, DialogContent, DialogDescription, 
