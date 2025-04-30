@@ -26,8 +26,9 @@ const calculateProgress = (completed: number, total: number): number => {
 };
 
 export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistModalProps) {
-  const router = useRouter();
-  const { data, isLoading, error, refetch, setData } = useChecklist(projectId);
+  // const router = useRouter(); // Removed unused router
+  // Get setData from the hook, remove unused refetch for now
+  const { data, isLoading, error, setData } = useChecklist(projectId); 
   const [isUpdatingTask, setIsUpdatingTask] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
 
