@@ -1,14 +1,15 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
-import GithubProvider from 'next-auth/providers/github';
+import GitHubProvider from 'next-auth/providers/github';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { PrismaClient } from '@/generated/prisma'; // Use path alias
+import prisma from '@/lib/prisma'; // Import singleton instance
+// import { PrismaClient } from '@/generated/prisma'; // Remove direct import
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient(); // Remove direct instantiation
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma), // Use the imported singleton instance
   providers: [
-    GithubProvider({
+    GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     }),

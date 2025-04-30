@@ -1,10 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, Prisma } from '@/generated/prisma';
-import { openai } from '@/lib/openai'; // Import configured OpenAI client
+import prisma from '@/lib/prisma'; // Import singleton instance
+import { Prisma } from '@/generated/prisma'; // Keep type import if needed
+import { z, ZodError } from 'zod';
+import { OpenAI } from 'openai'; // Ensure OpenAI is imported
+// import { PrismaClient, Prisma } from '@/generated/prisma'; // Remove direct import
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient(); // Remove direct instantiation
+
+// Initialize OpenAI Client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // --- OpenAI Tool Schemas --- 
 const generateCopySchema = {

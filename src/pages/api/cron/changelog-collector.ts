@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@/generated/prisma';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma'; // Import singleton instance
+// import { PrismaClient } from '@/generated/prisma'; // Remove direct import
 
 const GITHUB_API_URL = 'https://api.github.com';
 const GITHUB_PAT = process.env.GITHUB_PAT;

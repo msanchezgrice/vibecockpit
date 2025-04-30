@@ -1,9 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient } from '@/generated/prisma';
+import prisma from '@/lib/prisma'; // Import singleton instance
+// import { PrismaClient } from '@/generated/prisma'; // Remove direct import
+// import { Octokit } from 'octokit'; // Removed accidental import
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient(); // Remove direct instantiation
 const GITHUB_API_URL = 'https://api.github.com';
 
 interface GitHubRepo {

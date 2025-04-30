@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient } from '@/generated/prisma';
+import prisma from '@/lib/prisma'; // Import singleton instance
 import { z, ZodError } from 'zod';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient(); // Remove direct instantiation
 
 // Zod schema for creating a changelog entry (specifically a note)
 const createNoteSchema = z.object({

@@ -106,14 +106,15 @@ Deno.serve(async (req) => {
 
 
     // --- Construct New OpenAI Prompt ---
-    const promptContent = `
+    const systemPrompt = "You are a seasoned startup cofounder, best in class at all aspects of designing, launching, and fundraising for a startup. Your goal is to provide highly relevant and actionable recommendations.";
+    const userPrompt = `
 Analyze the following project information for a project currently in the 'prep_launch' status:
 - Name: ${projectData.name}
 - Description: ${projectData.description || 'Not provided'}
 - Website URL: ${projectData.frontendUrl || 'Not provided'}
 - GitHub Repo: ${projectData.githubRepo || 'Not provided'}
 
-Based *only* on this information, recommend the 5 most relevant and actionable next tasks to focus on for successfully launching this project. Provide a concise title and a brief reasoning for each task.
+Based on your expertise and the project details, analyze the situation and recommend the 5 most crucial and helpful next tasks to ensure a successful launch. For each task, provide a concise title and brief reasoning explaining its importance at this stage.
     `.trim();
     // --- End Construct New OpenAI Prompt ---
 
@@ -121,8 +122,11 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
     // 1. Call OpenAI with new prompt and schema
     console.log("launch-checklist: Sending request to OpenAI for", project_id);
     const rsp = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // Or 'gpt-4' if preferred
-      messages: [{ role:'user', content: promptContent }], // Use the new prompt
+      model: 'o3-2025-04-16', // Updated model to o3-2025-04-16
+      messages: [
+        { role: 'system', content: systemPrompt }, // Added system prompt for persona
+        { role: 'user', content: userPrompt } // Updated user prompt
+      ],
       tools: [fnSchema], // Use the updated schema
       tool_choice: { type:'function', function: { name: 'recommend_next_tasks' } }, // Use the new function name
     });

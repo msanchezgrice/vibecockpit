@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, Prisma } from '@/generated/prisma';
+import prisma from '@/lib/prisma'; // Import singleton instance
+import { Prisma } from '@/generated/prisma'; // Keep type import if needed
 import { z, ZodError } from 'zod';
-
-const prisma = new PrismaClient();
 
 // Schema to validate request body
 const updateDraftSchema = z.object({

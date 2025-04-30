@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { PrismaClient, ProjectStatus, Prisma } from '@/generated/prisma';
+import prisma from '@/lib/prisma'; // Import singleton instance
+import { ProjectStatus, Prisma } from '@/generated/prisma'; // Keep type imports
 import { z, ZodError } from 'zod';
+// import { PrismaClient, ProjectStatus, Prisma } from '@/generated/prisma'; // Remove direct import
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient(); // Remove direct instantiation
 
 // Zod schema for updating a project (all fields optional)
 const updateProjectSchema = z.object({
