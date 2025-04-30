@@ -1,4 +1,4 @@
-import { serve } from "jsr:@std/http";
+// import { serve } from "jsr:@std/http";
 import { OpenAI } from "npm:openai@^4"; // Import OpenAI SDK
 import { createClient } from 'npm:@supabase/supabase-js@2'; // Import Supabase client
 // import { corsHeaders } from '../_shared/cors.ts'; // Removed incorrect import
@@ -9,12 +9,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-console.log("launch-checklist function booting up...");
+console.log("launch-checklist: Top-level script executing..."); // Log script start
 
-// Initialize OpenAI Client (ensure OPENAI_API_KEY is set in Edge Function env vars)
-const openai = new OpenAI({
-  apiKey: Deno.env.get("OPENAI_API_KEY"),
-});
+// Initialize OpenAI Client
+let openai;
+try {
+  openai = new OpenAI({ // Initialize inside try-catch
+    apiKey: Deno.env.get("OPENAI_API_KEY"),
+  });
+  console.log("launch-checklist: OpenAI client initialized."); // Log success
+} catch (error) {
+  console.error("launch-checklist: FAILED to initialize OpenAI client:", error);
+  // Optionally, throw the error again if initialization is critical
+  // throw error;
+}
 
 // Define the expected OpenAI function call schema for task recommendation
 const fnSchema = {
@@ -48,23 +56,32 @@ interface RecommendedTaskData { // Renamed interface
     reasoning: string; // Changed field
 }
 
-serve(async (req) => {
-  console.log('Request received for launch-checklist');
+Deno.serve(async (req) => {
+  console.log('launch-checklist: Request received.'); // Existing log
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  let supabaseAdmin; // Declare outside try block
   try {
-    // Initialize Supabase client (ensure env vars are set)
-    const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-        { auth: { persistSession: false } }
-    );
+    console.log('launch-checklist: Entering main try block.'); // Log entering try
 
-    const { project_id } = await req.json(); // Only expect project_id now
-    console.log(`Generating task recommendations for project: ${project_id}`);
+    // Initialize Supabase client
+    try { // Nested try-catch for Supabase client
+       supabaseAdmin = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+          { auth: { persistSession: false } }
+      );
+      console.log("launch-checklist: Supabase client initialized."); // Log success
+    } catch (error) {
+        console.error("launch-checklist: FAILED to initialize Supabase client:", error);
+        throw error; // Re-throw to be caught by outer catch
+    }
+
+    const { project_id } = await req.json();
+    console.log(`launch-checklist: Parsed project_id: ${project_id}`); // Log after parsing
 
     if (!project_id) {
         throw new Error("Missing project_id in request body");
@@ -84,7 +101,7 @@ serve(async (req) => {
     if (!projectData) {
         throw new Error(`Project with ID ${project_id} not found.`);
     }
-    console.log("Fetched project data:", projectData);
+    console.log("launch-checklist: Fetched project data for", project_id);
     // --- End Fetch Project Details ---
 
 
@@ -102,7 +119,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
 
 
     // 1. Call OpenAI with new prompt and schema
-    console.log("Sending request to OpenAI...");
+    console.log("launch-checklist: Sending request to OpenAI for", project_id);
     const rsp = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo', // Or 'gpt-4' if preferred
       messages: [{ role:'user', content: promptContent }], // Use the new prompt
@@ -119,7 +136,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
       throw new Error('Failed to parse recommendations from OpenAI response.');
     }
 
-    console.log("Raw OpenAI arguments:", functionCall.arguments);
+    console.log("launch-checklist: Raw OpenAI arguments for", project_id, ":", functionCall.arguments);
     let parsedTasks: { tasks: RecommendedTaskData[] }; // Use updated interface
     try {
        parsedTasks = JSON.parse(functionCall.arguments);
@@ -129,7 +146,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
     }
 
     const tasks = parsedTasks.tasks;
-    console.log(`Received ${tasks?.length ?? 0} recommended tasks from OpenAI.`);
+    console.log(`launch-checklist: Received ${tasks?.length ?? 0} recommended tasks for ${project_id}.`);
 
     if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
         throw new Error("No valid tasks received from OpenAI.");
@@ -137,7 +154,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
 
     // 3. Format data for Supabase/Prisma insertion
     const checklistItemsToInsert = tasks.map((task, index) => ({
-      projectId: project_id, // Link to the project
+      project_id: project_id, // <-- Use snake_case 'project_id' (matches DB column)
       title: task.title,
       ai_help_hint: task.reasoning, // Map reasoning to ai_help_hint
       order: index + 1, // Simple ordering
@@ -145,7 +162,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
     }));
 
     // 4. Insert into Database
-    console.log(`Attempting to insert ${checklistItemsToInsert.length} recommended tasks...`);
+    console.log(`launch-checklist: Attempting to insert ${checklistItemsToInsert.length} tasks for ${project_id}`);
     const { data: insertedData, error: insertError } = await supabaseAdmin
       .from('checklist_items') // Use the actual table name
       .insert(checklistItemsToInsert)
@@ -156,7 +173,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
       throw new Error(`Database error inserting checklist items: ${insertError.message}`);
     }
 
-    console.log(`Successfully inserted ${insertedData?.length ?? 0} recommended tasks.`);
+    console.log(`launch-checklist: Successfully inserted ${insertedData?.length ?? 0} tasks for ${project_id}`);
 
     // Return success response
     return new Response(JSON.stringify({ success: true, count: insertedData?.length ?? 0 }), {
@@ -165,7 +182,7 @@ Based *only* on this information, recommend the 5 most relevant and actionable n
     });
 
   } catch (error: unknown) {
-    console.error("Edge function error:", error);
+    console.error("launch-checklist: Error in main try block:", error); // Modify existing log
     const message = error instanceof Error ? error.message : 'Unknown edge function error';
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

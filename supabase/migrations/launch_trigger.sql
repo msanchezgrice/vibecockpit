@@ -12,12 +12,12 @@ BEGIN
     -- Make a POST request to the Edge Function URL
     -- The Edge Function name must match exactly
     perform net.http_post(
-        url:='{SUPABASE_URL}/functions/v1/launch-checklist', -- Replace {SUPABASE_URL} with your actual URL or use env var in config
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer {SUPABASE_SERVICE_ROLE_KEY}"}', -- Pass service key for auth
-        body:=json_build_object(
+        url:= 'https://zscifcljgkzltnxrlzlp.supabase.co/functions/v1/launch-checklist', -- Actual URL
+        body:= json_build_object(
             'project_id', project_id,
             'category', project_category -- Pass category for prompt context
-        )::text
+        )::jsonb, -- <<< Cast to jsonb
+        headers:= '{"Content-Type": "application/json", "Authorization": "Bearer YOUR_SEeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY2lmY2xqZ2t6bHRueHJsemxwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTY5OTI1MywiZXhwIjoyMDYxMjc1MjUzfQ.xUpl7YXjVbZvu8geJA6UlVOk6bE2SuVYP29YWHmfjJg"}'::jsonb -- <<< Cast to jsonb
     );
 END;
 $$;
