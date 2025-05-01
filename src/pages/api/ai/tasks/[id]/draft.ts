@@ -14,36 +14,19 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// --- OpenAI Tool Schemas --- 
+// --- OpenAI Tool Definitions ---
+// Commenting out unused schemas temporarily until tool passing for responses.create is confirmed
+/*
 const generateCopySchema = {
     type: 'function' as const,
-    function: {
-        name: 'generate_copy',
-        description: 'Generate marketing copy based on a task title and project name.',
-        parameters: {
-            type: 'object',
-            properties: { 
-                copy: { type: 'string', description: 'The generated marketing copy.' } 
-            },
-            required: ['copy']
-        }
-    }
+    function: { ... } // Keep full definition
 };
 
 const generateImageSchema = {
     type: 'function' as const,
-    function: {
-        name: 'generate_image_prompt',
-        description: 'Generate an image prompt suitable for DALL-E-3 based on a task title and project name.',
-        parameters: {
-            type: 'object',
-            properties: { 
-                image_prompt: { type: 'string', description: 'The generated DALL-E-3 prompt.' } 
-            },
-            required: ['image_prompt']
-        }
-    }
+    function: { ... } // Keep full definition
 };
+*/
 // -----------------------------
 
 export default async function handler(
@@ -99,49 +82,66 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
       });
 
       // 4. Process Response & 5. Update DB
-      // *** PARSING NEEDS ADJUSTMENT based on actual responses.create output ***
-      console.log(`[AI Task ${checklistItemId}] Raw response object:`, response);
+      // *** PARSING NEEDS ADJUSTMENT based on actual responses.create output logged above ***
+      console.log(`[AI Task ${checklistItemId}] Raw response object:`, JSON.stringify(response, null, 2)); // Log the full structure
 
       // TODO: Adapt parsing logic based on the ACTUAL structure of the `response` object
       // The structure might be different from the chat/completions response.
       // How are tool calls represented in the response from responses.create?
       // Inspect the actual `response` object logged above.
 
-      // --- Placeholder for new parsing logic ---
-      let updateData: Prisma.ChecklistItemUpdateInput = {};
+      // --- Refined Placeholder Parsing Logic (NEEDS VERIFICATION) ---
+      const outputItems = response.output; // Assuming 'output' is the primary field
+
+      const updateData: Prisma.ChecklistItemUpdateInput = {}; // Use const
       let generatedContentType: string | null = null;
 
-      // Example: Hypothetical structure - THIS WILL LIKELY NEED TO BE CHANGED
-      // Accessing fields like `response.output.tool_calls` or similar based on console log.
-      // Adjust the following logic based on what you see in the logged `response` object.
-      const output = response.output; // Assuming the main content is in an 'output' field
-
-      if (output?.tool_calls && output.tool_calls.length > 0) { // Hypothetical path
-         const toolCall = output.tool_calls[0];
-         const functionName = toolCall.function.name;
-         const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
-         console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
-
-         if (functionName === 'generate_copy' && functionArgs.copy) {
-            updateData.ai_help_hint = functionArgs.copy;
-            updateData.ai_image_prompt = null;
-            generatedContentType = 'copy';
-          } else if (functionName === 'generate_image_prompt' && functionArgs.image_prompt) {
-            updateData.ai_image_prompt = functionArgs.image_prompt;
-            updateData.ai_help_hint = null;
-            generatedContentType = 'image_prompt';
-          } else {
-             console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
+      if (Array.isArray(outputItems) && outputItems.length > 0) {
+        // Iterate through output items (assuming it might be an array like messages/steps)
+        for (const item of outputItems) {
+          // Check for direct text content (adjust 'item.type' and 'item.content' based on actual structure)
+          if (item.type === 'message' && item.content?.text) {
+             console.log(`[AI Task ${checklistItemId}] OpenAI responded directly with text.`);
+             updateData.ai_help_hint = item.content.text; // Adjust path as needed
+             updateData.ai_image_prompt = null;
+             generatedContentType = 'direct_content';
+             break; // Stop processing if direct text is found (adjust if multiple outputs are possible)
           }
-      } else if (output?.content) { // Hypothetical path for direct text content
-         console.log(`[AI Task ${checklistItemId}] OpenAI responded directly.`);
-         updateData.ai_help_hint = output.content;
-         updateData.ai_image_prompt = null;
-         generatedContentType = 'direct_content';
-      } else {
-         console.error(`[AI Task ${checklistItemId}] Unexpected response structure from responses.create.`);
-         // Consider throwing an error if no usable output is found
-         // throw new Error("Unexpected response structure from AI.");
+
+          // Check for custom tool calls (adjust 'item.type' and 'item.tool_calls' based on actual structure)
+          if (item.type === 'tool_calls' && Array.isArray(item.tool_calls)) {
+             const toolCall = item.tool_calls[0]; // Assuming only one tool call for now
+             if (toolCall?.type === 'function') {
+                 const functionName = toolCall.function.name;
+                 const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+                 console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
+
+                 if (functionName === 'generate_copy' && functionArgs.copy) {
+                    updateData.ai_help_hint = functionArgs.copy;
+                    updateData.ai_image_prompt = null;
+                    generatedContentType = 'copy';
+                 } else if (functionName === 'generate_image_prompt' && functionArgs.image_prompt) {
+                    updateData.ai_image_prompt = functionArgs.image_prompt;
+                    updateData.ai_help_hint = null;
+                    generatedContentType = 'image_prompt';
+                 } else {
+                    console.warn(`[AI Task ${checklistItemId}] Unhandled custom tool call: ${functionName}`);
+                 }
+                 break; // Stop processing after handling tool call
+             }
+          }
+
+          // Check for web search results (adjust path and structure based on actual response)
+          // Example: if web search results are directly in an item or nested
+          if (item.type === 'web_search_results' && item.results) { // HYPOTHETICAL STRUCTURE
+              console.log(`[AI Task ${checklistItemId}] Web search was used.`);
+              // Decide how to use web search results - maybe add to ai_help_hint?
+              // For now, just logging, not saving directly.
+              // updateData.ai_help_hint = `Web Search Results:\n${JSON.stringify(item.results)}`;
+              // generatedContentType = 'web_search';
+              // break; // Or continue processing?
+          }
+        }
       }
       // --- End Placeholder ---
 
