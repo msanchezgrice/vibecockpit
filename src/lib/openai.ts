@@ -13,6 +13,12 @@ export const openai = new OpenAI({
   // Other options like organization ID can be added here if needed
 });
 
+// Helper function to determine if Responses API is available
+// Can be used for feature flagging during transition
+export function supportsResponsesApi() {
+  return typeof openai.responses !== 'undefined';
+}
+
 // Optional: Add a simple function to test connectivity (can be removed later)
 export async function testOpenAIConnection() {
   if (!openai.apiKey) return false;
