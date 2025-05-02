@@ -110,7 +110,7 @@ export function AskAIDrawer({
         try {
           const urlObj = new URL(url);
           title = urlObj.hostname.replace(/^www\./, '');
-        } catch (e) {
+        } catch {
           // If URL parsing fails, just use the URL as title
         }
         
@@ -169,7 +169,7 @@ export function AskAIDrawer({
             ) : editMode || !isMarkdown ? (
               <Textarea
                 value={aiDraft}
-                onChange={(e) => setAiDraft(e.target.value)}
+                onChange={({ target }) => setAiDraft(target.value)}
                 className="h-full min-h-[200px] text-sm bg-muted/50"
                 rows={10}
               />
