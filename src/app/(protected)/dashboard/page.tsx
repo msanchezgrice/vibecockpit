@@ -53,7 +53,7 @@ export default async function DashboardPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8 md:p-12 lg:p-24">
       <VercelConnectPrompt />
-      <div className="w-full max-w-4xl flex justify-between items-center mb-8">
+      <div className="w-full max-w-6xl flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Project Dashboard</h1>
         <div>
           {session ? (
@@ -95,7 +95,7 @@ function LoadingProjects() {
 async function ProjectList({ projectsPromise }: { projectsPromise: Promise<ProjectWithRelations[]> }) {
   const projects = await projectsPromise;
   return (
-    <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
       {projects.length > 0 ? (
         projects.map((project) => (
           <ProjectCard key={project.id} project={project} />

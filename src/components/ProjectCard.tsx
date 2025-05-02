@@ -91,16 +91,16 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   };
 
   return (
-    <Card className="w-full flex flex-col justify-between">
+    <Card className="w-full flex flex-col justify-between h-full">
       <div>
         <CardHeader>
           <div className="flex justify-between items-start">
-            <div className="flex-1 mr-2">
-              <CardTitle>{project.name}</CardTitle>
+            <div className="flex-1 mr-2 overflow-hidden">
+              <CardTitle className="truncate text-lg">{project.name}</CardTitle>
               {project.description && (
-                <CardDescription className="pt-1 break-words">{project.description}</CardDescription>
+                <CardDescription className="pt-1 break-words line-clamp-2 text-sm">{project.description}</CardDescription>
               )}
-              <CardDescription>Created: {formatDateTime(project.createdAt)}</CardDescription>
+              <CardDescription className="text-xs">Created: {formatDateTime(project.createdAt)}</CardDescription>
             </div>
             <EditProjectDialog project={project} />
           </div>
@@ -114,7 +114,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 onValueChange={handleStatusChange}
                 disabled={isUpdating}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] h-9 text-sm">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,7 +181,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             <DollarSign className="h-6 w-6 text-muted-foreground" />
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium leading-none">Est. Monthly Cost</p>
-              <p className="text-lg font-semibold">
+              <p className="text-base font-semibold">
                 {formatCurrency(latestCost as unknown as string | null)}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -193,9 +193,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             <BarChartBig className="h-6 w-6 text-muted-foreground" />
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium leading-none">Monthly Activity</p>
-              <p className="text-lg font-semibold">
+              <p className="text-base font-semibold">
                 {latestAnalytics?.visits ?? 'N/A'} visits
-                <span className="text-base font-normal text-muted-foreground mx-1">∙</span>
+                <span className="text-sm font-normal text-muted-foreground mx-1">∙</span>
                 {latestAnalytics?.signups ?? 'N/A'} sign-ups
               </p>
               <p className="text-xs text-muted-foreground">
@@ -220,7 +220,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                         <ProviderIcon provider={entry.provider} />
                     </div>
                     <div className="flex-1 space-y-0.5 overflow-hidden">
-                      <p className="text-sm text-muted-foreground truncate" title={formatChangelogMessage(entry)}>
+                      <p className="text-sm text-muted-foreground line-clamp-2" title={formatChangelogMessage(entry)}>
                         {formatChangelogMessage(entry)}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -234,7 +234,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           )}
         </CardContent>
       </div>
-      <CardFooter className="flex justify-between items-center">
+      <CardFooter className="flex justify-between items-center border-t mt-auto pt-4">
         <p className="text-xs text-muted-foreground">
           Last Activity: {formatDateTime(project.lastActivityAt)}
         </p>

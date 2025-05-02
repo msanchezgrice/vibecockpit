@@ -206,8 +206,8 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pr-6">
-          <DialogTitle>Edit Project: {projectName}</DialogTitle>
-          <DialogDescription>View details, make changes, and add notes.</DialogDescription>
+          <DialogTitle className="text-xl">Edit Project: {projectName}</DialogTitle>
+          <DialogDescription className="text-sm">View details, make changes, and add notes.</DialogDescription>
         </DialogHeader>
 
         {/* Hero Image Placeholder */}
@@ -219,40 +219,40 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
             <div className="grid gap-4 py-4">
                 {/* --- Edit Fields --- */} 
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor={`edit-name-${project.id}`} className="text-right">Name</Label>
-                    <Input id={`edit-name-${project.id}`} value={projectName} onChange={(e) => setProjectName(e.target.value)} className="col-span-3" required disabled={isSaving}/>
+                    <Label htmlFor={`edit-name-${project.id}`} className="text-right text-sm">Name</Label>
+                    <Input id={`edit-name-${project.id}`} value={projectName} onChange={(e) => setProjectName(e.target.value)} className="col-span-3 text-base h-10" required disabled={isSaving}/>
                 </div>
                  <div className="grid grid-cols-4 items-start gap-4"> {/* Align start for textarea */}
-                    <Label htmlFor={`edit-desc-${project.id}`} className="text-right pt-2">Description</Label>
-                    <Textarea id={`edit-desc-${project.id}`} placeholder="(Optional)..." value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" rows={3} disabled={isSaving}/>
+                    <Label htmlFor={`edit-desc-${project.id}`} className="text-right text-sm pt-2">Description</Label>
+                    <Textarea id={`edit-desc-${project.id}`} placeholder="(Optional)..." value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3 text-base min-h-[80px]" rows={3} disabled={isSaving}/>
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor={`edit-status-${project.id}`} className="text-right">Status</Label>
+                    <Label htmlFor={`edit-status-${project.id}`} className="text-right text-sm">Status</Label>
                      <Select value={currentStatus} onValueChange={(v) => setCurrentStatus(v as ProjectStatus)} disabled={isSaving}>
-                        <SelectTrigger className="col-span-3"><SelectValue/></SelectTrigger>
+                        <SelectTrigger className="col-span-3 h-10 text-base"><SelectValue/></SelectTrigger>
                         <SelectContent>
                             {Object.values(ProjectStatus).map((s) => (<SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>))}
                         </SelectContent>
                     </Select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor={`edit-feUrl-${project.id}`} className="text-right">Frontend URL</Label>
-                    <Input id={`edit-feUrl-${project.id}`} type="url" placeholder="https://... (Optional)" value={frontendUrl} onChange={(e) => setFrontendUrl(e.target.value)} className="col-span-3" disabled={isSaving}/>
+                    <Label htmlFor={`edit-feUrl-${project.id}`} className="text-right text-sm">Frontend URL</Label>
+                    <Input id={`edit-feUrl-${project.id}`} type="url" placeholder="https://... (Optional)" value={frontendUrl} onChange={(e) => setFrontendUrl(e.target.value)} className="col-span-3 text-base h-10" disabled={isSaving}/>
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor={`edit-vercelId-${project.id}`} className="text-right">Vercel ID</Label>
+                    <Label htmlFor={`edit-vercelId-${project.id}`} className="text-right text-sm">Vercel ID</Label>
                      {/* Simple Input, assumes user already connected account */}
-                    <Input id={`edit-vercelId-${project.id}`} placeholder="Enter Vercel Project ID (Optional)" className="col-span-3" value={vercelId} onChange={(e) => setVercelId(e.target.value)} disabled={isSaving}/> 
+                    <Input id={`edit-vercelId-${project.id}`} placeholder="Enter Vercel Project ID (Optional)" className="col-span-3 text-base h-10" value={vercelId} onChange={(e) => setVercelId(e.target.value)} disabled={isSaving}/> 
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">GitHub Repo</Label>
+                    <Label className="text-right text-sm">GitHub Repo</Label>
                      <Popover open={popoverOpenGitHub} onOpenChange={setPopoverOpenGitHub}>
                         <PopoverTrigger asChild>
                         <Button
                             variant="outline"
                             role="combobox"
                             aria-expanded={popoverOpenGitHub}
-                            className="col-span-3 justify-between"
+                            className="col-span-3 justify-between h-10 text-base"
                              onClick={!githubRepos.length ? fetchGitHubRepos : undefined}
                             disabled={loadingGitHub || isSaving}
                         >
@@ -263,7 +263,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] max-h-[--radix-popover-content-available-height] p-0">
                          <Command>
-                            <CommandInput placeholder="Search repo..." />
+                            <CommandInput placeholder="Search repo..." className="text-base" />
                             <CommandList>
                                 <CommandEmpty>No repositories found.</CommandEmpty>
                                 <CommandGroup>
@@ -275,6 +275,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                                         setGithubRepo(currentValue === githubRepo ? "" : currentValue)
                                         setPopoverOpenGitHub(false)
                                     }}
+                                    className="text-sm"
                                     >
                                      <Check
                                         className={cn(
@@ -307,7 +308,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                             value={newNoteText}
                             onChange={(e) => setNewNoteText(e.target.value)}
                             rows={3}
-                            className="mt-1 mb-2"
+                            className="mt-1 mb-2 text-base min-h-[80px]"
                             disabled={isAddingNote}
                         />
                         {noteError && <p className="text-xs text-red-500 mb-2">{noteError}</p>}
