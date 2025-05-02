@@ -21,6 +21,15 @@ const taskCreateSchema = z.object({
   ai_help_hint: z.string().optional().nullable(),
 });
 
+// Default checklist items for new projects
+const getDefaultChecklistItems = () => [
+  { title: "Nail Target User Personas & Value Proposition", is_complete: false },
+  { title: "Finalize MVP & Guided On-boarding Demo", is_complete: false },
+  { title: "Launch-Ready Landing Page & Waitlist Funnel", is_complete: false },
+  { title: "Recruit & Run Closed Beta with 25-50 Founders", is_complete: false },
+  { title: "Instrument Product Analytics & Feedback Loops", is_complete: false },
+];
+
 // Fallback data for when DB operations fail
 const getFallbackData = (projectId: string) => {
   return {
@@ -76,6 +85,52 @@ const getFallbackData = (projectId: string) => {
   };
 };
 
+// Initialize checklist items for a project
+async function initializeChecklistItems(projectId: string) {
+  console.log(`[API] Initializing checklist items for project ${projectId}`);
+  
+  try {
+    // First check if there are any existing items
+    const existingItems = await prisma.checklistItem.findMany({
+      where: { projectId },
+    });
+    
+    if (existingItems.length > 0) {
+      console.log(`[API] Project ${projectId} already has ${existingItems.length} checklist items, skipping initialization`);
+      return existingItems;
+    }
+    
+    // Get default items template
+    const defaultItems = getDefaultChecklistItems();
+    
+    // Create items with sequential order
+    const createdItems = [];
+    for (let i = 0; i < defaultItems.length; i++) {
+      const item = defaultItems[i];
+      try {
+        const createdItem = await prisma.checklistItem.create({
+          data: {
+            projectId,
+            title: item.title,
+            is_complete: item.is_complete,
+            order: i,
+          },
+        });
+        createdItems.push(createdItem);
+      } catch (createError) {
+        console.error(`[API] Error creating item ${i} for project ${projectId}:`, createError);
+        // Continue with next item even if one fails
+      }
+    }
+    
+    console.log(`[API] Created ${createdItems.length} checklist items for project ${projectId}`);
+    return createdItems;
+  } catch (error) {
+    console.error(`[API] Failed to initialize checklist items for project ${projectId}:`, error);
+    throw error;
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -104,7 +159,7 @@ export default async function handler(
 
       try {
         // Try to get checklist items from database
-        const checklistItems = await prisma.checklistItem.findMany({
+        let checklistItems = await prisma.checklistItem.findMany({
           where: {
             projectId: projectId,
           },
@@ -112,6 +167,16 @@ export default async function handler(
             order: 'asc', // Order by the 'order' field
           },
         });
+        
+        // If no items exist yet, initialize with defaults
+        if (checklistItems.length === 0) {
+          try {
+            checklistItems = await initializeChecklistItems(projectId);
+          } catch (initError) {
+            console.error(`[API] Failed to initialize checklist: ${initError}`);
+            // Continue with empty items if initialization fails
+          }
+        }
 
         const completedCount = checklistItems.filter(item => item.is_complete).length;
 

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import prisma from '@/lib/prisma'; // Import singleton instance
 
 // Mock AI responses for different task types
 const mockAIResponses: Record<string, string> = {
@@ -216,6 +217,38 @@ To get specific guidance for this task, please provide more details about:
 I can then generate tailored advice that will help you complete this task effectively.`
 };
 
+// Function to determine content type based on task title or ID
+function determineContentType(taskId: string, taskTitle?: string): string {
+  let contentType = 'default';
+  
+  // Use task title if available
+  const searchText = (taskTitle || taskId).toLowerCase();
+  
+  if (searchText.includes('persona') || searchText.includes('value prop')) {
+    contentType = 'personas';
+  } else if (searchText.includes('mvp') || searchText.includes('onboarding') || searchText.includes('demo')) {
+    contentType = 'onboarding';
+  } else if (searchText.includes('landing') || searchText.includes('waitlist') || searchText.includes('funnel')) {
+    contentType = 'landing';
+  } else if (searchText.includes('beta') || searchText.includes('recruit') || searchText.includes('founder')) {
+    contentType = 'beta';
+  } else if (searchText.includes('analytic') || searchText.includes('feedback') || searchText.includes('instrument')) {
+    contentType = 'analytics';
+  } else if (taskId.includes('fallback1')) {
+    contentType = 'personas';
+  } else if (taskId.includes('fallback2')) {
+    contentType = 'onboarding';
+  } else if (taskId.includes('fallback3')) {
+    contentType = 'landing';
+  } else if (taskId.includes('fallback4')) {
+    contentType = 'beta';
+  } else if (taskId.includes('fallback5')) {
+    contentType = 'analytics';
+  }
+  
+  return contentType;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -246,32 +279,39 @@ export default async function handler(
     try {
       console.log(`Generating AI draft for task ${taskId}`);
       
-      // Determine the type of task based on the ID or any identifier in it
-      let contentType = 'default';
+      let taskTitle: string | undefined;
       
-      if (taskId.includes('personas') || taskId.includes('value') || taskId.includes('fallback1')) {
-        contentType = 'personas';
-      } else if (taskId.includes('onboarding') || taskId.includes('demo') || taskId.includes('mvp') || taskId.includes('fallback2')) {
-        contentType = 'onboarding';
-      } else if (taskId.includes('landing') || taskId.includes('waitlist') || taskId.includes('fallback3')) {
-        contentType = 'landing';
-      } else if (taskId.includes('beta') || taskId.includes('recruit') || taskId.includes('founders') || taskId.includes('fallback4')) {
-        contentType = 'beta';
-      } else if (taskId.includes('analytics') || taskId.includes('feedback') || taskId.includes('fallback5')) {
-        contentType = 'analytics';
+      // Try to get the task title from the database if it's not a fallback/mock ID
+      if (!taskId.startsWith('fallback') && !taskId.startsWith('mock')) {
+        try {
+          const task = await prisma.checklistItem.findUnique({
+            where: { id: taskId },
+          });
+          
+          if (task) {
+            taskTitle = task.title;
+            console.log(`Found task in database: ${taskTitle}`);
+          }
+        } catch (dbError) {
+          console.warn(`Error fetching task from database:`, dbError);
+          // Continue with taskId-based determination if database fetch fails
+        }
       }
+      
+      // Determine content type based on task title or ID
+      const contentType = determineContentType(taskId, taskTitle);
+      console.log(`Using content type: ${contentType} for task: ${taskTitle || taskId}`);
       
       // Get the appropriate response content
       const aiContent = mockAIResponses[contentType] || mockAIResponses.default;
       
-      // Return success with the AI content - we don't need to update the database
-      // since the display component will handle showing the content
+      // Return success with the AI content
       return res.status(200).json({
         id: taskId,
         ai_help_hint: aiContent,
         success: true,
       });
-      
+
     } catch (error) {
       console.error(`Failed to generate AI draft for task ${taskId}:`, error);
       res.status(500).json({ 
