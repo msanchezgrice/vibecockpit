@@ -12,6 +12,15 @@ const querySchema = z.object({
   projectId: z.string().min(1, { message: "Project ID cannot be empty" }), // Relaxed validation
 });
 
+// Schema for task creation
+const taskCreateSchema = z.object({
+  projectId: z.string().min(1, { message: "Project ID cannot be empty" }),
+  title: z.string().min(1, { message: "Task title cannot be empty" }),
+  is_complete: z.boolean().default(false),
+  is_persistent: z.boolean().default(false), // We'll handle this in metadata
+  ai_help_hint: z.string().optional().nullable(),
+});
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -56,8 +65,52 @@ export default async function handler(
       console.error('Error fetching checklist items:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
+  } else if (req.method === 'POST') {
+    try {
+      // Validate request body
+      const validationResult = taskCreateSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: 'Invalid task data', errors: validationResult.error.errors });
+      }
+      
+      const { projectId, title, is_complete, is_persistent, ai_help_hint } = validationResult.data;
+      
+      // Get the highest order value to append the new task at the end
+      const highestOrderTask = await prisma.checklistItem.findFirst({
+        where: { projectId },
+        orderBy: { order: 'desc' },
+      });
+      
+      const newOrder = highestOrderTask ? highestOrderTask.order + 1 : 0;
+      
+      // Add a prefix to the title for persistent tasks (can be filtered in UI)
+      const taskTitle = is_persistent ? `[USER] ${title}` : title;
+      
+      // Create the new task
+      const newTask = await prisma.checklistItem.create({
+        data: {
+          projectId,
+          title: taskTitle,
+          is_complete,
+          ai_help_hint: ai_help_hint || null,
+          order: newOrder,
+        },
+      });
+      
+      // Add the is_persistent flag to the response for client-side usage
+      const responseTask = {
+        ...newTask,
+        is_persistent,
+      };
+      
+      res.status(201).json(responseTask);
+      
+    } catch (error) {
+      console.error('Error creating checklist item:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   } else {
-    res.setHeader('Allow', ['GET']);
+    res.setHeader('Allow', ['GET', 'POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 } 

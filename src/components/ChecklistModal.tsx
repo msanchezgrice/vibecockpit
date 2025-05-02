@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 // import { useRouter } from 'next/navigation'; // Removed unused import
-import { useChecklist } from '@/hooks/useChecklist';
+import { useChecklist, ChecklistTask } from '@/hooks/useChecklist';
 import {
   Dialog, DialogContent, DialogDescription, 
   DialogHeader, DialogTitle, DialogClose, DialogFooter
@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Loader2 } from 'lucide-react';
-import { AskAIDrawer } from './AskAIDrawer';
+import { Loader2, Plus } from 'lucide-react';
+import { AskAIDialog } from './AskAIDialog';
+import { Input } from "@/components/ui/input";
 
 interface ChecklistModalProps {
   projectId: string;
@@ -25,12 +26,27 @@ const calculateProgress = (completed: number, total: number): number => {
   return total > 0 ? (completed / total) * 100 : 0;
 };
 
+// Helper function to check if a task is persistent
+const isTaskPersistent = (task: ChecklistTask): boolean => {
+  return task.title.startsWith('[USER]') || (task as any).is_persistent === true;
+};
+
+// Helper function to get the display title (without prefix)
+const getDisplayTitle = (task: ChecklistTask): string => {
+  if (task.title.startsWith('[USER]')) {
+    return task.title.substring(7); // Remove [USER] prefix for display
+  }
+  return task.title;
+};
+
 export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistModalProps) {
   // const router = useRouter(); // Removed unused router
   // Get setData from the hook, remove unused refetch for now
   const { data, isLoading, error, setData } = useChecklist(projectId); 
   const [isUpdatingTask, setIsUpdatingTask] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
+  const [proposedTask, setProposedTask] = useState('');
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   // Handle state internally based on props
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -66,7 +82,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
         const updatedItem = await response.json(); 
         console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, updatedItem); 
         
-        // --- Manual State Update --- 
+        // Manual State Update - ensure persistent task status is preserved
         setData(currentData => {
            if (!currentData) return null; // Should not happen if toggle is possible
            
@@ -74,9 +90,16 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
            const taskIndex = currentData.tasks.findIndex(t => t.id === taskId);
            if (taskIndex === -1) return currentData; // Task not found?
            
+           // Preserve is_persistent flag if it exists
+           const isPersistent = isTaskPersistent(currentData.tasks[taskIndex]);
+           const updatedItemWithMeta = {
+             ...updatedItem,
+             is_persistent: isPersistent
+           };
+           
            const newTasks = [
               ...currentData.tasks.slice(0, taskIndex),
-              updatedItem, // Insert the updated item from API response
+              updatedItemWithMeta, // Insert the updated item with metadata
               ...currentData.tasks.slice(taskIndex + 1),
            ];
 
@@ -88,13 +111,8 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
               ...currentData,
               tasks: newTasks,
               completed_tasks: newCompletedCount,
-              // total_tasks presumably doesn't change on toggle
            };
         });
-        // --- End Manual State Update ---
-
-        // refetch(); // No longer strictly needed for immediate UI update, but can keep for consistency
-
       } else {
         // Try to parse error message if not ok
         let errorResult = { message: 'Failed to toggle task' };
@@ -134,6 +152,51 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
     }
   };
 
+  const handleAddTask = async () => {
+    if (!proposedTask.trim()) return;
+    
+    setIsAddingTask(true);
+    try {
+      const response = await fetch('/api/checklist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          projectId, 
+          title: proposedTask,
+          is_complete: false,
+          is_persistent: true // Mark as a user-created persistent task
+        }),
+      });
+      
+      if (response.ok) {
+        const newTask = await response.json();
+        
+        // Update local state
+        setData(currentData => {
+          if (!currentData) return null;
+          
+          const newTasks = [...currentData.tasks, newTask];
+          
+          return {
+            ...currentData,
+            tasks: newTasks,
+            total_tasks: newTasks.length,
+            // completed_tasks stays the same since new task is not complete
+          };
+        });
+        
+        // Clear input
+        setProposedTask('');
+      } else {
+        console.error('Failed to add task:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error adding task:', error);
+    } finally {
+      setIsAddingTask(false);
+    }
+  };
+
   return (
     <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col">
@@ -158,6 +221,29 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
           </div>
         )}
         
+        {/* Proposed Tasks Section */}
+        <div className="mb-4 mt-2">
+          <h3 className="text-sm font-medium mb-2">Proposed tasks</h3>
+          <div className="flex space-x-2">
+            <Input
+              placeholder="Add a new task..."
+              value={proposedTask}
+              onChange={(e) => setProposedTask(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
+              className="text-sm"
+            />
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={handleAddTask}
+              disabled={isAddingTask || !proposedTask.trim()}
+            >
+              {isAddingTask ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+              Add task to list
+            </Button>
+          </div>
+        </div>
+        
         {/* Scrollable Task List */}
         <ScrollArea className="flex-grow border rounded-md p-1 mb-4"> 
           <div className="p-3">
@@ -179,16 +265,19 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                                 disabled={isUpdatingTask === task.id}
                              />
                              <label htmlFor={`task-${task.id}`} className={`text-sm ${task.is_complete ? 'text-muted-foreground line-through' : ''}`}>
-                                {task.title}
+                                {getDisplayTitle(task)}
                              </label>
                              {task.ai_help_hint && (
                                 <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs px-1.5 py-0.5">AI</Badge>
                              )}
+                             {isTaskPersistent(task) && (
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-xs px-1.5 py-0.5">User</Badge>
+                             )}
                             </div>
                             {isUpdatingTask === task.id && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>}
-                            <AskAIDrawer 
+                            <AskAIDialog 
                                 taskId={task.id} 
-                                taskTitle={task.title} 
+                                taskTitle={getDisplayTitle(task)} 
                                 initialHint={task.ai_help_hint} 
                                 onAccept={handleAcceptAIDraft} 
                             />
