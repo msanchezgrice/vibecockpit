@@ -1,18 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import prisma from '@/lib/prisma'; // Import singleton instance
-import { Prisma } from '@/generated/prisma'; // Keep type import if needed
-// import { z, ZodError } from 'zod'; // Removed unused Zod imports
-import { OpenAI } from 'openai'; // Ensure OpenAI is imported
-// import { PrismaClient, Prisma } from '@/generated/prisma'; // Remove direct import
-
-// const prisma = new PrismaClient(); // Remove direct instantiation
-
-// Initialize OpenAI Client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import prisma from '@/lib/prisma';
+import { Prisma } from '@/generated/prisma';
+import { openai } from '@/lib/openai'; // Import the shared OpenAI client
+import OpenAI from 'openai';
 
 // --- OpenAI Tool Schemas --- 
 const generateCopySchema = {
@@ -66,7 +58,7 @@ export default async function handler(
       // 1. Fetch Task and Project details
       const checklistItem = await prisma.checklistItem.findUnique({
         where: { id: checklistItemId },
-        include: { project: { select: { name: true, description: true } } }, // Include project context
+        include: { project: { select: { name: true, description: true } } },
       });
 
       if (!checklistItem) {
@@ -77,20 +69,21 @@ export default async function handler(
       }
 
       // 2. Build Prompt
-      // Simple prompt example, can be refined
       const prompt = `Task: "${checklistItem.title}"
 Project: "${checklistItem.project.name}"
 Project Description: "${checklistItem.project.description || 'N/A'}"
 
 Based on the project and task, generate either suitable marketing copy OR a DALL-E-3 image prompt. Choose the most appropriate tool.`;
 
-      // 3. Call OpenAI
+      // 3. Call OpenAI using Chat Completions API (will be updated to Responses API in a future update)
       console.log(`[AI Task ${checklistItemId}] Calling OpenAI for task: ${checklistItem.title}`);
+      
+      // For now, we're using the Chat Completions API which is known to work
       const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo', // Use appropriate model ('o3' alias if configured, else gpt-3.5/4)
+        model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
         tools: [generateCopySchema, generateImageSchema],
-        tool_choice: "auto", // Let the model choose the tool
+        tool_choice: "auto",
       });
 
       // 4. Process Response & 5. Update DB
@@ -106,27 +99,24 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
         console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
 
         if (functionName === 'generate_copy' && functionArgs.copy) {
-          updateData.ai_help_hint = functionArgs.copy; // Save copy to hint field
-          updateData.ai_image_prompt = null; // Clear image prompt
+          updateData.ai_help_hint = functionArgs.copy;
+          updateData.ai_image_prompt = null;
           generatedContentType = 'copy';
         } else if (functionName === 'generate_image_prompt' && functionArgs.image_prompt) {
-          updateData.ai_image_prompt = functionArgs.image_prompt; // Save image prompt
-          updateData.ai_help_hint = null; // Clear text hint
+          updateData.ai_image_prompt = functionArgs.image_prompt;
+          updateData.ai_help_hint = null;
           generatedContentType = 'image_prompt';
         } else {
-           console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
-           // Fallback to saving the raw response text if needed?
-           // updateData.ai_help_hint = choice.message.content || "AI response format unclear.";
+          console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
         }
       } else if (choice.message?.content) {
-        // Handle cases where the model responds directly without a tool call
-         console.log(`[AI Task ${checklistItemId}] OpenAI responded directly.`);
-         updateData.ai_help_hint = choice.message.content;
-         updateData.ai_image_prompt = null;
-         generatedContentType = 'direct_content';
+        console.log(`[AI Task ${checklistItemId}] OpenAI responded directly.`);
+        updateData.ai_help_hint = choice.message.content;
+        updateData.ai_image_prompt = null;
+        generatedContentType = 'direct_content';
       } else {
-         console.error(`[AI Task ${checklistItemId}] Unexpected OpenAI response structure.`);
-         throw new Error("Received an unexpected response structure from AI.");
+        console.error(`[AI Task ${checklistItemId}] Unexpected OpenAI response structure.`);
+        throw new Error("Received an unexpected response structure from AI.");
       }
 
       if (Object.keys(updateData).length > 0) {
@@ -138,7 +128,6 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
          res.status(200).json(updatedItem);
       } else {
          console.log(`[AI Task ${checklistItemId}] No update data generated.`);
-         // Return original item or an appropriate message
          res.status(200).json(checklistItem);
       }
 
