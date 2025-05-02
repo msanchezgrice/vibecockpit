@@ -64,6 +64,18 @@ const webResearchSchema = {
     }
 };
 
+// Define interfaces for API responses
+interface Recommendation {
+  title: string;
+  description: string;
+  source?: string;
+}
+
+interface _WebResearchResponse {
+  recommendations: Recommendation[];
+  summary: string;
+}
+
 // Define response types for better type checking
 interface ResponsesApiResponse {
   tool_calls?: Array<{ function: { name: string; arguments: string } }>;
@@ -259,7 +271,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
             
             let formattedText = `## Summary\n${summary}\n\n## Recommendations\n`;
             
-            recommendations.forEach((rec: any, index: number) => {
+            recommendations.forEach((rec: Recommendation, index: number) => {
               formattedText += `\n### ${index + 1}. ${rec.title}\n${rec.description}\n`;
               if (rec.source) {
                 formattedText += `Source: ${rec.source}\n`;
@@ -303,7 +315,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
             
             let formattedText = `## Summary\n${summary}\n\n## Recommendations\n`;
             
-            recommendations.forEach((rec: any, index: number) => {
+            recommendations.forEach((rec: Recommendation, index: number) => {
               formattedText += `\n### ${index + 1}. ${rec.title}\n${rec.description}\n`;
               if (rec.source) {
                 formattedText += `Source: ${rec.source}\n`;
