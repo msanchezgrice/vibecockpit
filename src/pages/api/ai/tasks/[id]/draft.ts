@@ -4,6 +4,7 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@/generated/prisma';
 import { openai, supportsResponsesApi, callResponsesApi } from '@/lib/openai'; // Import the helper functions
+import { ChatCompletion } from 'openai/resources';
 
 // --- OpenAI Tool Schemas --- 
 const generateCopySchema = {
@@ -35,7 +36,19 @@ const generateImageSchema = {
         }
     }
 };
-// -----------------------------
+
+// Define response types for better type checking
+interface ResponsesApiResponse {
+  tool_calls?: Array<{ function: { name: string; arguments: string } }>;
+  output_text?: string;
+}
+
+// Type guard to check if the response is from Responses API
+function isResponsesApiFormat(obj: unknown): obj is ResponsesApiResponse {
+  if (!obj || typeof obj !== 'object') return false;
+  const response = obj as Record<string, unknown>;
+  return ('tool_calls' in response || 'output_text' in response);
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -77,8 +90,7 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
       // 3. Call OpenAI using Responses API (with fallback to Chat Completions)
       console.log(`[AI Task ${checklistItemId}] Calling OpenAI for task: ${checklistItem.title}`);
       
-      let response;
-      let isResponsesApi = false;
+      let response: ResponsesApiResponse | ChatCompletion;
       
       try {
         if (supportsResponsesApi()) {
@@ -92,8 +104,6 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
             toolChoice: "auto",
             instructions: "You are a skilled marketer and creative director. Generate content that is concise, compelling, and aligned with the project goals."
           });
-          
-          isResponsesApi = true;
         } else {
           throw new Error('Responses API not supported');
         }
@@ -121,8 +131,9 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
       const updateData: Prisma.ChecklistItemUpdateInput = {};
       let generatedContentType: string | null = null;
 
-      if (isResponsesApi) {
-        // Parse Responses API format
+      // Use our type guard to determine the response format
+      if (isResponsesApiFormat(response)) {
+        // Process Responses API format
         if (response.tool_calls && response.tool_calls.length > 0) {
           const toolCall = response.tool_calls[0];
           const functionName = toolCall.function.name;

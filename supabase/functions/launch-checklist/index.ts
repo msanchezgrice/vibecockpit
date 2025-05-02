@@ -29,6 +29,14 @@ function supportsResponsesApi() {
   return typeof openai?.responses !== 'undefined';
 }
 
+// Type guard to check if the response is from Responses API
+function isResponsesApiFormat(response: any): response is { 
+  tool_calls?: Array<{ function: { name: string; arguments: string } }>;
+  output_text?: string;
+} {
+  return 'tool_calls' in response || 'output_text' in response;
+}
+
 // Safe wrapper to call the Responses API
 async function callResponsesApi(options) {
   if (!supportsResponsesApi()) {
@@ -163,8 +171,8 @@ Based on your expertise and the project details, analyze the situation and recom
           toolChoice: { type: 'function', function: { name: 'recommend_next_tasks' } },
         });
         
-        // Process Responses API result
-        if (response.tool_calls && response.tool_calls.length > 0) {
+        // Process Responses API result using the type guard
+        if (isResponsesApiFormat(response) && response.tool_calls && response.tool_calls.length > 0) {
           const toolCall = response.tool_calls[0];
           const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
           
