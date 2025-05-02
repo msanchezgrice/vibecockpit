@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 export function HeroSection() {
   return (
@@ -33,14 +34,12 @@ export function HeroSection() {
             </div>
           </div>
           <div className="relative h-[350px] lg:h-[500px] rounded-xl overflow-hidden border border-gray-200 shadow-lg">
-            {/* Placeholder for hero image - would be replaced with actual screenshot */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <div className="text-gray-400 text-center px-4">
-                <div className="text-6xl mb-4">🤖💻</div>
-                <p>AI cofounder analyzing your project activity</p>
-                <p className="text-xs mt-2">(Screenshot will be added here)</p>
-              </div>
-            </div>
+            <Image
+              src="/screenshots/dashboard-desktop.png"
+              alt="VirtualCofounder.ai dashboard overview"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
       </div>

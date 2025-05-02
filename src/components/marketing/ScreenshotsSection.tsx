@@ -3,33 +3,39 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
-// Placeholder screenshots data
+// Screenshots data with images
 const screenshots = [
   {
     id: 1,
     title: "AI Task Recommendations",
-    description: "Personalized suggestions with context-aware priorities"
+    description: "Personalized suggestions with context-aware priorities",
+    img: "/screenshots/task-recommendations.png"
   },
   {
     id: 2,
     title: "Project Dashboard",
-    description: "A unified view of your GitHub and Vercel metrics"
+    description: "A unified view of your GitHub and Vercel metrics",
+    img: "/screenshots/dashboard-desktop.png"
   },
   {
     id: 3,
     title: "Launch Checklist",
-    description: "Step-by-step guidance with AI-researched best practices"
+    description: "Step-by-step guidance with AI-researched best practices",
+    img: "/screenshots/launch-checklist.png"
   },
   {
     id: 4,
     title: "Ask AI Feature",
-    description: "Get instant answers with web-sourced research for your specific tasks"
+    description: "Get instant answers with web-sourced research for your specific tasks",
+    img: "/screenshots/ai-chat.png"
   },
   {
     id: 5,
     title: "Progress Tracking",
-    description: "Visualize your project's journey toward launch"
+    description: "Visualize your project's journey toward launch",
+    img: "/screenshots/integrations.png"
   }
 ];
 
@@ -92,18 +98,17 @@ export function ScreenshotsSection() {
               ref={scrollRef}
               className="h-[500px] bg-gray-100 flex items-center justify-center"
             >
-              <div className="text-center p-6">
+              <div className="text-center p-6 w-full">
                 <h3 className="text-xl font-bold mb-2">{screenshots[activeIndex].title}</h3>
                 <p className="text-gray-500 mb-8">{screenshots[activeIndex].description}</p>
                 <div className="flex items-center justify-center">
                   <div className="relative w-full max-w-3xl aspect-video bg-gray-200 rounded-md overflow-hidden">
-                    {/* Placeholder for actual screenshot */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-gray-400">
-                        <p className="text-lg">Screenshot {activeIndex + 1}</p>
-                        <p className="text-sm mt-2">(Actual product screenshots will be placed here)</p>
-                      </div>
-                    </div>
+                    <Image
+                      src={screenshots[activeIndex].img}
+                      alt={screenshots[activeIndex].title}
+                      fill
+                      className="object-contain"
+                    />
                   </div>
                 </div>
               </div>
