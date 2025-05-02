@@ -24,6 +24,11 @@ try {
   // throw error;
 }
 
+// Function to check if the Responses API is supported
+function supportsResponsesApi() {
+  return typeof openai?.responses !== 'undefined';
+}
+
 // Define the expected OpenAI function call schema for task recommendation
 const fnSchema = {
   type: 'function' as const, // Add type assertion
@@ -118,39 +123,88 @@ Based on your expertise and the project details, analyze the situation and recom
     `.trim();
     // --- End Construct New OpenAI Prompt ---
 
+    let tasks: RecommendedTaskData[] = [];
 
-    // 1. Call OpenAI with new prompt and schema
-    console.log("launch-checklist: Sending request to OpenAI for", project_id);
-    const rsp = await openai.chat.completions.create({
-      model: 'o3-2025-04-16', // Updated model to o3-2025-04-16
-      messages: [
-        { role: 'system', content: systemPrompt }, // Added system prompt for persona
-        { role: 'user', content: userPrompt } // Updated user prompt
-      ],
-      tools: [fnSchema], // Use the updated schema
-      tool_choice: { type:'function', function: { name: 'recommend_next_tasks' } }, // Use the new function name
-    });
+    // Check if Responses API is supported
+    if (supportsResponsesApi()) {
+      try {
+        console.log("launch-checklist: Using Responses API");
+        
+        // 1. Call OpenAI with Responses API
+        const response = await openai.chat.completions.create({
+          model: 'o3', // Updated model name for Responses API
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          tools: [fnSchema],
+          tool_choice: { type: 'function', function: { name: 'recommend_next_tasks' } },
+        });
 
-    // 2. Parse Response
-    const choice = rsp.choices[0];
-    const functionCall = choice.message?.tool_calls?.[0]?.function;
+        // 2. Parse Response (keep using the existing format for now)
+        const choice = response.choices[0];
+        const functionCall = choice.message?.tool_calls?.[0]?.function;
 
-    if (!functionCall?.arguments) {
-      console.error("OpenAI response missing function call arguments:", rsp);
-      throw new Error('Failed to parse recommendations from OpenAI response.');
+        if (!functionCall?.arguments) {
+          console.error("OpenAI response missing function call arguments:", response);
+          throw new Error('Failed to parse recommendations from OpenAI response.');
+        }
+
+        console.log("launch-checklist: Raw OpenAI arguments for", project_id, ":", functionCall.arguments);
+        let parsedTasks: { tasks: RecommendedTaskData[] };
+        try {
+          parsedTasks = JSON.parse(functionCall.arguments);
+        } catch (parseError) {
+          console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
+          throw new Error("Invalid JSON format received from OpenAI.");
+        }
+
+        tasks = parsedTasks.tasks;
+
+      } catch (error) {
+        console.warn("launch-checklist: Error using Responses API, falling back to Chat Completions:", error);
+        // Let it fall through to the fallback implementation
+      }
     }
 
-    console.log("launch-checklist: Raw OpenAI arguments for", project_id, ":", functionCall.arguments);
-    let parsedTasks: { tasks: RecommendedTaskData[] }; // Use updated interface
-    try {
-       parsedTasks = JSON.parse(functionCall.arguments);
-    } catch (parseError) {
-        console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
-        throw new Error("Invalid JSON format received from OpenAI.");
+    // Fallback to Chat Completions API if Responses API failed or is not available
+    if (tasks.length === 0) {
+      console.log("launch-checklist: Using Chat Completions API");
+      
+      // 1. Call OpenAI with new prompt and schema
+      console.log("launch-checklist: Sending request to OpenAI for", project_id);
+      const rsp = await openai.chat.completions.create({
+        model: 'o3-2025-04-16', // Updated model to o3-2025-04-16
+        messages: [
+          { role: 'system', content: systemPrompt }, 
+          { role: 'user', content: userPrompt }
+        ],
+        tools: [fnSchema],
+        tool_choice: { type:'function', function: { name: 'recommend_next_tasks' } },
+      });
+
+      // 2. Parse Response
+      const choice = rsp.choices[0];
+      const functionCall = choice.message?.tool_calls?.[0]?.function;
+
+      if (!functionCall?.arguments) {
+        console.error("OpenAI response missing function call arguments:", rsp);
+        throw new Error('Failed to parse recommendations from OpenAI response.');
+      }
+
+      console.log("launch-checklist: Raw OpenAI arguments for", project_id, ":", functionCall.arguments);
+      let parsedTasks: { tasks: RecommendedTaskData[] };
+      try {
+         parsedTasks = JSON.parse(functionCall.arguments);
+      } catch (parseError) {
+          console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
+          throw new Error("Invalid JSON format received from OpenAI.");
+      }
+
+      tasks = parsedTasks.tasks;
     }
 
-    const tasks = parsedTasks.tasks;
-    console.log(`launch-checklist: Received ${tasks?.length ?? 0} recommended tasks for ${project_id}.`);
+    console.log(`launch-checklist: Received ${tasks.length} recommended tasks for ${project_id}.`);
 
     if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
         throw new Error("No valid tasks received from OpenAI.");
