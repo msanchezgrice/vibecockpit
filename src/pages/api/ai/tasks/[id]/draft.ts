@@ -4,7 +4,6 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@/generated/prisma';
 import { openai } from '@/lib/openai'; // Import the shared OpenAI client
-import OpenAI from 'openai';
 
 // --- OpenAI Tool Schemas --- 
 const generateCopySchema = {
