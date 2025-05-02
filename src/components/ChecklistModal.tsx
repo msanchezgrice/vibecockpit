@@ -21,6 +21,11 @@ interface ChecklistModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Extended interface to include is_persistent property
+interface ExtendedChecklistTask extends ChecklistTask {
+  is_persistent?: boolean;
+}
+
 // Function to calculate progress (can be moved to utils)
 const calculateProgress = (completed: number, total: number): number => {
   return total > 0 ? (completed / total) * 100 : 0;
@@ -28,7 +33,7 @@ const calculateProgress = (completed: number, total: number): number => {
 
 // Helper function to check if a task is persistent
 const isTaskPersistent = (task: ChecklistTask): boolean => {
-  return task.title.startsWith('[USER]') || (task as any).is_persistent === true;
+  return task.title.startsWith('[USER]') || (task as ExtendedChecklistTask).is_persistent === true;
 };
 
 // Helper function to get the display title (without prefix)
@@ -92,7 +97,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
            
            // Preserve is_persistent flag if it exists
            const isPersistent = isTaskPersistent(currentData.tasks[taskIndex]);
-           const updatedItemWithMeta = {
+           const updatedItemWithMeta: ExtendedChecklistTask = {
              ...updatedItem,
              is_persistent: isPersistent
            };
