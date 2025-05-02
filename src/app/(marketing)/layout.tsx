@@ -1,6 +1,8 @@
 import React from 'react';
+import { Header } from '@/components/marketing/Header';
+import { Footer } from '@/components/marketing/Footer';
 
-// Minimalist layout for marketing pages
+// Layout for marketing pages
 export default function MarketingLayout({
   children,
 }: {
@@ -8,11 +10,11 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Optional: Add a very simple header specific to marketing later */}
+      <Header />
       <main className="flex-grow">
         {children}
       </main>
-      {/* Optional: Add a very simple footer specific to marketing later */}
+      <Footer />
     </div>
   );
 } 
