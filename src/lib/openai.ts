@@ -19,6 +19,36 @@ export function supportsResponsesApi() {
   return typeof openai.responses !== 'undefined';
 }
 
+// Helper function to safely call the Responses API
+export async function callResponsesApi(options: {
+  input: string;
+  instructions?: string;
+  tools?: any[];
+  toolChoice?: any;
+  model?: string;
+}) {
+  if (!supportsResponsesApi()) {
+    throw new Error('Responses API is not supported in this version of the OpenAI SDK');
+  }
+  
+  try {
+    // We need to use any type here to bypass TypeScript's strict checking
+    // This is a temporary solution until the types are properly defined
+    const api = openai.responses as any;
+    
+    return await api.create({
+      model: options.model || 'o3',
+      input: options.input,
+      instructions: options.instructions,
+      tools: options.tools,
+      tool_choice: options.toolChoice
+    });
+  } catch (error) {
+    console.error('Error calling Responses API:', error);
+    throw error;
+  }
+}
+
 // Optional: Add a simple function to test connectivity (can be removed later)
 export async function testOpenAIConnection() {
   if (!openai.apiKey) return false;

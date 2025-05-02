@@ -29,6 +29,29 @@ function supportsResponsesApi() {
   return typeof openai?.responses !== 'undefined';
 }
 
+// Safe wrapper to call the Responses API
+async function callResponsesApi(options) {
+  if (!supportsResponsesApi()) {
+    throw new Error('Responses API not supported');
+  }
+  
+  try {
+    // Use any type to bypass type checking
+    const api = openai.responses;
+    
+    return await api.create({
+      model: options.model || 'o3',
+      input: options.input,
+      instructions: options.instructions,
+      tools: options.tools,
+      tool_choice: options.toolChoice
+    });
+  } catch (error) {
+    console.error('Error calling Responses API:', error);
+    throw error;
+  }
+}
+
 // Define the expected OpenAI function call schema for task recommendation
 const fnSchema = {
   type: 'function' as const, // Add type assertion
@@ -124,54 +147,45 @@ Based on your expertise and the project details, analyze the situation and recom
     // --- End Construct New OpenAI Prompt ---
 
     let tasks: RecommendedTaskData[] = [];
+    let isResponsesApi = false;
 
-    // Check if Responses API is supported
-    if (supportsResponsesApi()) {
-      try {
+    // Try to use Responses API first
+    try {
+      if (supportsResponsesApi()) {
         console.log("launch-checklist: Using Responses API");
         
-        // 1. Call OpenAI with Responses API
-        const response = await openai.chat.completions.create({
-          model: 'o3', // Updated model name for Responses API
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
+        // Call Responses API
+        const response = await callResponsesApi({
+          model: 'o3',
+          input: userPrompt,
+          instructions: systemPrompt,
           tools: [fnSchema],
-          tool_choice: { type: 'function', function: { name: 'recommend_next_tasks' } },
+          toolChoice: { type: 'function', function: { name: 'recommend_next_tasks' } },
         });
-
-        // 2. Parse Response (keep using the existing format for now)
-        const choice = response.choices[0];
-        const functionCall = choice.message?.tool_calls?.[0]?.function;
-
-        if (!functionCall?.arguments) {
-          console.error("OpenAI response missing function call arguments:", response);
-          throw new Error('Failed to parse recommendations from OpenAI response.');
+        
+        // Process Responses API result
+        if (response.tool_calls && response.tool_calls.length > 0) {
+          const toolCall = response.tool_calls[0];
+          const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+          
+          console.log("launch-checklist: Raw OpenAI arguments from Responses API for", project_id, ":", functionArgs);
+          
+          if (functionArgs.tasks && Array.isArray(functionArgs.tasks)) {
+            tasks = functionArgs.tasks;
+            isResponsesApi = true;
+          }
         }
-
-        console.log("launch-checklist: Raw OpenAI arguments for", project_id, ":", functionCall.arguments);
-        let parsedTasks: { tasks: RecommendedTaskData[] };
-        try {
-          parsedTasks = JSON.parse(functionCall.arguments);
-        } catch (parseError) {
-          console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
-          throw new Error("Invalid JSON format received from OpenAI.");
-        }
-
-        tasks = parsedTasks.tasks;
-
-      } catch (error) {
-        console.warn("launch-checklist: Error using Responses API, falling back to Chat Completions:", error);
-        // Let it fall through to the fallback implementation
       }
+    } catch (apiError) {
+      const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
+      console.warn("launch-checklist: Error using Responses API, falling back to Chat Completions:", errorMessage);
     }
 
     // Fallback to Chat Completions API if Responses API failed or is not available
     if (tasks.length === 0) {
       console.log("launch-checklist: Using Chat Completions API");
       
-      // 1. Call OpenAI with new prompt and schema
+      // Call OpenAI with new prompt and schema
       console.log("launch-checklist: Sending request to OpenAI for", project_id);
       const rsp = await openai.chat.completions.create({
         model: 'o3-2025-04-16', // Updated model to o3-2025-04-16
@@ -183,7 +197,7 @@ Based on your expertise and the project details, analyze the situation and recom
         tool_choice: { type:'function', function: { name: 'recommend_next_tasks' } },
       });
 
-      // 2. Parse Response
+      // Parse Response
       const choice = rsp.choices[0];
       const functionCall = choice.message?.tool_calls?.[0]?.function;
 
@@ -192,7 +206,7 @@ Based on your expertise and the project details, analyze the situation and recom
         throw new Error('Failed to parse recommendations from OpenAI response.');
       }
 
-      console.log("launch-checklist: Raw OpenAI arguments for", project_id, ":", functionCall.arguments);
+      console.log("launch-checklist: Raw OpenAI arguments from Chat Completions for", project_id, ":", functionCall.arguments);
       let parsedTasks: { tasks: RecommendedTaskData[] };
       try {
          parsedTasks = JSON.parse(functionCall.arguments);
@@ -204,7 +218,7 @@ Based on your expertise and the project details, analyze the situation and recom
       tasks = parsedTasks.tasks;
     }
 
-    console.log(`launch-checklist: Received ${tasks.length} recommended tasks for ${project_id}.`);
+    console.log(`launch-checklist: Received ${tasks.length} recommended tasks for ${project_id} (using ${isResponsesApi ? 'Responses API' : 'Chat Completions API'}).`);
 
     if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
         throw new Error("No valid tasks received from OpenAI.");
@@ -234,7 +248,11 @@ Based on your expertise and the project details, analyze the situation and recom
     console.log(`launch-checklist: Successfully inserted ${insertedData?.length ?? 0} tasks for ${project_id}`);
 
     // Return success response
-    return new Response(JSON.stringify({ success: true, count: insertedData?.length ?? 0 }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      count: insertedData?.length ?? 0,
+      api_used: isResponsesApi ? 'responses' : 'chat_completions'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
