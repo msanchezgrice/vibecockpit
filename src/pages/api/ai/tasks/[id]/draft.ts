@@ -1,11 +1,27 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import prisma from '@/lib/prisma'; // Import singleton instance
+import prisma from '@/lib/prisma';
+import { OpenAI } from 'openai';
 
-// Mock AI responses for different task types
+// Define type for project details
+interface ProjectDetails {
+  id: string;
+  name: string;
+  description?: string | null;
+  frontendUrl?: string | null;
+  githubRepo?: string | null;
+  vercelProjectId?: string | null;
+  status?: string;
+}
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Fallback responses in case API fails
 const mockAIResponses: Record<string, string> = {
-  // First task: User Personas & Value Proposition
   "personas": `# Target User Personas
 
 1. **Early-Stage Startup Founders (Primary)**
@@ -35,7 +51,7 @@ const mockAIResponses: Record<string, string> = {
 - **Guidance**: Built-in checklists and AI recommendations
 - **Time Savings**: Automate repetitive project management tasks`,
 
-  // Second task: MVP & Onboarding
+  // Other fallback responses remain unchanged...
   "onboarding": `# MVP Features (Prioritized)
 
 1. **Project Dashboard**
@@ -78,7 +94,6 @@ const mockAIResponses: Record<string, string> = {
    - Share onboarding completion with team
    - Suggested next steps based on project type`,
 
-  // Third task: Landing Page & Waitlist
   "landing": `# Landing Page Structure
 
 1. **Hero Section**
@@ -124,7 +139,6 @@ const mockAIResponses: Record<string, string> = {
    - Mix of technical/non-technical founders
    - Diversity of project types`,
 
-  // Fourth task: Closed Beta
   "beta": `# Closed Beta Strategy
 
 1. **Participant Selection**
@@ -157,7 +171,6 @@ const mockAIResponses: Record<string, string> = {
    - NPS score >40
    - Qualitative feedback shows "can't work without it" sentiment`,
 
-  // Fifth task: Analytics & Feedback
   "analytics": `# Product Analytics Implementation
 
 1. **Core Metrics to Track**
@@ -198,7 +211,6 @@ const mockAIResponses: Record<string, string> = {
    - Frequency of mention multiplier
    - Roadmap fit alignment`,
 
-  // Default response
   "default": `# AI Task Guidance
 
 I'll help you complete this task by providing:
@@ -249,6 +261,100 @@ function determineContentType(taskId: string, taskTitle?: string): string {
   return contentType;
 }
 
+// Generate prompt for OpenAI API
+async function generateDynamicPrompt(taskTitle: string, projectDetails: ProjectDetails): Promise<string> {
+  const projectName = projectDetails.name || 'Unknown Project';
+  const projectDescription = projectDetails.description || 'No description provided';
+  const projectUrl = projectDetails.frontendUrl || '';
+  const githubRepo = projectDetails.githubRepo || '';
+  
+  let prompt = `Task: "${taskTitle}"
+Project: "${projectName}"
+Project Description: "${projectDescription}"`;
+
+  if (projectUrl) {
+    prompt += `\nProject URL: ${projectUrl}`;
+  }
+  
+  if (githubRepo) {
+    prompt += `\nGitHub Repository: ${githubRepo}`;
+  }
+  
+  prompt += `\n\nPlease provide detailed, actionable recommendations for completing this task specifically for this project. 
+Include specific steps, best practices, and examples that are relevant to this project's context.
+Format your response in Markdown with headings, bullet points, and clear sections.`;
+
+  // Add specific instructions based on task type
+  const taskType = taskTitle.toLowerCase();
+  if (taskType.includes('persona') || taskType.includes('value prop')) {
+    prompt += `\n\nFor this value proposition task:
+1. Identify specific target user personas for ${projectName}
+2. Craft a compelling value proposition 
+3. List key benefits that would appeal to the target audience`;
+  } else if (taskType.includes('landing') || taskType.includes('waitlist')) {
+    prompt += `\n\nFor this landing page task:
+1. Suggest landing page structure specific to ${projectName}'s audience
+2. Provide headline and CTA recommendations
+3. Outline a waitlist strategy appropriate for this project type`;
+  }
+  
+  // Add instruction to use web search if URL is available
+  if (projectUrl) {
+    prompt += `\n\nPlease analyze the website at ${projectUrl} to provide context-aware recommendations.`;
+  }
+  
+  return prompt;
+}
+
+// Generate AI content using OpenAI
+async function generateAIContent(
+  taskTitle: string,
+  projectDetails: ProjectDetails,
+  useWebSearch: boolean = true
+): Promise<string> {
+  try {
+    // Generate dynamic prompt based on project details
+    const prompt = await generateDynamicPrompt(taskTitle, projectDetails);
+    console.log('[AI] Generated prompt:', prompt);
+    
+    // Prepare system message with instructions
+    const systemMessage = 
+      "You are a skilled project manager and product strategist who helps founders launch successful products. " + 
+      "Provide specific, actionable advice customized to each project's unique context.";
+    
+    // Include web search context if a URL is available
+    const webSearchUrl = useWebSearch && projectDetails.frontendUrl ? projectDetails.frontendUrl : null;
+    let userPrompt = prompt;
+    
+    if (webSearchUrl) {
+      userPrompt += `\n\nIncorporate relevant information from the project website, if available: ${webSearchUrl}`;
+      console.log('[AI] Including website URL in prompt:', webSearchUrl);
+    }
+    
+    try {
+      // Use GPT-4o for high-quality responses
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500
+      });
+      
+      return completion.choices[0].message.content || 
+             "I couldn't generate specific recommendations. Please try again or provide more project details.";
+    } catch (error) {
+      console.error('[AI] OpenAI API error:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('[AI] Error generating content:', error);
+    throw error;
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -277,43 +383,68 @@ export default async function handler(
 
   if (req.method === 'POST') {
     try {
-      console.log(`Generating AI draft for task ${taskId}`);
+      console.log(`[API] Generating AI draft for task ${taskId}`);
       
-      let taskTitle: string | undefined;
+      // Variables to store task and project info
+      let taskTitle: string = '';
+      let projectDetails: ProjectDetails | null = null;
       
-      // Try to get the task title from the database if it's not a fallback/mock ID
+      // Try to get the task and project details from the database
       if (!taskId.startsWith('fallback') && !taskId.startsWith('mock')) {
         try {
           const task = await prisma.checklistItem.findUnique({
             where: { id: taskId },
+            include: {
+              project: true // Include the related project
+            }
           });
           
-          if (task) {
+          if (task && task.project) {
             taskTitle = task.title;
-            console.log(`Found task in database: ${taskTitle}`);
+            projectDetails = task.project as ProjectDetails;
+            console.log(`[API] Found task "${taskTitle}" for project "${projectDetails.name}"`);
           }
         } catch (dbError) {
-          console.warn(`Error fetching task from database:`, dbError);
-          // Continue with taskId-based determination if database fetch fails
+          console.warn(`[API] Error fetching task from database:`, dbError);
+          // Continue with fallback if database fetch fails
         }
       }
       
-      // Determine content type based on task title or ID
+      // If we have project details, generate dynamic content
+      if (projectDetails) {
+        try {
+          console.log(`[API] Generating dynamic content for project "${projectDetails.name}"`);
+          
+          // Generate AI content using OpenAI
+          const aiContent = await generateAIContent(taskTitle, projectDetails);
+          
+          // Return the dynamic content
+          return res.status(200).json({
+            id: taskId,
+            ai_help_hint: aiContent,
+            success: true,
+            isDynamic: true
+          });
+        } catch (aiError) {
+          console.error(`[API] Error generating dynamic content:`, aiError);
+          // Fall back to template content if AI generation fails
+        }
+      }
+      
+      // Fallback to template-based content if dynamic generation failed or no project details
+      console.log(`[API] Using template content for task ${taskId}`);
       const contentType = determineContentType(taskId, taskTitle);
-      console.log(`Using content type: ${contentType} for task: ${taskTitle || taskId}`);
+      const fallbackContent = mockAIResponses[contentType] || mockAIResponses.default;
       
-      // Get the appropriate response content
-      const aiContent = mockAIResponses[contentType] || mockAIResponses.default;
-      
-      // Return success with the AI content
       return res.status(200).json({
         id: taskId,
-        ai_help_hint: aiContent,
+        ai_help_hint: fallbackContent,
         success: true,
+        isDynamic: false
       });
 
     } catch (error) {
-      console.error(`Failed to generate AI draft for task ${taskId}:`, error);
+      console.error(`[API] Failed to generate AI draft for task ${taskId}:`, error);
       res.status(500).json({ 
         message: 'Failed to generate AI draft',
         error: error instanceof Error ? error.message : 'Unknown error'
