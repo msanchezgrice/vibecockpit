@@ -4,5 +4,10 @@
       "path": "/api/cron/cost-collector",
       "schedule": "35 0 * * *"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "PNPM_FLAGS": "--no-frozen-lockfile"
+    }
+  }
 } 
