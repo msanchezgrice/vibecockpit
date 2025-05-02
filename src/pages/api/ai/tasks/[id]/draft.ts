@@ -2,357 +2,91 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
-import { OpenAI } from 'openai';
+import { Prisma } from '@/generated/prisma';
+import { openai, supportsResponsesApi, callResponsesApi, callResponsesWithWebSearch, extractWebSearchResults, ResponsesAPIResponse } from '@/lib/openai';
+import { ChatCompletion } from 'openai/resources';
 
-// Define type for project details
-interface ProjectDetails {
-  id: string;
-  name: string;
-  description?: string | null;
-  frontendUrl?: string | null;
-  githubRepo?: string | null;
-  vercelProjectId?: string | null;
-  status?: string;
-}
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Fallback responses in case API fails
-const mockAIResponses: Record<string, string> = {
-  "personas": `# Target User Personas
-
-1. **Early-Stage Startup Founders (Primary)**
-   - Ages 25-40, tech-savvy
-   - Building MVP or early product
-   - Limited resources and team size
-   - Need: Tools to validate ideas and optimize workflows
-
-2. **Solo Technical Founders**
-   - Engineering background
-   - Struggling with business/marketing aspects
-   - Need: Guidance on non-technical aspects of startup
-
-3. **Non-Technical Founders**
-   - Business/marketing background
-   - Outsourcing development
-   - Need: Technical oversight and project management
-
-# Value Proposition
-
-**Core Value Proposition:**
-"Launch faster with less stress: We provide founders with an all-in-one toolkit to manage technical projects, track costs, and prepare for launch - even if you're non-technical."
-
-**Key Benefits:**
-- **Visibility**: Real-time cost tracking and project status
-- **Simplicity**: Unified dashboard for all launch tasks
-- **Guidance**: Built-in checklists and AI recommendations
-- **Time Savings**: Automate repetitive project management tasks`,
-
-  // Other fallback responses remain unchanged...
-  "onboarding": `# MVP Features (Prioritized)
-
-1. **Project Dashboard**
-   - Status tracking (design/prep-launch/launched)
-   - Cost monitoring integration
-   - Frontend URL & repository linking
-
-2. **Launch Checklist**
-   - Template tasks customizable per project
-   - AI-powered guidance per checklist item
-   - Progress tracking & visualization
-
-3. **Vercel Integration**
-   - Auto-connect projects
-   - Cost tracking
-   - Deployment status
-
-4. **GitHub Integration**
-   - Repository linking
-   - Activity tracking
-   - Commit history integration
-
-# Guided Onboarding Flow
-
-1. **Account Creation**
-   - Simple email/GitHub/Google auth
-   - No credit card required
-
-2. **First Project Setup**
-   - Name and description
-   - Choose GitHub repo (optional)
-   - Connect Vercel project (optional)
-
-3. **Launch Preparation Wizard**
-   - Select project type (SaaS, Marketing, etc.)
-   - Auto-generate customized checklist
-   - AI-generated recommendations
-
-4. **Success Templates**
-   - Share onboarding completion with team
-   - Suggested next steps based on project type`,
-
-  "landing": `# Landing Page Structure
-
-1. **Hero Section**
-   - Headline: "Launch Your Product Faster with Confidence"
-   - Subheading: "The all-in-one toolkit that helps technical founders track costs, manage deployments, and prepare for launch"
-   - CTA: "Join the Waitlist" (primary)
-   - Demo Video/Screenshots
-
-2. **Problem → Solution**
-   - Pain points: Cost surprises, scattered tools, launch anxiety
-   - Solution: Unified dashboard, predictive costs, guided checklists
-
-3. **Feature Highlights**
-   - Project dashboard with cost tracking
-   - Vercel & GitHub integrations
-   - AI-powered launch assistant
-   - Auto-generated documentation
-
-4. **Social Proof**
-   - Early adopter testimonials (if available)
-   - Integration partner logos
-   - "Built by founders for founders"
-
-# Waitlist Funnel
-
-1. **Signup Form**
-   - Email only (reduce friction)
-   - Optional: "Your biggest launch challenge?" dropdown
-
-2. **Confirmation Page**
-   - Share links (Twitter, etc.)
-   - Referral mechanism: "Skip the line by inviting 3 friends"
-
-3. **Email Sequence**
-   - Welcome + what to expect
-   - Founder story / why we built this
-   - Sneak peek of features
-   - Beta invite (when ready)
-
-4. **Beta Selection Criteria**
-   - Prioritize by signup date
-   - Boost priority for referrals
-   - Mix of technical/non-technical founders
-   - Diversity of project types`,
-
-  "beta": `# Closed Beta Strategy
-
-1. **Participant Selection**
-   - Target: 25-50 founders
-   - Mix of technical/non-technical (60/40 split)
-   - Diverse project types (SaaS, marketplace, consumer)
-   - Prioritize founders with active projects
-
-2. **Recruitment Channels**
-   - Waitlist signups (priority access)
-   - Founder communities (IndieHackers, HackerNews)
-   - Twitter/LinkedIn direct outreach
-   - Y Combinator/TechStars alumni networks
-
-3. **Onboarding Process**
-   - Kickoff email with setup instructions
-   - 15-min onboarding call option
-   - Quick-start guide & video walkthrough
-   - Slack community invitation
-
-4. **Feedback Collection Methods**
-   - Weekly check-in surveys (NPS + qualitative)
-   - In-app feedback widget
-   - Bi-weekly user interviews (5 users per cycle)
-   - Usage analytics tracking
-
-5. **Success Metrics**
-   - 80%+ activation rate (define project + use 3+ features)
-   - 60%+ weekly active usage
-   - NPS score >40
-   - Qualitative feedback shows "can't work without it" sentiment`,
-
-  "analytics": `# Product Analytics Implementation
-
-1. **Core Metrics to Track**
-   - Activation: % completing onboarding
-   - Engagement: DAU/WAU ratio, feature usage
-   - Retention: Week 1/2/4 return rates
-   - Growth: Referral rate, viral coefficient
-
-2. **Event Tracking Plan**
-   - User: signup, profile completion, invite sent
-   - Projects: created, connected to Vercel/GitHub, status changed
-   - Checklist: viewed, task completed, AI assistance used
-   - Costs: viewed, alert triggered, settings changed
-
-3. **Analytics Stack**
-   - PostHog for event tracking & funnels
-   - Mixpanel for cohort analysis
-   - Amplitude for retention (if needed)
-   - Custom dashboard for key metrics
-
-# Feedback Loop Systems
-
-1. **In-app Feedback Mechanisms**
-   - NPS survey (after 14 days)
-   - Feature reaction buttons (👍/👎)
-   - Intercom for chat support
-   - Exit surveys for dropped users
-
-2. **Automated User Research**
-   - Bi-weekly email asking for 15-min calls
-   - Dovetail for research repository
-   - UserTesting.com for unmoderated tests
-   - Screen recording with HotJar/FullStory
-
-3. **Feedback Prioritization Framework**
-   - Impact vs Effort matrix
-   - User segment weighting (ideal customer = 2x)
-   - Frequency of mention multiplier
-   - Roadmap fit alignment`,
-
-  "default": `# AI Task Guidance
-
-I'll help you complete this task by providing:
-
-1. **Strategic recommendations** based on startup best practices
-2. **Implementation suggestions** with practical steps
-3. **Resource links** to helpful tools and templates
-
-To get specific guidance for this task, please provide more details about:
-
-- Your target audience
-- Current stage of your project
-- Specific challenges you're facing
-- Any resources/tools you're already using
-
-I can then generate tailored advice that will help you complete this task effectively.`
+// --- OpenAI Tool Schemas --- 
+const generateCopySchema = {
+    type: 'function' as const,
+    function: {
+        name: 'generate_copy',
+        description: 'Generate marketing copy based on a task title and project name.',
+        parameters: {
+            type: 'object',
+            properties: { 
+                copy: { type: 'string', description: 'The generated marketing copy.' } 
+            },
+            required: ['copy']
+        }
+    }
 };
 
-// Function to determine content type based on task title or ID
-function determineContentType(taskId: string, taskTitle?: string): string {
-  let contentType = 'default';
-  
-  // Use task title if available
-  const searchText = (taskTitle || taskId).toLowerCase();
-  
-  if (searchText.includes('persona') || searchText.includes('value prop')) {
-    contentType = 'personas';
-  } else if (searchText.includes('mvp') || searchText.includes('onboarding') || searchText.includes('demo')) {
-    contentType = 'onboarding';
-  } else if (searchText.includes('landing') || searchText.includes('waitlist') || searchText.includes('funnel')) {
-    contentType = 'landing';
-  } else if (searchText.includes('beta') || searchText.includes('recruit') || searchText.includes('founder')) {
-    contentType = 'beta';
-  } else if (searchText.includes('analytic') || searchText.includes('feedback') || searchText.includes('instrument')) {
-    contentType = 'analytics';
-  } else if (taskId.includes('fallback1')) {
-    contentType = 'personas';
-  } else if (taskId.includes('fallback2')) {
-    contentType = 'onboarding';
-  } else if (taskId.includes('fallback3')) {
-    contentType = 'landing';
-  } else if (taskId.includes('fallback4')) {
-    contentType = 'beta';
-  } else if (taskId.includes('fallback5')) {
-    contentType = 'analytics';
-  }
-  
-  return contentType;
+const generateImageSchema = {
+    type: 'function' as const,
+    function: {
+        name: 'generate_image_prompt',
+        description: 'Generate an image prompt suitable for DALL-E-3 based on a task title and project name.',
+        parameters: {
+            type: 'object',
+            properties: { 
+                image_prompt: { type: 'string', description: 'The generated DALL-E-3 prompt.' } 
+            },
+            required: ['image_prompt']
+        }
+    }
+};
+
+const webResearchSchema = {
+    type: 'function' as const,
+    function: {
+        name: 'web_research',
+        description: 'Generate task recommendations based on web research',
+        parameters: {
+            type: 'object',
+            properties: {
+                recommendations: {
+                    type: 'array',
+                    description: 'List of recommendations with references',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string', description: 'Short title for this recommendation' },
+                            description: { type: 'string', description: 'Detailed explanation of the recommendation' },
+                            source: { type: 'string', description: 'URL source of this information (if any)' }
+                        }
+                    }
+                },
+                summary: { type: 'string', description: 'Brief summary of the research findings' }
+            },
+            required: ['recommendations', 'summary']
+        }
+    }
+};
+
+// Define interfaces for API responses
+interface Recommendation {
+  title: string;
+  description: string;
+  source?: string;
 }
 
-// Generate prompt for OpenAI API
-async function generateDynamicPrompt(taskTitle: string, projectDetails: ProjectDetails): Promise<string> {
-  const projectName = projectDetails.name || 'Unknown Project';
-  const projectDescription = projectDetails.description || 'No description provided';
-  const projectUrl = projectDetails.frontendUrl || '';
-  const githubRepo = projectDetails.githubRepo || '';
-  
-  let prompt = `Task: "${taskTitle}"
-Project: "${projectName}"
-Project Description: "${projectDescription}"`;
-
-  if (projectUrl) {
-    prompt += `\nProject URL: ${projectUrl}`;
-  }
-  
-  if (githubRepo) {
-    prompt += `\nGitHub Repository: ${githubRepo}`;
-  }
-  
-  prompt += `\n\nPlease provide detailed, actionable recommendations for completing this task specifically for this project. 
-Include specific steps, best practices, and examples that are relevant to this project's context.
-Format your response in Markdown with headings, bullet points, and clear sections.`;
-
-  // Add specific instructions based on task type
-  const taskType = taskTitle.toLowerCase();
-  if (taskType.includes('persona') || taskType.includes('value prop')) {
-    prompt += `\n\nFor this value proposition task:
-1. Identify specific target user personas for ${projectName}
-2. Craft a compelling value proposition 
-3. List key benefits that would appeal to the target audience`;
-  } else if (taskType.includes('landing') || taskType.includes('waitlist')) {
-    prompt += `\n\nFor this landing page task:
-1. Suggest landing page structure specific to ${projectName}'s audience
-2. Provide headline and CTA recommendations
-3. Outline a waitlist strategy appropriate for this project type`;
-  }
-  
-  // Add instruction to use web search if URL is available
-  if (projectUrl) {
-    prompt += `\n\nPlease analyze the website at ${projectUrl} to provide context-aware recommendations.`;
-  }
-  
-  return prompt;
+interface _WebResearchResponse {
+  recommendations: Recommendation[];
+  summary: string;
 }
 
-// Generate AI content using OpenAI
-async function generateAIContent(
-  taskTitle: string,
-  projectDetails: ProjectDetails,
-  useWebSearch: boolean = true
-): Promise<string> {
-  try {
-    // Generate dynamic prompt based on project details
-    const prompt = await generateDynamicPrompt(taskTitle, projectDetails);
-    console.log('[AI] Generated prompt:', prompt);
-    
-    // Prepare system message with instructions
-    const systemMessage = 
-      "You are a skilled project manager and product strategist who helps founders launch successful products. " + 
-      "Provide specific, actionable advice customized to each project's unique context.";
-    
-    // Include web search context if a URL is available
-    const webSearchUrl = useWebSearch && projectDetails.frontendUrl ? projectDetails.frontendUrl : null;
-    let userPrompt = prompt;
-    
-    if (webSearchUrl) {
-      userPrompt += `\n\nIncorporate relevant information from the project website, if available: ${webSearchUrl}`;
-      console.log('[AI] Including website URL in prompt:', webSearchUrl);
-    }
-    
-    try {
-      // Use GPT-4o for high-quality responses
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemMessage },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1500
-      });
-      
-      return completion.choices[0].message.content || 
-             "I couldn't generate specific recommendations. Please try again or provide more project details.";
-    } catch (error) {
-      console.error('[AI] OpenAI API error:', error);
-      throw error;
-    }
-  } catch (error) {
-    console.error('[AI] Error generating content:', error);
-    throw error;
-  }
+// Define response types for better type checking
+interface ResponsesApiResponse {
+  tool_calls?: Array<{ function: { name: string; arguments: string } }>;
+  output_text?: string;
+}
+
+// Type guard to check if the response is from Responses API
+function isResponsesApiFormat(obj: unknown): obj is ResponsesApiResponse {
+  if (!obj || typeof obj !== 'object') return false;
+  const response = obj as Record<string, unknown>;
+  return ('tool_calls' in response || 'output_text' in response);
 }
 
 export default async function handler(
@@ -360,95 +94,268 @@ export default async function handler(
   res: NextApiResponse
 ) {
   console.log(`[API] Received request for ${req.method} ${req.url}`);
-  
-  // For development, allow requests without authentication
-  let session;
-  try {
-    session = await getServerSession(req, res, authOptions);
-  } catch (error) {
-    console.warn("Error getting session, continuing anyway:", error);
-  }
+  const session = await getServerSession(req, res, authOptions);
+  const { id: checklistItemId } = req.query; 
 
-  // In production, enforce authentication
-  if (process.env.NODE_ENV === 'production' && !session) {
+  if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
-  
-  // Get checklist item ID from URL
-  const { id: taskId } = req.query;
-  
-  if (typeof taskId !== 'string') {
-    return res.status(400).json({ message: 'Invalid task ID' });
+  if (typeof checklistItemId !== 'string') {
+    return res.status(400).json({ message: 'Invalid checklist item ID' });
   }
 
   if (req.method === 'POST') {
     try {
-      console.log(`[API] Generating AI draft for task ${taskId}`);
-      
-      // Variables to store task and project info
-      let taskTitle: string = '';
-      let projectDetails: ProjectDetails | null = null;
-      
-      // Try to get the task and project details from the database
-      if (!taskId.startsWith('fallback') && !taskId.startsWith('mock')) {
-        try {
-          const task = await prisma.checklistItem.findUnique({
-            where: { id: taskId },
-            include: {
-              project: true // Include the related project
-            }
-          });
-          
-          if (task && task.project) {
-            taskTitle = task.title;
-            projectDetails = task.project as ProjectDetails;
-            console.log(`[API] Found task "${taskTitle}" for project "${projectDetails.name}"`);
-          }
-        } catch (dbError) {
-          console.warn(`[API] Error fetching task from database:`, dbError);
-          // Continue with fallback if database fetch fails
-        }
-      }
-      
-      // If we have project details, generate dynamic content
-      if (projectDetails) {
-        try {
-          console.log(`[API] Generating dynamic content for project "${projectDetails.name}"`);
-          
-          // Generate AI content using OpenAI
-          const aiContent = await generateAIContent(taskTitle, projectDetails);
-          
-          // Return the dynamic content
-          return res.status(200).json({
-            id: taskId,
-            ai_help_hint: aiContent,
-            success: true,
-            isDynamic: true
-          });
-        } catch (aiError) {
-          console.error(`[API] Error generating dynamic content:`, aiError);
-          // Fall back to template content if AI generation fails
-        }
-      }
-      
-      // Fallback to template-based content if dynamic generation failed or no project details
-      console.log(`[API] Using template content for task ${taskId}`);
-      const contentType = determineContentType(taskId, taskTitle);
-      const fallbackContent = mockAIResponses[contentType] || mockAIResponses.default;
-      
-      return res.status(200).json({
-        id: taskId,
-        ai_help_hint: fallbackContent,
-        success: true,
-        isDynamic: false
+      // 1. Fetch Task and Project details
+      const checklistItem = await prisma.checklistItem.findUnique({
+        where: { id: checklistItemId },
+        include: { project: { select: { name: true, description: true } } },
       });
 
-    } catch (error) {
-      console.error(`[API] Failed to generate AI draft for task ${taskId}:`, error);
-      res.status(500).json({ 
-        message: 'Failed to generate AI draft',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      if (!checklistItem) {
+        return res.status(404).json({ message: 'Checklist item not found' });
+      }
+      if (!checklistItem.project) {
+         return res.status(404).json({ message: 'Associated project not found' });
+      }
+
+      // 2. Build base prompt
+      const taskTitle = checklistItem.title;
+      const projectName = checklistItem.project.name;
+      const projectDescription = checklistItem.project.description || 'N/A';
+      
+      // 3. First, try to use the Responses API with web search if available
+      let response: ResponsesAPIResponse | ChatCompletion;
+      let usedWebSearch = false;
+      
+      try {
+        if (supportsResponsesApi()) {
+          console.log(`[AI Task ${checklistItemId}] Using Responses API with web search`);
+          
+          // Create a search query based on task and project
+          const searchQuery = `Best practices and recommendations for "${taskTitle}" in context of "${projectName}" project`;
+          
+          const instructions = `You are a skilled project manager and creative director helping with a project task. 
+For the task "${taskTitle}" in project "${projectName}" (${projectDescription}), search for information online
+and provide specific, actionable recommendations. Include proper attribution to sources with URLs. 
+Format your response with a brief summary followed by numbered recommendations. For each, include:
+1. A clear, actionable title
+2. A concise explanation
+3. Attribution to sources when applicable`;
+          
+          // Use web search via Responses API
+          response = await callResponsesWithWebSearch(searchQuery, instructions);
+          usedWebSearch = true;
+        } else {
+          throw new Error('Responses API not supported');
+        }
+      } catch (apiError) {
+        // Properly type the error
+        const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
+        console.log(`[AI Task ${checklistItemId}] Falling back to tools approach: ${errorMessage}`);
+        
+        // Build standard prompt (without web search)
+        const prompt = `Task: "${taskTitle}"
+Project: "${projectName}"
+Project Description: "${projectDescription}"
+
+Based on the project and task, provide specific, actionable recommendations. If appropriate, generate either suitable marketing copy OR a DALL-E-3 image prompt (choose what's most relevant to the task).`;
+        
+        // Try to use Responses API with tools
+        if (supportsResponsesApi()) {
+          try {
+            response = await callResponsesApi({
+              model: 'o3',
+              input: prompt,
+              tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+              toolChoice: "auto",
+              instructions: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+            });
+          } catch (error) {
+            console.log(`[AI Task ${checklistItemId}] Falling back to Chat Completions API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            
+            // Fallback to Chat Completions API
+            response = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: [
+                {
+                  role: 'system',
+                  content: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+                },
+                { role: 'user', content: prompt }
+              ],
+              tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+              tool_choice: "auto",
+            });
+          }
+        } else {
+          // Fallback to Chat Completions API
+          response = await openai.chat.completions.create({
+            model: 'gpt-4o',
+            messages: [
+              {
+                role: 'system',
+                content: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+              },
+              { role: 'user', content: prompt }
+            ],
+            tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+            tool_choice: "auto",
       });
+        }
+      }
+
+      // 4. Process Response & 5. Update DB
+      const updateData: Prisma.ChecklistItemUpdateInput = {};
+      let generatedContentType: string | null = null;
+
+      // Process Responses API with web search format
+      if (usedWebSearch && 'output' in response) {
+        console.log(`[AI Task ${checklistItemId}] Processing web search response`);
+        
+        let responseText = '';
+        
+        // Extract the assistant's text from the response
+        if (response.output && Array.isArray(response.output)) {
+          for (const output of response.output) {
+            if (output.role === 'assistant' && output.content && Array.isArray(output.content)) {
+              for (const content of output.content) {
+                if (content.text) {
+                  responseText = content.text;
+                  break;
+                }
+              }
+              if (responseText) break;
+            }
+          }
+        }
+        
+        if (responseText) {
+          // Extract web search results
+          const searchResults = extractWebSearchResults(response);
+          
+          // Save both the formatted text and the search results
+          updateData.ai_help_hint = responseText;
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'web_research';
+          
+          console.log(`[AI Task ${checklistItemId}] Web search found ${searchResults.length} results`);
+        } else {
+          console.log(`[AI Task ${checklistItemId}] Web search did not return formatted text`);
+          updateData.ai_help_hint = "Couldn't get web search results. Please try again later.";
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'error';
+        }
+      }
+      // Process standard Responses API format
+      else if (isResponsesApiFormat(response)) {
+        if (response.tool_calls && response.tool_calls.length > 0) {
+          const toolCall = response.tool_calls[0];
+          const functionName = toolCall.function.name;
+          const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+
+          console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
+
+          if (functionName === 'generate_copy' && functionArgs.copy) {
+            updateData.ai_help_hint = functionArgs.copy;
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'copy';
+          } else if (functionName === 'generate_image_prompt' && functionArgs.image_prompt) {
+            updateData.ai_image_prompt = functionArgs.image_prompt;
+            updateData.ai_help_hint = null;
+            generatedContentType = 'image_prompt';
+          } else if (functionName === 'web_research' && functionArgs.recommendations) {
+            // Format web research results
+            const summary = functionArgs.summary || '';
+            const recommendations = functionArgs.recommendations || [];
+            
+            let formattedText = `## Summary\n${summary}\n\n## Recommendations\n`;
+            
+            recommendations.forEach((rec: Recommendation, index: number) => {
+              formattedText += `\n### ${index + 1}. ${rec.title}\n${rec.description}\n`;
+              if (rec.source) {
+                formattedText += `Source: ${rec.source}\n`;
+              }
+            });
+            
+            updateData.ai_help_hint = formattedText;
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'web_research';
+          } else {
+            console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
+          }
+        } else if (response.output_text) {
+          console.log(`[AI Task ${checklistItemId}] OpenAI responded with direct text.`);
+          updateData.ai_help_hint = response.output_text;
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'direct_content';
+        }
+      } else {
+        // Parse Chat Completions API format
+        const choice = response.choices[0];
+      if (choice.message?.tool_calls && choice.message.tool_calls.length > 0) {
+        const toolCall = choice.message.tool_calls[0];
+        const functionName = toolCall.function.name;
+        const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+
+        console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
+
+        if (functionName === 'generate_copy' && functionArgs.copy) {
+            updateData.ai_help_hint = functionArgs.copy;
+            updateData.ai_image_prompt = null;
+          generatedContentType = 'copy';
+        } else if (functionName === 'generate_image_prompt' && functionArgs.image_prompt) {
+            updateData.ai_image_prompt = functionArgs.image_prompt;
+            updateData.ai_help_hint = null;
+          generatedContentType = 'image_prompt';
+          } else if (functionName === 'web_research' && functionArgs.recommendations) {
+            // Format web research results
+            const summary = functionArgs.summary || '';
+            const recommendations = functionArgs.recommendations || [];
+            
+            let formattedText = `## Summary\n${summary}\n\n## Recommendations\n`;
+            
+            recommendations.forEach((rec: Recommendation, index: number) => {
+              formattedText += `\n### ${index + 1}. ${rec.title}\n${rec.description}\n`;
+              if (rec.source) {
+                formattedText += `Source: ${rec.source}\n`;
+              }
+            });
+            
+            updateData.ai_help_hint = formattedText;
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'web_research';
+        } else {
+           console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
+        }
+      } else if (choice.message?.content) {
+          console.log(`[AI Task ${checklistItemId}] OpenAI responded with direct text.`);
+         updateData.ai_help_hint = choice.message.content;
+         updateData.ai_image_prompt = null;
+         generatedContentType = 'direct_content';
+        }
+      }
+
+      if (Object.keys(updateData).length === 0) {
+         console.error(`[AI Task ${checklistItemId}] Unexpected OpenAI response structure.`);
+         throw new Error("Received an unexpected response structure from AI.");
+      }
+
+      // Update the database
+         console.log(`[AI Task ${checklistItemId}] Updating database with ${generatedContentType}`);
+         const updatedItem = await prisma.checklistItem.update({
+            where: { id: checklistItemId },
+            data: updateData,
+         });
+         res.status(200).json(updatedItem);
+
+    } catch (error) {
+       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        res.status(404).json({ message: 'Checklist item not found' });
+      } else {
+        console.error(`Failed to generate AI draft for item ${checklistItemId}:`, error);
+        res.status(500).json({ message: 'Failed to generate AI draft' });
+      }
     }
   } else {
     res.setHeader('Allow', ['POST']);

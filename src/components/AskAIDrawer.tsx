@@ -167,11 +167,11 @@ export function AskAIDrawer({
                 <p className="text-sm text-muted-foreground">Researching task...</p>
               </div>
             ) : editMode || !isMarkdown ? (
-              <Textarea
+            <Textarea
                 value={aiDraft}
                 onChange={({ target }) => setAiDraft(target.value)}
-                className="h-full min-h-[200px] text-sm bg-muted/50"
-                rows={10}
+              className="h-full min-h-[200px] text-sm bg-muted/50"
+              rows={10}
               />
             ) : (
               <div className="prose prose-sm max-w-none">

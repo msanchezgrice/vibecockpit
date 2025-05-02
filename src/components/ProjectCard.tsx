@@ -205,7 +205,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </div>
 
           {/* Conditionally render Checklist Preview */}
-          {currentStatus === 'prep_launch' && (
+          {project.status === 'prep_launch' && (
             <ChecklistPreview projectId={project.id} />
           )}
 

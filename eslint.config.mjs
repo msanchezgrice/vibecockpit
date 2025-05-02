@@ -11,7 +11,11 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   {
-    ignores: ["src/generated/prisma/**", ".next/**"]
+    ignores: [
+      "src/generated/prisma/**", 
+      ".next/**",
+      "supabase/functions/**" // Ignore Supabase Edge Functions (Deno)
+    ]
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
