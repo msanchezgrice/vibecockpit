@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { PricingCard } from "@/components/ui/PricingCard";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -49,18 +48,25 @@ export default function PricingPage() {
         </p>
         
         <div className="flex items-center justify-center space-x-2 mt-8">
-          <Label htmlFor="billing-toggle" className="cursor-pointer">Monthly</Label>
-          <Switch 
-            id="billing-toggle" 
-            checked={isAnnual} 
-            onCheckedChange={setIsAnnual}
-          />
-          <Label htmlFor="billing-toggle" className="cursor-pointer">
-            Annual
-            <span className="ml-1.5 inline-block bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">
-              Save 20%
-            </span>
-          </Label>
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <Button
+              variant={isAnnual ? "outline" : "default"}
+              className="rounded-r-none"
+              onClick={() => setIsAnnual(false)}
+            >
+              Monthly
+            </Button>
+            <Button
+              variant={isAnnual ? "default" : "outline"}
+              className="rounded-l-none"
+              onClick={() => setIsAnnual(true)}
+            >
+              Annual
+              <span className="ml-1.5 inline-block bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">
+                Save 20%
+              </span>
+            </Button>
+          </div>
         </div>
       </header>
       
