@@ -19,22 +19,48 @@ export function supportsResponsesApi() {
   return typeof openai.responses !== 'undefined';
 }
 
-// Helper function to safely call the Responses API
-export async function callResponsesApi(options: {
+// Define TypeScript interfaces for Responses API
+interface ResponsesAPITool {
+  type: 'function';
+  function: {
+    name: string;
+    description?: string;
+    parameters: {
+      type: string;
+      properties: Record<string, unknown>;
+      required?: string[];
+    };
+  };
+}
+
+interface ResponsesAPIOptions {
   input: string;
   instructions?: string;
-  tools?: any[];
-  toolChoice?: any;
+  tools?: ResponsesAPITool[];
+  toolChoice?: 'auto' | 'none' | { type: 'function'; function: { name: string } };
   model?: string;
-}) {
+}
+
+// Helper function to safely call the Responses API
+export async function callResponsesApi(options: ResponsesAPIOptions) {
   if (!supportsResponsesApi()) {
     throw new Error('Responses API is not supported in this version of the OpenAI SDK');
   }
   
   try {
-    // We need to use any type here to bypass TypeScript's strict checking
-    // This is a temporary solution until the types are properly defined
-    const api = openai.responses as any;
+    // We use a more specific type cast with our interfaces
+    const api = openai.responses as {
+      create: (params: {
+        model: string;
+        input: string;
+        instructions?: string;
+        tools?: ResponsesAPITool[];
+        tool_choice?: ResponsesAPIOptions['toolChoice'];
+      }) => Promise<{
+        tool_calls?: Array<{ function: { name: string; arguments: string } }>;
+        output_text?: string;
+      }>;
+    };
     
     return await api.create({
       model: options.model || 'o3',
