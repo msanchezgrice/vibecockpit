@@ -9,7 +9,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "test": "vitest run",
-    "prepare": "husky"
+    "prepare": "husky && husky install"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
@@ -46,7 +46,7 @@
     "@types/react-dom": "^19.1.2",
     "eslint": "^9.25.1",
     "eslint-config-next": "15.3.1",
-    "husky": "^9.1.7",
+    "husky": "^8.0.0",
     "lint-staged": "^15.5.1",
     "prisma": "^6.6.0",
     "tailwindcss": "^4.1.4",
