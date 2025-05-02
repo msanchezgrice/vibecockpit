@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@/generated/prisma';
-import { openai, supportsResponsesApi, callResponsesApi } from '@/lib/openai'; // Import the helper functions
+import { openai, supportsResponsesApi, callResponsesApi, callResponsesWithWebSearch, extractWebSearchResults, ResponsesAPIResponse } from '@/lib/openai';
 import { ChatCompletion } from 'openai/resources';
 
 // --- OpenAI Tool Schemas --- 
@@ -33,6 +33,33 @@ const generateImageSchema = {
                 image_prompt: { type: 'string', description: 'The generated DALL-E-3 prompt.' } 
             },
             required: ['image_prompt']
+        }
+    }
+};
+
+const webResearchSchema = {
+    type: 'function' as const,
+    function: {
+        name: 'web_research',
+        description: 'Generate task recommendations based on web research',
+        parameters: {
+            type: 'object',
+            properties: {
+                recommendations: {
+                    type: 'array',
+                    description: 'List of recommendations with references',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            title: { type: 'string', description: 'Short title for this recommendation' },
+                            description: { type: 'string', description: 'Detailed explanation of the recommendation' },
+                            source: { type: 'string', description: 'URL source of this information (if any)' }
+                        }
+                    }
+                },
+                summary: { type: 'string', description: 'Brief summary of the research findings' }
+            },
+            required: ['recommendations', 'summary']
         }
     }
 };
@@ -80,60 +107,136 @@ export default async function handler(
          return res.status(404).json({ message: 'Associated project not found' });
       }
 
-      // 2. Build Prompt
-      const prompt = `Task: "${checklistItem.title}"
-Project: "${checklistItem.project.name}"
-Project Description: "${checklistItem.project.description || 'N/A'}"
-
-Based on the project and task, generate either suitable marketing copy OR a DALL-E-3 image prompt. Choose the most appropriate tool.`;
-
-      // 3. Call OpenAI using Responses API (with fallback to Chat Completions)
-      console.log(`[AI Task ${checklistItemId}] Calling OpenAI for task: ${checklistItem.title}`);
+      // 2. Build base prompt
+      const taskTitle = checklistItem.title;
+      const projectName = checklistItem.project.name;
+      const projectDescription = checklistItem.project.description || 'N/A';
       
-      let response: ResponsesApiResponse | ChatCompletion;
+      // 3. First, try to use the Responses API with web search if available
+      let response: ResponsesAPIResponse | ChatCompletion;
+      let usedWebSearch = false;
       
       try {
         if (supportsResponsesApi()) {
-          console.log(`[AI Task ${checklistItemId}] Using Responses API`);
+          console.log(`[AI Task ${checklistItemId}] Using Responses API with web search`);
           
-          // Call Responses API using our helper function
-          response = await callResponsesApi({
-            model: 'o3',
-            input: prompt,
-            tools: [generateCopySchema, generateImageSchema],
-            toolChoice: "auto",
-            instructions: "You are a skilled marketer and creative director. Generate content that is concise, compelling, and aligned with the project goals."
-          });
+          // Create a search query based on task and project
+          const searchQuery = `Best practices and recommendations for "${taskTitle}" in context of "${projectName}" project`;
+          
+          const instructions = `You are a skilled project manager and creative director helping with a project task. 
+For the task "${taskTitle}" in project "${projectName}" (${projectDescription}), search for information online
+and provide specific, actionable recommendations. Include proper attribution to sources with URLs. 
+Format your response with a brief summary followed by numbered recommendations. For each, include:
+1. A clear, actionable title
+2. A concise explanation
+3. Attribution to sources when applicable`;
+          
+          // Use web search via Responses API
+          response = await callResponsesWithWebSearch(searchQuery, instructions);
+          usedWebSearch = true;
         } else {
           throw new Error('Responses API not supported');
         }
       } catch (apiError) {
         // Properly type the error
         const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
-        console.log(`[AI Task ${checklistItemId}] Falling back to Chat Completions API: ${errorMessage}`);
+        console.log(`[AI Task ${checklistItemId}] Falling back to tools approach: ${errorMessage}`);
         
-        // Fallback to Chat Completions API
-        response = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: "You are a skilled marketer and creative director. Generate content that is concise, compelling, and aligned with the project goals."
-            },
-            { role: 'user', content: prompt }
-          ],
-          tools: [generateCopySchema, generateImageSchema],
-          tool_choice: "auto",
-        });
+        // Build standard prompt (without web search)
+        const prompt = `Task: "${taskTitle}"
+Project: "${projectName}"
+Project Description: "${projectDescription}"
+
+Based on the project and task, provide specific, actionable recommendations. If appropriate, generate either suitable marketing copy OR a DALL-E-3 image prompt (choose what's most relevant to the task).`;
+        
+        // Try to use Responses API with tools
+        if (supportsResponsesApi()) {
+          try {
+            response = await callResponsesApi({
+              model: 'o3',
+              input: prompt,
+              tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+              toolChoice: "auto",
+              instructions: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+            });
+          } catch (error) {
+            console.log(`[AI Task ${checklistItemId}] Falling back to Chat Completions API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            
+            // Fallback to Chat Completions API
+            response = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: [
+                {
+                  role: 'system',
+                  content: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+                },
+                { role: 'user', content: prompt }
+              ],
+              tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+              tool_choice: "auto",
+            });
+          }
+        } else {
+          // Fallback to Chat Completions API
+          response = await openai.chat.completions.create({
+            model: 'gpt-4o',
+            messages: [
+              {
+                role: 'system',
+                content: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+              },
+              { role: 'user', content: prompt }
+            ],
+            tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+            tool_choice: "auto",
+          });
+        }
       }
 
       // 4. Process Response & 5. Update DB
       const updateData: Prisma.ChecklistItemUpdateInput = {};
       let generatedContentType: string | null = null;
-
-      // Use our type guard to determine the response format
-      if (isResponsesApiFormat(response)) {
-        // Process Responses API format
+      
+      // Process Responses API with web search format
+      if (usedWebSearch && 'output' in response) {
+        console.log(`[AI Task ${checklistItemId}] Processing web search response`);
+        
+        let responseText = '';
+        
+        // Extract the assistant's text from the response
+        if (response.output && Array.isArray(response.output)) {
+          for (const output of response.output) {
+            if (output.role === 'assistant' && output.content && Array.isArray(output.content)) {
+              for (const content of output.content) {
+                if (content.text) {
+                  responseText = content.text;
+                  break;
+                }
+              }
+              if (responseText) break;
+            }
+          }
+        }
+        
+        if (responseText) {
+          // Extract web search results
+          const searchResults = extractWebSearchResults(response);
+          
+          // Save both the formatted text and the search results
+          updateData.ai_help_hint = responseText;
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'web_research';
+          
+          console.log(`[AI Task ${checklistItemId}] Web search found ${searchResults.length} results`);
+        } else {
+          console.log(`[AI Task ${checklistItemId}] Web search did not return formatted text`);
+          updateData.ai_help_hint = "Couldn't get web search results. Please try again later.";
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'error';
+        }
+      }
+      // Process standard Responses API format
+      else if (isResponsesApiFormat(response)) {
         if (response.tool_calls && response.tool_calls.length > 0) {
           const toolCall = response.tool_calls[0];
           const functionName = toolCall.function.name;
@@ -149,6 +252,23 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
             updateData.ai_image_prompt = functionArgs.image_prompt;
             updateData.ai_help_hint = null;
             generatedContentType = 'image_prompt';
+          } else if (functionName === 'web_research' && functionArgs.recommendations) {
+            // Format web research results
+            const summary = functionArgs.summary || '';
+            const recommendations = functionArgs.recommendations || [];
+            
+            let formattedText = `## Summary\n${summary}\n\n## Recommendations\n`;
+            
+            recommendations.forEach((rec: any, index: number) => {
+              formattedText += `\n### ${index + 1}. ${rec.title}\n${rec.description}\n`;
+              if (rec.source) {
+                formattedText += `Source: ${rec.source}\n`;
+              }
+            });
+            
+            updateData.ai_help_hint = formattedText;
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'web_research';
           } else {
             console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
           }
@@ -176,6 +296,23 @@ Based on the project and task, generate either suitable marketing copy OR a DALL
             updateData.ai_image_prompt = functionArgs.image_prompt;
             updateData.ai_help_hint = null;
             generatedContentType = 'image_prompt';
+          } else if (functionName === 'web_research' && functionArgs.recommendations) {
+            // Format web research results
+            const summary = functionArgs.summary || '';
+            const recommendations = functionArgs.recommendations || [];
+            
+            let formattedText = `## Summary\n${summary}\n\n## Recommendations\n`;
+            
+            recommendations.forEach((rec: any, index: number) => {
+              formattedText += `\n### ${index + 1}. ${rec.title}\n${rec.description}\n`;
+              if (rec.source) {
+                formattedText += `Source: ${rec.source}\n`;
+              }
+            });
+            
+            updateData.ai_help_hint = formattedText;
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'web_research';
           } else {
             console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
           }

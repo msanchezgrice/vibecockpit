@@ -13,7 +13,8 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { Sparkles, RotateCcw, Globe, ExternalLink } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface AskAIDrawerProps {
   taskId: string;
@@ -32,6 +33,8 @@ export function AskAIDrawer({
   const [isLoading, setIsLoading] = useState(false);
   const [aiDraft, setAiDraft] = useState(initialHint ?? 'Loading draft...');
   const [error, setError] = useState<string | null>(null);
+  const [isMarkdown, setIsMarkdown] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const fetchAIDraft = useCallback(async (isRegenerate = false) => {
     setIsLoading(true);
@@ -50,7 +53,18 @@ export function AskAIDrawer({
         if (!response.ok) {
             throw new Error(result.message || 'Failed to fetch/generate AI draft');
         }
-        setAiDraft(result.ai_help_hint || result.ai_image_prompt || 'No suggestion available.'); 
+        
+        const content = result.ai_help_hint || result.ai_image_prompt || 'No suggestion available.';
+        setAiDraft(content);
+        
+        // Check if the content is likely markdown (contains ## or URLs)
+        setIsMarkdown(
+          content.includes('##') || 
+          content.includes('http') || 
+          content.includes('Source:') ||
+          content.includes('# ')
+        );
+        setEditMode(false);
     } catch (err: unknown) {
         console.error("AI Draft fetch/generation failed:", err);
         const message = err instanceof Error ? err.message : 'Failed to process AI request';
@@ -73,6 +87,39 @@ export function AskAIDrawer({
     onAccept(taskId, aiDraft); // Pass accepted draft back
     setIsOpen(false); // Close drawer
   };
+  
+  // Helper to detect if content contains web search results
+  const hasWebSearchResults = (content: string): boolean => {
+    return content.includes('Source:') || 
+           (content.includes('http') && content.includes('Recommendation'));
+  };
+
+  // Extract URLs from content for direct links
+  const extractUrls = (content: string): Array<{url: string, title: string}> => {
+    const urls: Array<{url: string, title: string}> = [];
+    
+    // Match Source: URLs - Format: Source: https://example.com
+    const sourceRegex = /Source:\s*(https?:\/\/[^\s\n]+)/g;
+    let match;
+    
+    while ((match = sourceRegex.exec(content)) !== null) {
+      if (match[1]) {
+        // Get a readable domain name as the title
+        const url = match[1];
+        let title = url;
+        try {
+          const urlObj = new URL(url);
+          title = urlObj.hostname.replace(/^www\./, '');
+        } catch (e) {
+          // If URL parsing fails, just use the URL as title
+        }
+        
+        urls.push({ url, title });
+      }
+    }
+    
+    return urls;
+  };
 
   return (
     <Drawer direction="right" open={isOpen} onOpenChange={setIsOpen}> 
@@ -87,16 +134,52 @@ export function AskAIDrawer({
              <Sparkles className="w-5 h-5 mr-2 text-purple-500" /> AI Assistant
           </DrawerTitle>
           <DrawerDescription>Drafting help for: &quot;{taskTitle}&quot;</DrawerDescription>
+          
+          {hasWebSearchResults(aiDraft) && !isLoading && (
+            <div className="flex items-center mt-2 text-xs text-muted-foreground">
+              <Globe className="w-3 h-3 mr-1" /> 
+              Includes web search results
+            </div>
+          )}
+          
+          {!isLoading && extractUrls(aiDraft).length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {extractUrls(aiDraft).map((item, index) => (
+                <a 
+                  key={index}
+                  href={item.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-2 py-1 bg-muted rounded-full text-xs hover:bg-muted/80"
+                >
+                  {item.title}
+                  <ExternalLink className="ml-1 w-3 h-3" />
+                </a>
+              ))}
+            </div>
+          )}
         </DrawerHeader>
         
         <div className="p-4 flex-grow overflow-y-auto"> {/* Scrollable content */}
-            <Textarea
-              value={isLoading ? 'Loading...' : aiDraft}
-              onChange={(e) => setAiDraft(e.target.value)}
-              className="h-full min-h-[200px] text-sm bg-muted/50"
-              rows={10}
-              disabled={isLoading}
-            />
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center h-24">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                <p className="text-sm text-muted-foreground">Researching task...</p>
+              </div>
+            ) : editMode || !isMarkdown ? (
+              <Textarea
+                value={aiDraft}
+                onChange={(e) => setAiDraft(e.target.value)}
+                className="h-full min-h-[200px] text-sm bg-muted/50"
+                rows={10}
+              />
+            ) : (
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown>
+                  {aiDraft}
+                </ReactMarkdown>
+              </div>
+            )}
             {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
         </div>
 
@@ -104,6 +187,18 @@ export function AskAIDrawer({
              <Button variant="outline" onClick={handleRegenerate} disabled={isLoading} className="mr-auto">
                 <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Regenerate
              </Button>
+             
+             {isMarkdown && (
+               <Button 
+                 variant="outline" 
+                 onClick={() => setEditMode(!editMode)} 
+                 className="ml-2" 
+                 disabled={isLoading}
+               >
+                 {editMode ? 'Preview' : 'Edit'}
+               </Button>
+             )}
+             
             <DrawerClose asChild>
               <Button variant="secondary">Cancel</Button>
             </DrawerClose>
