@@ -308,12 +308,12 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                   
-                                  {/* Check if this is a task that has reasoning (from AI) */}
+                                  {/* Pass task title as taskReasoning to ensure "Ask AI for help" button shows up */}
                                   <AskAIModal 
                                     taskId={task.id} 
                                     taskTitle={task.title}
                                     initialHint={task.ai_help_hint} 
-                                    taskReasoning={task.ai_help_hint}
+                                    taskReasoning={task.title}
                                     onAccept={handleAcceptAIDraft} 
                                   />
                                 </>
