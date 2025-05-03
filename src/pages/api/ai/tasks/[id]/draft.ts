@@ -128,7 +128,7 @@ export default async function handler(
       // 1. Fetch Task and Project details
       const checklistItem = await prisma.checklistItem.findUnique({
         where: { id: checklistItemId },
-        include: { project: { select: { name: true, description: true } } },
+        include: { project: { select: { name: true, description: true, frontendUrl: true, githubRepo: true } } },
       });
 
       if (!checklistItem) {
@@ -138,10 +138,15 @@ export default async function handler(
          return res.status(404).json({ message: 'Associated project not found' });
       }
 
-      // 2. Build base prompt
+      // 2. Extract task reasoning from request body (if provided)
+      const { taskReasoning } = req.body || {};
+      
+      // 3. Build base prompt
       const taskTitle = checklistItem.title;
       const projectName = checklistItem.project.name;
       const projectDescription = checklistItem.project.description || 'N/A';
+      const projectUrl = checklistItem.project.frontendUrl;
+      const githubRepo = checklistItem.project.githubRepo;
       
       // 3. First, try to use the Responses API with web search if available
       let response: ResponsesAPIResponse | ChatCompletion;
@@ -151,10 +156,15 @@ export default async function handler(
         if (supportsResponsesApi()) {
           console.log(`[AI Task ${checklistItemId}] Using Responses API with web search`);
           
-          // Update the instructions with CSS guidance
+          // Update the instructions with CSS guidance and include task reasoning if available
           const instructions = `You are a skilled project manager and creative director helping with a project task. 
 For the task "${taskTitle}" in project "${projectName}" (${projectDescription}), search for information online
-and provide specific, actionable recommendations. Include proper attribution to sources with URLs. 
+and provide specific, actionable recommendations. Include proper attribution to sources with URLs.
+
+${taskReasoning ? `TASK CONTEXT: ${taskReasoning}\n` : ''}
+
+Project Website: ${projectUrl || 'Not available'}
+Project GitHub: ${githubRepo || 'Not available'}
 
 If the task involves creating a landing page, website, or UI design, provide a mockup using markdown with inline HTML and CSS.
 Use <div>, <section>, <h1>, <p>, and other semantic HTML tags with inline style attributes for precise styling.
@@ -183,8 +193,11 @@ Format your response with a brief summary followed by numbered recommendations o
         const prompt = `Task: "${taskTitle}"
 Project: "${projectName}"
 Project Description: "${projectDescription}"
+Project Website: ${projectUrl || 'Not available'}
+Project GitHub: ${githubRepo || 'Not available'}
+${taskReasoning ? `\nTask Context/Reasoning: ${taskReasoning}` : ''}
 
-Based on the project and task, provide specific, actionable recommendations. If appropriate, generate either suitable marketing copy OR a DALL-E-3 image prompt (choose what's most relevant to the task).`;
+Based on the project and task details${taskReasoning ? ' and the specific task context' : ''}, provide specific, actionable recommendations. If appropriate, generate either suitable marketing copy OR a DALL-E-3 image prompt (choose what's most relevant to the task).`;
         
         // Try to use Responses API with tools
         if (supportsResponsesApi()) {

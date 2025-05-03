@@ -24,6 +24,7 @@ interface AskAIModalProps {
   taskId: string;
   taskTitle: string;
   initialHint?: string | null;
+  taskReasoning?: string | null;
   onAccept: (taskId: string, draft: string) => void; // Callback to save accepted draft
 }
 
@@ -31,6 +32,7 @@ export function AskAIModal({
     taskId, 
     taskTitle,
     initialHint,
+    taskReasoning,
     onAccept 
 }: AskAIModalProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,6 +63,12 @@ export function AskAIModal({
     try {
         const response = await fetch(`/api/ai/tasks/${taskId}/draft`, {
             method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              taskReasoning
+            })
         });
         const result = await response.json();
         if (!response.ok) {
@@ -85,7 +93,7 @@ export function AskAIModal({
     } finally {
         setIsLoading(false);
     }
-  }, [taskId, hasCachedResult]);
+  }, [taskId, hasCachedResult, taskReasoning]);
 
   // When modal opens, check if we need to fetch new content or use cached
   useEffect(() => {
@@ -265,7 +273,12 @@ export function AskAIModal({
       <Dialog open={isOpen} onOpenChange={setIsOpen}> 
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700">
-            {hasCachedResult ? "See Tips" : "Ask AI"}
+            {hasCachedResult 
+              ? "See Tips" 
+              : (taskReasoning && !initialHint) 
+                ? "Ask AI for help" 
+                : "Ask AI"
+            }
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">

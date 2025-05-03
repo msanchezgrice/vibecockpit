@@ -134,6 +134,25 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
         throw new Error(result.message || 'Failed to save AI draft');
       }
       console.log(`[ChecklistModal] Save Draft API success for ${taskId}:`, result);
+      
+      // Update local state to reflect the saved draft
+      setData(currentData => {
+        if (!currentData) return null;
+        
+        // Find the task and update its ai_help_hint
+        const updatedTasks = currentData.tasks.map(task => {
+          if (task.id === taskId) {
+            return { ...task, ai_help_hint: draft };
+          }
+          return task;
+        });
+        
+        return {
+          ...currentData,
+          tasks: updatedTasks
+        };
+      });
+      
     } catch(err) {
       console.error(`[ChecklistModal] Error in handleAcceptAIDraft for ${taskId}:`, err);
     }
@@ -288,10 +307,13 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
+                                  
+                                  {/* Check if this is a task that has reasoning (from AI) */}
                                   <AskAIModal 
                                     taskId={task.id} 
-                                    taskTitle={task.title} 
+                                    taskTitle={task.title}
                                     initialHint={task.ai_help_hint} 
+                                    taskReasoning={task.ai_help_hint}
                                     onAccept={handleAcceptAIDraft} 
                                   />
                                 </>
