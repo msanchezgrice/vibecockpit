@@ -6,6 +6,11 @@ import { Prisma } from '@/generated/prisma';
 import { openai, supportsResponsesApi, callResponsesApi, callResponsesWithWebSearch, extractWebSearchResults, ResponsesAPIResponse } from '@/lib/openai';
 import { ChatCompletion } from 'openai/resources';
 
+// Extend Vercel function timeout from 60 to 90 seconds
+export const config = {
+  maxDuration: 90, // Set timeout to 90 seconds
+};
+
 // --- OpenAI Tool Schemas --- 
 const generateCopySchema = {
     type: 'function' as const,

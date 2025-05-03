@@ -115,7 +115,16 @@ export function AskAIModal({
     } catch (err: unknown) {
         console.error("AI Draft fetch/generation failed:", err);
         const message = err instanceof Error ? err.message : 'Failed to process AI request';
-        setError(message);
+        
+        // Add more user-friendly messages for common errors
+        let userMessage = message;
+        if (message.includes('504') || message.includes('timed out')) {
+            userMessage = "The AI search is taking too long. This can happen with complex topics. Please try again or simplify your request.";
+        } else if (message.includes('429')) {
+            userMessage = "Too many requests. Please wait a moment and try again.";
+        }
+        
+        setError(userMessage);
         setAiDraft('');
     } finally {
         setIsLoading(false);
