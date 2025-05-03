@@ -190,7 +190,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
         if (supportsResponsesApi()) {
           try {
             response = await callResponsesApi({
-              model: 'o3',
+              model: 'gpt-4o',
               input: prompt,
               tools: [generateCopySchema, generateImageSchema, webResearchSchema, landingPageMockupSchema],
               toolChoice: "auto",
