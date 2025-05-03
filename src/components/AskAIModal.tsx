@@ -50,7 +50,11 @@ export function AskAIModal({
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [hasCachedResult, setHasCachedResult] = useState(!!initialHint);
-  const [isViewingReasoning, setIsViewingReasoning] = useState(false);
+  
+  // Initialize isViewingReasoning based on props
+  const [isViewingReasoning, setIsViewingReasoning] = useState(
+    !initialHint && !!taskReasoning
+  );
 
   // Fetch new recommendations from OpenAI only if no cached results
   const fetchAIDraft = useCallback(async () => {
@@ -96,16 +100,15 @@ export function AskAIModal({
     }
   }, [taskId, hasCachedResult, taskReasoning]);
 
-  // When modal opens, check if we need to fetch new content or use cached
+  // When modal opens, determine content source and mode
   useEffect(() => {
     if (isOpen) {
       if (initialHint) {
-        // We have cached content, use it
+        // Use cached content
         setAiDraft(initialHint);
         setHasCachedResult(true);
         setIsViewingReasoning(false);
         
-        // Still need to analyze content type
         setIsMarkdown(
           initialHint.includes('##') || 
           initialHint.includes('http') || 
@@ -113,12 +116,11 @@ export function AskAIModal({
           initialHint.includes('# ')
         );
       } else if (taskReasoning) {
-        // We have reasoning but no saved response
+        // Show reasoning and "Ask AI for help" button
         setAiDraft(taskReasoning);
         setIsViewingReasoning(true);
         setHasCachedResult(false);
         
-        // Check if reasoning is markdown
         setIsMarkdown(
           taskReasoning.includes('##') || 
           taskReasoning.includes('http') || 
@@ -126,7 +128,7 @@ export function AskAIModal({
           taskReasoning.includes('# ')
         );
       } else {
-        // No cached content or reasoning, fetch new recommendations
+        // No content, fetch new recommendations
         setIsViewingReasoning(false);
         fetchAIDraft();
       }
@@ -284,17 +286,19 @@ export function AskAIModal({
     setNewMessage('');
   }, [newMessage]);
 
+  // Update trigger button text based on content state
+  const buttonText = useMemo(() => {
+    if (hasCachedResult) return "See Tips";
+    if (taskReasoning && !initialHint) return "Ask AI for help";
+    return "Ask AI";
+  }, [hasCachedResult, taskReasoning, initialHint]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}> 
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700">
-            {hasCachedResult 
-              ? "See Tips" 
-              : (taskReasoning && !initialHint) 
-                ? "Ask AI for help" 
-                : "Ask AI"
-            }
+            {buttonText}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -441,7 +445,7 @@ export function AskAIModal({
                </div>
                
                <div className="flex space-x-2 items-center">
-                 {isMarkdown && (
+                 {isMarkdown && !isViewingReasoning && (
                    <>
                      <div className="flex border rounded-md overflow-hidden">
                        <Button 
