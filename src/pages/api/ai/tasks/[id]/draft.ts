@@ -64,6 +64,25 @@ const webResearchSchema = {
     }
 };
 
+// Add a new tool schema for landing page mockups with inline CSS
+const landingPageMockupSchema = {
+    type: 'function' as const,
+    function: {
+        name: 'generate_landing_page_mockup',
+        description: 'Generate a landing page mockup with inline CSS styling in markdown format.',
+        parameters: {
+            type: 'object',
+            properties: { 
+                html_mockup: { 
+                    type: 'string', 
+                    description: 'The generated HTML and CSS mockup using markdown and inline styles. Include semantic HTML and inline CSS for styling.' 
+                } 
+            },
+            required: ['html_mockup']
+        }
+    }
+};
+
 // Define interfaces for API responses
 interface Recommendation {
   title: string;
@@ -132,16 +151,22 @@ export default async function handler(
         if (supportsResponsesApi()) {
           console.log(`[AI Task ${checklistItemId}] Using Responses API with web search`);
           
-          // Create a search query based on task and project
-          const searchQuery = `Best practices and recommendations for "${taskTitle}" in context of "${projectName}" project`;
-          
+          // Update the instructions with CSS guidance
           const instructions = `You are a skilled project manager and creative director helping with a project task. 
 For the task "${taskTitle}" in project "${projectName}" (${projectDescription}), search for information online
 and provide specific, actionable recommendations. Include proper attribution to sources with URLs. 
-Format your response with a brief summary followed by numbered recommendations. For each, include:
+
+If the task involves creating a landing page, website, or UI design, provide a mockup using markdown with inline HTML and CSS.
+Use <div>, <section>, <h1>, <p>, and other semantic HTML tags with inline style attributes for precise styling.
+Example: <div style="display: flex; justify-content: space-between; background-color: #f5f5f5; padding: 20px;">Content</div>
+
+Format your response with a brief summary followed by numbered recommendations or a visual mockup. For each recommendation, include:
 1. A clear, actionable title
 2. A concise explanation
 3. Attribution to sources when applicable`;
+          
+          // Create a search query based on task and project
+          const searchQuery = `Best practices and recommendations for "${taskTitle}" in context of "${projectName}" project`;
           
           // Use web search via Responses API
           response = await callResponsesWithWebSearch(searchQuery, instructions);
@@ -167,9 +192,9 @@ Based on the project and task, provide specific, actionable recommendations. If 
             response = await callResponsesApi({
               model: 'o3',
               input: prompt,
-              tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+              tools: [generateCopySchema, generateImageSchema, webResearchSchema, landingPageMockupSchema],
               toolChoice: "auto",
-              instructions: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+              instructions: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, include HTML with inline CSS styling."
             });
           } catch (error) {
             console.log(`[AI Task ${checklistItemId}] Falling back to Chat Completions API: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -180,11 +205,11 @@ Based on the project and task, provide specific, actionable recommendations. If 
               messages: [
                 {
                   role: 'system',
-                  content: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+                  content: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, include HTML with inline CSS styling."
                 },
                 { role: 'user', content: prompt }
               ],
-              tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+              tools: [generateCopySchema, generateImageSchema, webResearchSchema, landingPageMockupSchema],
               tool_choice: "auto",
             });
           }
@@ -195,11 +220,11 @@ Based on the project and task, provide specific, actionable recommendations. If 
             messages: [
               {
                 role: 'system',
-                content: "You are a skilled project manager and creative director. Generate content that is concise, compelling, and aligned with the project goals."
+                content: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, include HTML with inline CSS styling."
               },
               { role: 'user', content: prompt }
             ],
-            tools: [generateCopySchema, generateImageSchema, webResearchSchema],
+            tools: [generateCopySchema, generateImageSchema, webResearchSchema, landingPageMockupSchema],
             tool_choice: "auto",
       });
         }
@@ -281,6 +306,10 @@ Based on the project and task, provide specific, actionable recommendations. If 
             updateData.ai_help_hint = formattedText;
             updateData.ai_image_prompt = null;
             generatedContentType = 'web_research';
+          } else if (functionName === 'generate_landing_page_mockup' && functionArgs.html_mockup) {
+            updateData.ai_help_hint = functionArgs.html_mockup;
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'landing_page_mockup';
           } else {
             console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
           }
@@ -325,6 +354,10 @@ Based on the project and task, provide specific, actionable recommendations. If 
             updateData.ai_help_hint = formattedText;
             updateData.ai_image_prompt = null;
             generatedContentType = 'web_research';
+        } else if (functionName === 'generate_landing_page_mockup' && functionArgs.html_mockup) {
+          updateData.ai_help_hint = functionArgs.html_mockup;
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'landing_page_mockup';
         } else {
            console.warn(`[AI Task ${checklistItemId}] Tool call response format unexpected.`);
         }
