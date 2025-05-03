@@ -56,9 +56,8 @@ export function AskAIModal({
 
   // Fetch new recommendations from OpenAI only if no cached results
   const fetchAIDraft = useCallback(async () => {
-    // Don't fetch if we already have cached results
-    if (hasCachedResult) return;
-    
+    // Remove check for hasCachedResult to allow fetching new recommendations
+    // even when there's existing content
     setIsLoading(true);
     setError(null);
     setAiDraft('Generating draft...');
@@ -80,6 +79,7 @@ export function AskAIModal({
         
         const content = result.ai_help_hint || result.ai_image_prompt || 'No suggestion available.';
         setAiDraft(content);
+        setHasCachedResult(true); // Mark that we now have a result
         
         // Check if the content is likely markdown (contains ## or URLs)
         setIsMarkdown(
@@ -96,7 +96,7 @@ export function AskAIModal({
     } finally {
         setIsLoading(false);
     }
-  }, [taskId, hasCachedResult, taskReasoning]);
+  }, [taskId, taskReasoning]);
 
   // When modal opens, determine content source and mode
   useEffect(() => {
@@ -410,7 +410,10 @@ export function AskAIModal({
                  {isViewingReasoning && (
                    <Button 
                      variant="default" 
-                     onClick={() => fetchAIDraft()} 
+                     onClick={() => {
+                       setIsViewingReasoning(false); // Stop viewing reasoning
+                       fetchAIDraft(); // Fetch AI recommendations
+                     }} 
                      disabled={isLoading}
                      className="bg-blue-600 hover:bg-blue-700 text-white"
                    >
