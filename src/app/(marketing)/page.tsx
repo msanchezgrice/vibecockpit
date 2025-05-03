@@ -1,9 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { LoginButton } from '@/components/authButtons';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 export default async function MarketingHomePage() {
   const session = await getServerSession(authOptions);
@@ -13,85 +11,171 @@ export default async function MarketingHomePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="p-4 border-b">
-         <h1 className="text-xl font-semibold">Vibe Cockpit</h1>
-      </header>
+    <div className="min-h-screen w-full bg-gradient-to-b from-indigo-50 via-sky-50 to-teal-50 font-sans text-gray-900">
 
-      <main className="flex-grow">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gradient-to-br from-indigo-100 via-white to-cyan-100">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-gray-900">
-                    Monitor Your Vercel & GitHub Projects
-                  </h1>
-                  <p className="max-w-[600px] text-gray-600 md:text-xl">
-                    Vibe Cockpit gives you a unified dashboard to track costs, activity, and analytics across your projects.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <LoginButton />
-                </div>
-              </div>
+      {/* ---------------- HERO ---------------- */}
+      <section className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-6 pb-32 pt-24 lg:flex-row lg:items-center lg:gap-16 lg:pt-40">
+        <div className="flex-1">
+          <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            ✨ Your Messy Side-Projects,<br className="hidden sm:block" />
+            Organized &amp; Shipped
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-gray-600">
+            <strong>BuildDeck</strong> keeps every "vibe-code" experiment in one place—repos,
+            deployments, databases, costs—then pairs you with a&nbsp;
+            <strong>Virtual Cofounder</strong> that pushes the last&nbsp;20 %.
+          </p>
+          <Button
+            asChild
+            className="mt-6 bg-blue-600 px-6 py-3 text-base hover:bg-blue-700"
+          >
+            <a href="/api/auth/signin">Sign in with GitHub</a>
+          </Button>
+        </div>
+
+        {/* Hero illustration (swap the src with your asset) */}
+        <div className="hidden flex-1 lg:block">
+          <img
+            src="/hero-illustration.png"
+            alt="Developer dashboard illustration"
+            className="w-full"
+          />
+        </div>
+      </section>
+
+      {/* ---------------- FEATURES ---------------- */}
+      <section className="mx-auto max-w-5xl px-6 py-20">
+        <h2 className="mb-10 text-center text-3xl font-bold">
+          Why Builders Love BuildDeck
+        </h2>
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <h3 className="mb-3 text-xl font-semibold">
+              🔗&nbsp;All Your Links, Zero Guesswork
+            </h3>
+            <ul className="list-disc pl-5 text-gray-600">
+              <li>GitHub repos, Vercel URLs, Supabase IDs—auto-linked</li>
+              <li>Last commit, uptime &amp; spend at a glance</li>
+              <li>Notes so you never say "where did I leave off?"</li>
+            </ul>
+          </div>
+
+          <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <h3 className="mb-3 text-xl font-semibold">
+              🤖&nbsp;Virtual Cofounder
+            </h3>
+            <ul className="list-disc pl-5 text-gray-600">
+              <li>Generates a tailored launch checklist</li>
+              <li>Drafts copy, OG images &amp; tweet threads</li>
+              <li>Nudges you on Slack if tasks go stale</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- AUDIENCE ---------------- */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <h2 className="mb-6 text-3xl font-bold">Who's It For?</h2>
+          <p className="mx-auto max-w-2xl text-lg text-gray-600">
+            Perfect for <strong>new-to-code makers</strong> and weekend hackers who
+            can wrangle GitHub &amp; Vercel but struggle to stay organised once idea #5 hits.
+          </p>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            <div className="rounded-xl border bg-gray-50 p-6 shadow-sm">
+              <h4 className="mb-2 text-lg font-semibold">🚀 Indie Devs</h4>
+              <p className="text-sm text-gray-600">
+                Keep experiments tidy and launch more often.
+              </p>
+            </div>
+
+            <div className="rounded-xl border bg-gray-50 p-6 shadow-sm">
+              <h4 className="mb-2 text-lg font-semibold">🛠️ Hack-Week Teams</h4>
+              <p className="text-sm text-gray-600">
+                Track multiple proofs-of-concept and avoid resource sprawl.
+              </p>
+            </div>
+
+            <div className="rounded-xl border bg-gray-50 p-6 shadow-sm">
+              <h4 className="mb-2 text-lg font-semibold">🎓 Students &amp; Boot-campers</h4>
+              <p className="text-sm text-gray-600">
+                Focus on learning; let BuildDeck handle the housekeeping.
+              </p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-white">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-              <div className="space-y-2">
-                 <div className="inline-block rounded-lg bg-gray-100 px-3 py-1 text-sm">How it Works</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Simple Steps to Clarity</h2>
-                <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Connect your accounts and let Vibe Cockpit gather the insights.
-                </p>
-              </div>
-            </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2">
-                     <CheckCircle className="w-5 h-5 text-green-500" /> Step 1: Connect
-                  </CardTitle>
-                  <CardDescription>Sign in securely with your GitHub account.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Authorize Vibe Cockpit to access necessary data from GitHub, Vercel, and Supabase.</p>
-                </CardContent>
-              </Card>
-               <Card>
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2">
-                     <CheckCircle className="w-5 h-5 text-green-500" /> Step 2: Link Projects
-                  </CardTitle>
-                  <CardDescription>Add your projects and link their Vercel and GitHub details.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Provide Vercel Project IDs and GitHub repository names (owner/repo) via the dashboard.</p>
-                </CardContent>
-              </Card>
-               <Card>
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2">
-                     <CheckCircle className="w-5 h-5 text-green-500" /> Step 3: Monitor
-                  </CardTitle>
-                  <CardDescription>View costs, activity, and analytics aggregated on your dashboard.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Nightly jobs collect data, keeping your dashboard up-to-date automatically.</p>
-                </CardContent>
-              </Card>
-            </div>
+      {/* ---------------- AI CAPABILITIES ---------------- */}
+      <section className="mx-auto max-w-5xl px-6 py-20">
+        <h2 className="mb-10 text-center text-3xl font-bold">
+          What Your Virtual Cofounder Does
+        </h2>
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <h3 className="mb-3 text-lg font-semibold">📝 Launch Checklist Example</h3>
+            <ol className="space-y-1 text-sm text-gray-600">
+              <li>1. Write 60-char tagline</li>
+              <li>
+                2. Stand-up{" "}
+                <code className="rounded bg-gray-100 px-1">/landing</code>
+              </li>
+              <li>3. Draft Product Hunt copy</li>
+              <li>4. Create OG image</li>
+              <li>5. Schedule tweet thread</li>
+            </ol>
           </div>
-        </section>
-      </main>
 
-       <footer className="flex items-center justify-center w-full h-16 border-t">
-        <p className="text-xs text-gray-500">© Vibe Cockpit</p>
-      </footer>
+          <div className="rounded-xl border bg-white p-6 shadow-sm">
+            <h3 className="mb-3 text-lg font-semibold">⚡ Automations</h3>
+            <ul className="list-disc pl-5 text-sm text-gray-600">
+              <li>Nightly cost &amp; uptime scan → Slack ping</li>
+              <li>Detects commit drought → suggests next task</li>
+              <li>Generates images via DALL·E 3 on demand</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- HOW IT WORKS ---------------- */}
+      <section className="bg-gray-50 py-20">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-600">
+            How it Works
+          </span>
+          <h2 className="mb-10 mt-4 text-3xl font-bold">
+            Three Steps from Chaos → Clarity
+          </h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              { num: "1️⃣", title: "Connect", copy: "Sign in with GitHub & permit Vercel access." },
+              { num: "2️⃣", title: "Organise", copy: "BuildDeck auto-links repos, URLs, DBs & spend." },
+              { num: "3️⃣", title: "Finish", copy: "Virtual Cofounder generates tasks & pushes them to done." },
+            ].map((step) => (
+              <div key={step.num} className="rounded-xl border bg-white p-6 shadow-sm">
+                <h4 className="mb-2 text-lg font-semibold">
+                  {step.num} {step.title}
+                </h4>
+                <p className="text-sm text-gray-600">{step.copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- CTA ---------------- */}
+      <section className="bg-blue-600 py-16 text-center text-white">
+        <h2 className="text-3xl font-bold">
+          🛫 Ready to finish every project you start?
+        </h2>
+        <Button
+          asChild
+          className="mt-6 bg-white text-blue-600 hover:bg-gray-100"
+        >
+          <a href="/api/auth/signin">Sign in with GitHub</a>
+        </Button>
+      </section>
     </div>
   );
 }
