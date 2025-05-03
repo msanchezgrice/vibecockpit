@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, RotateCcw, Globe, ExternalLink, Maximize2, Code } from 'lucide-react';
+import { Sparkles, RotateCcw, Globe, ExternalLink, Maximize2, Code, Eye, Edit, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
@@ -37,7 +37,8 @@ export function AskAIModal({
   const [aiDraft, setAiDraft] = useState(initialHint ?? 'Loading draft...');
   const [error, setError] = useState<string | null>(null);
   const [isMarkdown, setIsMarkdown] = useState(false);
-  const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'code'>('preview');
+  const [isHtmlMockup, setIsHtmlMockup] = useState(false);
+  const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'code' | 'html'>('preview');
   const [fullscreenPreview, setFullscreenPreview] = useState(false);
 
   const fetchAIDraft = useCallback(async (isRegenerate = false) => {
@@ -84,6 +85,36 @@ export function AskAIModal({
     }
   }, [isOpen, taskId, fetchAIDraft]);
 
+  useEffect(() => {
+    if (!aiDraft) return;
+    
+    // Check if it's likely HTML+CSS content
+    const hasCSS = aiDraft.includes(' {') && aiDraft.includes('}') && 
+                  (aiDraft.includes('body {') || aiDraft.includes('div {') || 
+                   aiDraft.includes('color:') || aiDraft.includes('display:'));
+                   
+    const hasHTML = aiDraft.includes('<div') || aiDraft.includes('<section') || 
+                   aiDraft.includes('<header') || aiDraft.includes('<button');
+    
+    setIsHtmlMockup(hasCSS && hasHTML);
+    
+    // Check if the content is likely markdown
+    setIsMarkdown(
+      aiDraft.includes('##') || 
+      aiDraft.includes('http') || 
+      aiDraft.includes('Source:') ||
+      aiDraft.includes('# ') ||
+      hasHTML
+    );
+    
+    // Set initial view mode based on content
+    if (hasCSS && hasHTML) {
+      setViewMode('html');
+    } else if (aiDraft.includes('##') || aiDraft.includes('# ')) {
+      setViewMode('preview');
+    }
+  }, [aiDraft]);
+
   const handleRegenerate = () => fetchAIDraft(true);
 
   const handleAccept = () => {
@@ -96,6 +127,38 @@ export function AskAIModal({
     return content.includes('Source:') || 
            (content.includes('http') && content.includes('Recommendation'));
   };
+
+  // Preprocess AI response for better HTML rendering
+  const processedAiDraft = useMemo(() => {
+    if (!aiDraft) return '';
+    
+    // If the content appears to be HTML+CSS (contains CSS selectors)
+    if (aiDraft.includes('{') && aiDraft.includes('}') && 
+       (aiDraft.includes('body {') || aiDraft.includes('div {') || aiDraft.includes('.container {'))) {
+      
+      // Extract CSS and HTML parts
+      const parts = aiDraft.split(/\n\s*\n/);
+      let cssContent = '';
+      let htmlContent = '';
+      
+      // Process each part
+      parts.forEach(part => {
+        if (part.includes('{') && part.includes('}') && 
+           (part.includes(' {') || part.includes('{ '))) {
+          // This looks like CSS
+          cssContent += part + '\n';
+        } else if (part.trim().length > 0) {
+          // This looks like HTML or text content
+          htmlContent += part + '\n';
+        }
+      });
+      
+      // Return formatted content with style tag
+      return `<style>\n${cssContent}\n</style>\n\n${htmlContent}`;
+    }
+    
+    return aiDraft;
+  }, [aiDraft]);
 
   // Extract URLs from content for direct links
   const extractUrls = (content: string): Array<{url: string, title: string}> => {
@@ -181,6 +244,13 @@ export function AskAIModal({
                 <pre className="bg-slate-950 text-slate-50 p-4 rounded-md overflow-auto">
                   <code>{aiDraft}</code>
                 </pre>
+              ) : viewMode === 'html' ? (
+                <div className="w-full h-full">
+                  <div 
+                    className="w-full bg-white rounded" 
+                    dangerouslySetInnerHTML={{ __html: processedAiDraft }}
+                  />
+                </div>
               ) : (
                 <div className={`prose prose-base max-w-none ${fullscreenPreview ? 'min-h-screen p-8' : ''}`}>
                   <ReactMarkdown 
@@ -191,10 +261,31 @@ export function AskAIModal({
                         'span': ['style', 'class', 'className'],
                         'a': ['href', 'target', 'rel'],
                         'img': ['src', 'alt', 'width', 'height'],
+                        'body': ['style'],
+                        'header': ['style'],
+                        'footer': ['style'],
+                        'h1': ['style'],
+                        'button': ['style'],
+                        'container': ['style'],
+                        'content': ['style'],
+                        'cta-button': ['style']
                       }
                     }]]}
+                    components={{
+                      p: (props) => {
+                        // Check if the paragraph starts with CSS-like content
+                        const content = props.children?.toString() || '';
+                        if (content.trim().startsWith('body {') || content.includes(' { ')) {
+                          // Wrap CSS-like content in a style tag
+                          return (
+                            <style dangerouslySetInnerHTML={{__html: content}} />
+                          );
+                        }
+                        return <p {...props} />;
+                      }
+                    }}
                   >
-                    {aiDraft}
+                    {processedAiDraft}
                   </ReactMarkdown>
                 </div>
               )}
@@ -217,8 +308,19 @@ export function AskAIModal({
                          disabled={isLoading}
                          className="rounded-none border-r"
                        >
-                         Preview
+                         <Eye className="h-4 w-4 mr-1" /> Preview
                        </Button>
+                       {isHtmlMockup && (
+                         <Button 
+                           variant={viewMode === 'html' ? 'secondary' : 'ghost'}
+                           size="sm"
+                           onClick={() => setViewMode('html')}
+                           disabled={isLoading}
+                           className="rounded-none border-r"
+                         >
+                           <FileText className="h-4 w-4 mr-1" /> HTML
+                         </Button>
+                       )}
                        <Button 
                          variant={viewMode === 'edit' ? 'secondary' : 'ghost'}
                          size="sm"
@@ -226,7 +328,7 @@ export function AskAIModal({
                          disabled={isLoading}
                          className="rounded-none border-r"
                        >
-                         Edit
+                         <Edit className="h-4 w-4 mr-1" /> Edit
                        </Button>
                        <Button 
                          variant={viewMode === 'code' ? 'secondary' : 'ghost'}
@@ -243,7 +345,7 @@ export function AskAIModal({
                        variant="outline"
                        size="icon"
                        onClick={() => setFullscreenPreview(!fullscreenPreview)}
-                       disabled={isLoading || viewMode !== 'preview'}
+                       disabled={isLoading || (viewMode !== 'preview' && viewMode !== 'html')}
                      >
                        <Maximize2 className="h-4 w-4" />
                      </Button>
@@ -262,7 +364,7 @@ export function AskAIModal({
         </DialogContent>
       </Dialog>
       
-      {/* Fullscreen preview dialog */}
+      {/* Fullscreen preview dialog - update to support HTML view mode */}
       {fullscreenPreview && (
         <Dialog open={fullscreenPreview} onOpenChange={setFullscreenPreview}>
           <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh]">
@@ -276,25 +378,76 @@ export function AskAIModal({
             </DialogHeader>
             
             <div className="flex-1 overflow-auto p-4 bg-white rounded-lg">
-              <ReactMarkdown 
-                rehypePlugins={[rehypeRaw, [rehypeSanitize, {
-                  attributes: {
-                    '*': ['style', 'class', 'className'],
-                    'div': ['style', 'class', 'className'],
-                    'span': ['style', 'class', 'className'],
-                    'a': ['href', 'target', 'rel'],
-                    'img': ['src', 'alt', 'width', 'height'],
-                  }
-                }]]}
-              >
-                {aiDraft}
-              </ReactMarkdown>
+              {viewMode === 'html' ? (
+                <div 
+                  className="w-full h-full bg-white" 
+                  dangerouslySetInnerHTML={{ __html: processedAiDraft }}
+                />
+              ) : (
+                <ReactMarkdown 
+                  rehypePlugins={[rehypeRaw, [rehypeSanitize, {
+                    attributes: {
+                      '*': ['style', 'class', 'className'],
+                      'div': ['style', 'class', 'className'],
+                      'span': ['style', 'class', 'className'],
+                      'a': ['href', 'target', 'rel'],
+                      'img': ['src', 'alt', 'width', 'height'],
+                      'body': ['style'],
+                      'header': ['style'],
+                      'footer': ['style'],
+                      'h1': ['style'],
+                      'button': ['style'],
+                      'container': ['style'],
+                      'content': ['style'],
+                      'cta-button': ['style']
+                    }
+                  }]]}
+                  components={{
+                    p: (props) => {
+                      // Check if the paragraph starts with CSS-like content
+                      const content = props.children?.toString() || '';
+                      if (content.trim().startsWith('body {') || content.includes(' { ')) {
+                        // Wrap CSS-like content in a style tag
+                        return (
+                          <style dangerouslySetInnerHTML={{__html: content}} />
+                        );
+                      }
+                      return <p {...props} />;
+                    }
+                  }}
+                >
+                  {processedAiDraft}
+                </ReactMarkdown>
+              )}
             </div>
             
             <DialogFooter>
-              <DialogClose asChild>
-                <Button>Close</Button>
-              </DialogClose>
+              <div className="flex space-x-2">
+                {isHtmlMockup && (
+                  <div className="flex border rounded-md overflow-hidden mr-auto">
+                    <Button 
+                      variant={viewMode === 'preview' ? 'secondary' : 'ghost'}
+                      onClick={() => setViewMode('preview')}
+                      size="sm"
+                      className="rounded-none border-r"
+                    >
+                      <Eye className="h-4 w-4 mr-1" /> Preview
+                    </Button>
+                    <Button 
+                      variant={viewMode === 'html' ? 'secondary' : 'ghost'}
+                      onClick={() => setViewMode('html')}
+                      size="sm"
+                      className="rounded-none"
+                    >
+                      <FileText className="h-4 w-4 mr-1" /> HTML
+                    </Button>
+                  </div>
+                )}
+                
+                <DialogClose asChild>
+                  <Button>Close</Button>
+                </DialogClose>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -75,7 +75,7 @@ const landingPageMockupSchema = {
             properties: { 
                 html_mockup: { 
                     type: 'string', 
-                    description: 'The generated HTML and CSS mockup using markdown and inline styles. Include semantic HTML and inline CSS for styling.' 
+                    description: 'The generated HTML and CSS mockup. Start with all CSS styles followed by the actual HTML content. Format CSS like this: "body { font-family: Arial; } .header { background-color: #007BFF; }" and then add the HTML structure afterward.' 
                 } 
             },
             required: ['html_mockup']
@@ -194,7 +194,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
               input: prompt,
               tools: [generateCopySchema, generateImageSchema, webResearchSchema, landingPageMockupSchema],
               toolChoice: "auto",
-              instructions: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, include HTML with inline CSS styling."
+              instructions: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, structure your response in two parts: 1) All CSS styles at the top in a single block, followed by 2) The HTML structure. Do not mix inline styles with HTML tags. Example: 'body { font-family: Arial; } .header { background: blue; } \n\n <div class=\"header\">Content</div>'"
             });
           } catch (error) {
             console.log(`[AI Task ${checklistItemId}] Falling back to Chat Completions API: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -205,7 +205,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
               messages: [
                 {
                   role: 'system',
-                  content: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, include HTML with inline CSS styling."
+                  content: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, structure your response in two parts: 1) All CSS styles at the top in a single block, followed by 2) The HTML structure. Do not mix inline styles with HTML tags. Example: 'body { font-family: Arial; } .header { background: blue; } \n\n <div class=\"header\">Content</div>'"
                 },
                 { role: 'user', content: prompt }
               ],
@@ -220,7 +220,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
             messages: [
               {
                 role: 'system',
-                content: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, include HTML with inline CSS styling."
+                content: "You are a skilled project manager, creative director, and web designer. Generate content that is concise, compelling, and aligned with the project goals. If the task involves UI or landing pages, structure your response in two parts: 1) All CSS styles at the top in a single block, followed by 2) The HTML structure. Do not mix inline styles with HTML tags. Example: 'body { font-family: Arial; } .header { background: blue; } \n\n <div class=\"header\">Content</div>'"
               },
               { role: 'user', content: prompt }
             ],
