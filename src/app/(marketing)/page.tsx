@@ -23,7 +23,7 @@ export default async function MarketingHomePage() {
             Organized & Shipped
           </h1>
           <p className="mt-4 max-w-md text-lg text-gray-600">
-            <strong>BuildDeck</strong> keeps every "vibe-code" experiment in one place—repos,
+            <strong>Virtualcofounder.ai</strong> keeps every {'"'}vibe-code{'"'} experiment in one place—repos,
             deployments, databases, costs—then pairs you with a{' '}
             <strong>Virtual Cofounder</strong> that pushes the last 20%.
           </p>
@@ -50,7 +50,7 @@ export default async function MarketingHomePage() {
       {/* ---------------- FEATURES ---------------- */}
       <section className="mx-auto max-w-5xl px-6 py-20">
         <h2 className="mb-10 text-center text-3xl font-bold">
-          Why Builders Love BuildDeck
+          Why Builders Love Virtualcofounder.ai
         </h2>
         <div className="grid gap-8 md:grid-cols-2">
           <div className="rounded-xl border bg-white p-6 shadow-sm">
@@ -60,7 +60,7 @@ export default async function MarketingHomePage() {
             <ul className="list-disc pl-5 text-gray-600">
               <li>GitHub repos, Vercel URLs, Supabase IDs—auto-linked</li>
               <li>Last commit, uptime & spend at a glance</li>
-              <li>Notes so you never say "where did I leave off?"</li>
+              <li>Notes so you never say {'"'}where did I leave off?{'"'}</li>
             </ul>
           </div>
 
@@ -104,7 +104,7 @@ export default async function MarketingHomePage() {
             <div className="rounded-xl border bg-gray-50 p-6 shadow-sm">
               <h4 className="mb-2 text-lg font-semibold">🎓 Students & Boot-campers</h4>
               <p className="text-sm text-gray-600">
-                Focus on learning; let BuildDeck handle the housekeeping.
+                Focus on learning; let Virtualcofounder.ai handle the housekeeping.
               </p>
             </div>
           </div>
@@ -122,7 +122,7 @@ export default async function MarketingHomePage() {
             <ol className="space-y-1 text-sm text-gray-600">
               <li>1. Write 60-char tagline</li>
               <li>
-                2. Stand-up{" "}
+                2. Stand-up{' '}
                 <code className="rounded bg-gray-100 px-1">/landing</code>
               </li>
               <li>3. Draft Product Hunt copy</li>
@@ -154,7 +154,7 @@ export default async function MarketingHomePage() {
           <div className="grid gap-6 md:grid-cols-3">
             {[
               { num: "1️⃣", title: "Connect", copy: "Sign in with GitHub & permit Vercel access." },
-              { num: "2️⃣", title: "Organise", copy: "BuildDeck auto-links repos, URLs, DBs & spend." },
+              { num: "2️⃣", title: "Organise", copy: "Virtualcofounder.ai auto-links repos, URLs, DBs & spend." },
               { num: "3️⃣", title: "Finish", copy: "Virtual Cofounder generates tasks & pushes them to done." },
             ].map((step) => (
               <div key={step.num} className="rounded-xl border bg-white p-6 shadow-sm">
