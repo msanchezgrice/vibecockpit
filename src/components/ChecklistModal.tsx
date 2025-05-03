@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2, Plus } from 'lucide-react';
 import { AskAIModal } from './AskAIModal';
+import { Input } from "@/components/ui/input";
 
 interface ChecklistModalProps {
   projectId: string;
@@ -31,6 +32,10 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
   const { data, isLoading, error, setData } = useChecklist(projectId); 
   const [isUpdatingTask, setIsUpdatingTask] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isDeletingTask, setIsDeletingTask] = useState<string | null>(null);
+  const [addTaskError, setAddTaskError] = useState<string | null>(null);
 
   // Handle state internally based on props
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -134,6 +139,64 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
     }
   };
 
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    
+    setIsAddingTask(true);
+    setAddTaskError(null);
+    
+    try {
+      const response = await fetch('/api/checklist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          title: newTaskTitle.trim()
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add task');
+      }
+      
+      const updatedData = await response.json();
+      setData(updatedData);
+      setNewTaskTitle(''); // Clear input after successful add
+      
+    } catch (err) {
+      console.error('Error adding task:', err);
+      setAddTaskError(err instanceof Error ? err.message : 'Failed to add task');
+    } finally {
+      setIsAddingTask(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    setIsDeletingTask(taskId);
+    
+    try {
+      const response = await fetch(`/api/checklist/${taskId}/delete`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete task');
+      }
+      
+      const updatedData = await response.json();
+      setData(updatedData);
+      
+    } catch (err) {
+      console.error(`Error deleting task ${taskId}:`, err);
+      setToggleError(`Failed to delete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsDeletingTask(null);
+    }
+  };
+
   return (
     <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col">
@@ -157,6 +220,33 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
             </div>
           </div>
         )}
+        
+        {/* Add Task Form */}
+        <form onSubmit={handleAddTask} className="flex items-center gap-2 my-4">
+          <Input
+            type="text"
+            placeholder="Add new task..."
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            disabled={isAddingTask}
+            className="flex-grow"
+          />
+          <Button 
+            type="submit" 
+            size="sm" 
+            disabled={isAddingTask || !newTaskTitle.trim()}
+            className="px-3"
+          >
+            {isAddingTask ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-1" /> Add
+              </>
+            )}
+          </Button>
+        </form>
+        {addTaskError && <p className="text-xs text-red-500 mt-1 mb-2">{addTaskError}</p>}
         
         {/* Scrollable Task List */}
         <ScrollArea className="flex-grow border rounded-md p-1 mb-4"> 
@@ -185,13 +275,28 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                                 <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs px-1.5 py-0.5">AI</Badge>
                              )}
                             </div>
-                            {isUpdatingTask === task.id && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>}
-                            <AskAIModal 
-                                taskId={task.id} 
-                                taskTitle={task.title} 
-                                initialHint={task.ai_help_hint} 
-                                onAccept={handleAcceptAIDraft} 
-                            />
+                            <div className="flex items-center gap-2">
+                              {isUpdatingTask === task.id || isDeletingTask === task.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>
+                              ) : (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="h-7 w-7 text-red-600 hover:text-red-800 hover:bg-red-50"
+                                    onClick={() => handleDeleteTask(task.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                  <AskAIModal 
+                                    taskId={task.id} 
+                                    taskTitle={task.title} 
+                                    initialHint={task.ai_help_hint} 
+                                    onAccept={handleAcceptAIDraft} 
+                                  />
+                                </>
+                              )}
+                            </div>
                         </li>
                     ))}
                 </ul>
