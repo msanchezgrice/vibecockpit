@@ -35,7 +35,7 @@ export function AskAIModal({
 }: AskAIModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [aiDraft, setAiDraft] = useState(initialHint ?? 'Loading draft...');
+  const [aiDraft, setAiDraft] = useState(initialHint ?? '');
   const [error, setError] = useState<string | null>(null);
   const [isMarkdown, setIsMarkdown] = useState(false);
   const [isHtmlMockup, setIsHtmlMockup] = useState(false);
@@ -47,15 +47,16 @@ export function AskAIModal({
     { role: 'assistant', content: 'Hi! How may I help you?' }
   ]);
   const [newMessage, setNewMessage] = useState('');
+  const [hasCachedResult, setHasCachedResult] = useState(!!initialHint);
 
-  const fetchAIDraft = useCallback(async (isRegenerate = false) => {
+  // Fetch new recommendations from OpenAI only if no cached results
+  const fetchAIDraft = useCallback(async () => {
+    // Don't fetch if we already have cached results
+    if (hasCachedResult) return;
+    
     setIsLoading(true);
     setError(null);
-    if (!isRegenerate) {
-        setAiDraft(initialHint ?? 'Generating draft...');
-    } else {
-        setAiDraft('Regenerating draft...');
-    }
+    setAiDraft('Generating draft...');
 
     try {
         const response = await fetch(`/api/ai/tasks/${taskId}/draft`, {
@@ -80,18 +81,35 @@ export function AskAIModal({
         console.error("AI Draft fetch/generation failed:", err);
         const message = err instanceof Error ? err.message : 'Failed to process AI request';
         setError(message);
-        setAiDraft(initialHint ?? 'Error loading draft.');
+        setAiDraft('');
     } finally {
         setIsLoading(false);
     }
-  }, [taskId, initialHint]);
+  }, [taskId, hasCachedResult]);
 
+  // When modal opens, check if we need to fetch new content or use cached
   useEffect(() => {
-    if (isOpen && taskId) {
-      fetchAIDraft();
+    if (isOpen) {
+      if (initialHint) {
+        // We have cached content, use it
+        setAiDraft(initialHint);
+        setHasCachedResult(true);
+        
+        // Still need to analyze content type
+        setIsMarkdown(
+          initialHint.includes('##') || 
+          initialHint.includes('http') || 
+          initialHint.includes('Source:') ||
+          initialHint.includes('# ')
+        );
+      } else {
+        // No cached content, fetch new recommendations
+        fetchAIDraft();
+      }
     }
-  }, [isOpen, taskId, fetchAIDraft]);
+  }, [isOpen, initialHint, fetchAIDraft]);
 
+  // Initial analysis of the content when it changes
   useEffect(() => {
     if (!aiDraft) return;
     
@@ -123,10 +141,11 @@ export function AskAIModal({
   }, [aiDraft]);
 
   // Unused but kept for future reference
-  const _handleRegenerate = () => fetchAIDraft(true);
+  const _handleRegenerate = () => fetchAIDraft();
 
   const handleAccept = () => {
-    onAccept(taskId, aiDraft); // Pass accepted draft back
+    onAccept(taskId, aiDraft); // Pass accepted draft back to be saved/persisted
+    setHasCachedResult(true); // Mark as having cached result now
     setIsOpen(false); // Close modal
   };
   
@@ -246,7 +265,7 @@ export function AskAIModal({
       <Dialog open={isOpen} onOpenChange={setIsOpen}> 
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700">
-            {initialHint ? "See Tips" : "Ask AI"}
+            {hasCachedResult ? "See Tips" : "Ask AI"}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
