@@ -195,7 +195,7 @@ export function AskAIModal({
             Ask AI
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center">
                <Sparkles className="w-6 h-6 mr-2 text-purple-500" /> AI Assistant
@@ -227,7 +227,7 @@ export function AskAIModal({
             )}
           </DialogHeader>
           
-          <ScrollArea className="flex-grow my-4 min-h-[350px] border rounded-md p-4">
+          <ScrollArea className="flex-grow my-4 border rounded-md overflow-hidden">
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center h-36">
                   <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -241,18 +241,18 @@ export function AskAIModal({
                   rows={15}
                 />
               ) : viewMode === 'code' ? (
-                <pre className="bg-slate-950 text-slate-50 p-4 rounded-md overflow-auto">
+                <pre className="bg-slate-950 text-slate-50 p-4 rounded-md max-h-[calc(90vh-200px)] overflow-auto">
                   <code>{aiDraft}</code>
                 </pre>
               ) : viewMode === 'html' ? (
-                <div className="w-full h-full">
+                <div className="w-full max-h-[calc(90vh-200px)] overflow-auto p-4">
                   <div 
                     className="w-full bg-white rounded" 
                     dangerouslySetInnerHTML={{ __html: processedAiDraft }}
                   />
                 </div>
               ) : (
-                <div className={`prose prose-base max-w-none ${fullscreenPreview ? 'min-h-screen p-8' : ''}`}>
+                <div className={`prose prose-base max-w-none p-4 max-h-[calc(90vh-200px)] overflow-auto ${fullscreenPreview ? 'min-h-screen p-8' : ''}`}>
                   <ReactMarkdown 
                     rehypePlugins={[rehypeRaw, [rehypeSanitize, {
                       attributes: {
@@ -289,10 +289,10 @@ export function AskAIModal({
                   </ReactMarkdown>
                 </div>
               )}
-              {error && <p className="text-sm text-red-500 mt-4">{error}</p>}
+              {error && <p className="text-sm text-red-500 mt-4 p-4">{error}</p>}
           </ScrollArea>
 
-          <DialogFooter className="flex-shrink-0 pt-4 border-t flex flex-row justify-between items-center">
+          <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t flex flex-row justify-between items-center sticky bottom-0 bg-background z-10">
                <Button variant="outline" onClick={handleRegenerate} disabled={isLoading} className="mr-auto">
                   <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Regenerate
                </Button>
@@ -367,8 +367,8 @@ export function AskAIModal({
       {/* Fullscreen preview dialog - update to support HTML view mode */}
       {fullscreenPreview && (
         <Dialog open={fullscreenPreview} onOpenChange={setFullscreenPreview}>
-          <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh]">
-            <DialogHeader>
+          <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] flex flex-col overflow-hidden">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle className="flex items-center">
                 <Sparkles className="w-6 h-6 mr-2 text-purple-500" /> Landing Page Preview
               </DialogTitle>
@@ -421,10 +421,10 @@ export function AskAIModal({
               )}
             </div>
             
-            <DialogFooter>
-              <div className="flex space-x-2">
+            <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t sticky bottom-0 bg-background z-10">
+              <div className="flex space-x-2 w-full justify-between">
                 {isHtmlMockup && (
-                  <div className="flex border rounded-md overflow-hidden mr-auto">
+                  <div className="flex border rounded-md overflow-hidden">
                     <Button 
                       variant={viewMode === 'preview' ? 'secondary' : 'ghost'}
                       onClick={() => setViewMode('preview')}
