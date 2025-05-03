@@ -446,7 +446,7 @@ export function AskAIModal({
                    </Button>
                  )}
                  
-                 {!isViewingReasoning && (
+                 {!isViewingReasoning && aiDraft && !aiDraft.startsWith('Generating') && !aiDraft.startsWith('Loading') && (
                    <Button variant="outline" onClick={handleRefineClick} disabled={isLoading}>
                       <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refine Results
                    </Button>
