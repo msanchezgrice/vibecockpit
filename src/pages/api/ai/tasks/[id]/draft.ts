@@ -190,7 +190,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
         if (supportsResponsesApi()) {
           try {
             response = await callResponsesApi({
-              model: 'gpt-4o',
+              model: 'gpt-4o-2024-11-20',
               input: prompt,
               tools: [generateCopySchema, generateImageSchema, webResearchSchema, landingPageMockupSchema],
               toolChoice: "auto",
@@ -201,7 +201,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
             
             // Fallback to Chat Completions API
             response = await openai.chat.completions.create({
-              model: 'gpt-4o',
+              model: 'gpt-4o-2024-11-20',
               messages: [
                 {
                   role: 'system',
@@ -216,7 +216,7 @@ Based on the project and task, provide specific, actionable recommendations. If 
         } else {
           // Fallback to Chat Completions API
           response = await openai.chat.completions.create({
-            model: 'gpt-4o',
+            model: 'gpt-4o-2024-11-20',
             messages: [
               {
                 role: 'system',

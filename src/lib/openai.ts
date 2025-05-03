@@ -89,7 +89,7 @@ export async function callResponsesApi(options: ResponsesAPIOptions): Promise<Re
     };
     
     return await api.create({
-      model: options.model || 'gpt-4o',
+      model: options.model || 'gpt-4o-2024-11-20',
       input: options.input,
       instructions: options.instructions,
       tools: options.tools,
@@ -111,7 +111,7 @@ export async function callResponsesWithWebSearch(query: string, instructions?: s
     console.log(`Performing web search for: ${query}`);
     
     const response = await callResponsesApi({
-      model: 'gpt-4o',
+      model: 'gpt-4o-2024-11-20',
       input: query,
       instructions: instructions,
       tools: [{ type: 'web_search' }],
