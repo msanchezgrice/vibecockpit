@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, RotateCcw, Globe, ExternalLink, Maximize2, Code, Eye, Edit, FileText } from 'lucide-react';
+import { Sparkles, RotateCcw, Globe, ExternalLink, Maximize2, Code, Eye, Edit, FileText, Copy, Check, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
@@ -40,6 +40,7 @@ export function AskAIModal({
   const [isHtmlMockup, setIsHtmlMockup] = useState(false);
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'code' | 'html'>('preview');
   const [fullscreenPreview, setFullscreenPreview] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const fetchAIDraft = useCallback(async (isRegenerate = false) => {
     setIsLoading(true);
@@ -187,6 +188,29 @@ export function AskAIModal({
     return urls;
   };
 
+  // Function to handle copying text to clipboard
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(aiDraft)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy text:', err);
+      });
+  }, [aiDraft]);
+
+  // Function to handle downloading content
+  const handleDownload = useCallback(() => {
+    const element = document.createElement('a');
+    const file = new Blob([aiDraft], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${taskTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_ai_draft.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }, [aiDraft, taskTitle]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}> 
@@ -293,9 +317,32 @@ export function AskAIModal({
           </ScrollArea>
 
           <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t flex flex-row justify-between items-center sticky bottom-0 bg-background z-10">
-               <Button variant="outline" onClick={handleRegenerate} disabled={isLoading} className="mr-auto">
-                  <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Regenerate
-               </Button>
+               <div className="flex items-center space-x-2">
+                 <Button variant="outline" onClick={handleRegenerate} disabled={isLoading}>
+                    <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Regenerate
+                 </Button>
+                 
+                 {!isLoading && aiDraft && !aiDraft.startsWith('Loading') && !aiDraft.startsWith('Generating') && (
+                   <>
+                     <Button 
+                       variant="outline" 
+                       size="icon" 
+                       onClick={handleCopy}
+                       title="Copy to clipboard"
+                     >
+                       {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                     </Button>
+                     <Button 
+                       variant="outline" 
+                       size="icon" 
+                       onClick={handleDownload}
+                       title="Download as text file"
+                     >
+                       <Download className="h-4 w-4" />
+                     </Button>
+                   </>
+                 )}
+               </div>
                
                <div className="flex space-x-2 items-center">
                  {isMarkdown && (
@@ -346,6 +393,7 @@ export function AskAIModal({
                        size="icon"
                        onClick={() => setFullscreenPreview(!fullscreenPreview)}
                        disabled={isLoading || (viewMode !== 'preview' && viewMode !== 'html')}
+                       title="Maximize view"
                      >
                        <Maximize2 className="h-4 w-4" />
                      </Button>
@@ -364,7 +412,7 @@ export function AskAIModal({
         </DialogContent>
       </Dialog>
       
-      {/* Fullscreen preview dialog - update to support HTML view mode */}
+      {/* Fullscreen preview dialog - update to be 2x wider */}
       {fullscreenPreview && (
         <Dialog open={fullscreenPreview} onOpenChange={setFullscreenPreview}>
           <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] flex flex-col overflow-hidden">
@@ -423,26 +471,45 @@ export function AskAIModal({
             
             <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t sticky bottom-0 bg-background z-10">
               <div className="flex space-x-2 w-full justify-between">
-                {isHtmlMockup && (
-                  <div className="flex border rounded-md overflow-hidden">
-                    <Button 
-                      variant={viewMode === 'preview' ? 'secondary' : 'ghost'}
-                      onClick={() => setViewMode('preview')}
-                      size="sm"
-                      className="rounded-none border-r"
-                    >
-                      <Eye className="h-4 w-4 mr-1" /> Preview
-                    </Button>
-                    <Button 
-                      variant={viewMode === 'html' ? 'secondary' : 'ghost'}
-                      onClick={() => setViewMode('html')}
-                      size="sm"
-                      className="rounded-none"
-                    >
-                      <FileText className="h-4 w-4 mr-1" /> HTML
-                    </Button>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  {isHtmlMockup && (
+                    <div className="flex border rounded-md overflow-hidden mr-4">
+                      <Button 
+                        variant={viewMode === 'preview' ? 'secondary' : 'ghost'}
+                        onClick={() => setViewMode('preview')}
+                        size="sm"
+                        className="rounded-none border-r"
+                      >
+                        <Eye className="h-4 w-4 mr-1" /> Preview
+                      </Button>
+                      <Button 
+                        variant={viewMode === 'html' ? 'secondary' : 'ghost'}
+                        onClick={() => setViewMode('html')}
+                        size="sm"
+                        className="rounded-none"
+                      >
+                        <FileText className="h-4 w-4 mr-1" /> HTML
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleCopy}
+                    title="Copy to clipboard"
+                  >
+                    {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleDownload}
+                    title="Download as text file"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
                 
                 <DialogClose asChild>
                   <Button>Close</Button>
