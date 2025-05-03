@@ -1,6 +1,7 @@
 // import { serve } from "jsr:@std/http";
 import { OpenAI } from "npm:openai@^4"; // Import OpenAI SDK
 import { createClient } from 'npm:@supabase/supabase-js@2'; // Import Supabase client
+import { analyzeWebsite, analyzeGitHubRepo } from './content-analyzer.ts'; // Import content analyzer
 // import { corsHeaders } from '../_shared/cors.ts'; // Removed incorrect import
 
 // Define standard CORS headers directly
@@ -153,17 +154,56 @@ Deno.serve(async (req) => {
     console.log("launch-checklist: Fetched project data for", project_id);
     // --- End Fetch Project Details ---
 
+    // --- Analyze External Content ---
+    console.log("launch-checklist: Starting content analysis");
+    
+    // Analyze website if URL is provided
+    let websiteAnalysis = "No website URL provided";
+    if (projectData.frontendUrl) {
+      try {
+        console.log(`launch-checklist: Analyzing website: ${projectData.frontendUrl}`);
+        websiteAnalysis = await analyzeWebsite(projectData.frontendUrl);
+      } catch (error) {
+        console.error("Website analysis error:", error);
+        websiteAnalysis = `Website analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      }
+    }
+    
+    // Analyze GitHub repo if URL is provided
+    let githubAnalysis = "No GitHub repository URL provided";
+    if (projectData.githubRepo) {
+      try {
+        console.log(`launch-checklist: Analyzing GitHub repo: ${projectData.githubRepo}`);
+        githubAnalysis = await analyzeGitHubRepo(projectData.githubRepo);
+      } catch (error) {
+        console.error("GitHub analysis error:", error);
+        githubAnalysis = `GitHub analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      }
+    }
+    
+    console.log("launch-checklist: Content analysis complete");
+    // --- End Analyze External Content ---
 
     // --- Construct New OpenAI Prompt ---
-    const systemPrompt = "You are a seasoned startup cofounder, best in class at all aspects of designing, launching, and fundraising for a startup. Your goal is to provide highly relevant and actionable recommendations.";
+    const systemPrompt = "You are a seasoned startup cofounder, best in class at all aspects of designing, launching, and fundraising for a startup. Your goal is to provide highly relevant and actionable recommendations based on real-world project data.";
     const userPrompt = `
 Analyze the following project information for a project currently in the 'prep_launch' status:
+
+PROJECT DETAILS:
 - Name: ${projectData.name}
 - Description: ${projectData.description || 'Not provided'}
 - Website URL: ${projectData.frontendUrl || 'Not provided'}
 - GitHub Repo: ${projectData.githubRepo || 'Not provided'}
 
-Based on your expertise and the project details, analyze the situation and recommend the 5 most crucial and helpful next tasks to ensure a successful launch. For each task, provide a concise title and brief reasoning explaining its importance at this stage.
+WEBSITE ANALYSIS:
+${websiteAnalysis}
+
+GITHUB REPOSITORY ANALYSIS:
+${githubAnalysis}
+
+Based on all of the above information, analyze the situation thoroughly and recommend the 5 most crucial and helpful next tasks to ensure a successful launch. For each task, provide a concise title and brief reasoning explaining its importance at this stage.
+
+Your recommendations should be specific, actionable, and directly relevant to this particular project. Avoid generic advice that doesn't take into account the specific context provided.
     `.trim();
     // --- End Construct New OpenAI Prompt ---
 
@@ -177,7 +217,7 @@ Based on your expertise and the project details, analyze the situation and recom
         
         // Call Responses API
         const response = await callResponsesApi({
-          model: 'o3',
+          model: 'gpt-4o-2024-11-20', // Updated model to latest version
           input: userPrompt,
           instructions: systemPrompt,
           tools: [fnSchema],
@@ -207,34 +247,34 @@ Based on your expertise and the project details, analyze the situation and recom
       console.log("launch-checklist: Using Chat Completions API");
       
       // Call OpenAI with new prompt and schema
-    console.log("launch-checklist: Sending request to OpenAI for", project_id);
-    const rsp = await openai.chat.completions.create({
-      model: 'o3-2025-04-16', // Updated model to o3-2025-04-16
-      messages: [
-          { role: 'system', content: systemPrompt }, 
-          { role: 'user', content: userPrompt }
-      ],
+      console.log("launch-checklist: Sending request to OpenAI for", project_id);
+      const rsp = await openai.chat.completions.create({
+        model: 'gpt-4o-2024-11-20', // Updated model to latest version
+        messages: [
+            { role: 'system', content: systemPrompt }, 
+            { role: 'user', content: userPrompt }
+        ],
         tools: [fnSchema],
         tool_choice: { type:'function', function: { name: 'recommend_next_tasks' } },
-    });
+      });
 
       // Parse Response
-    const choice = rsp.choices[0];
-    const functionCall = choice.message?.tool_calls?.[0]?.function;
+      const choice = rsp.choices[0];
+      const functionCall = choice.message?.tool_calls?.[0]?.function;
 
-    if (!functionCall?.arguments) {
-      console.error("OpenAI response missing function call arguments:", rsp);
-      throw new Error('Failed to parse recommendations from OpenAI response.');
-    }
+      if (!functionCall?.arguments) {
+        console.error("OpenAI response missing function call arguments:", rsp);
+        throw new Error('Failed to parse recommendations from OpenAI response.');
+      }
 
       console.log("launch-checklist: Raw OpenAI arguments from Chat Completions for", project_id, ":", functionCall.arguments);
       let parsedTasks: { tasks: RecommendedTaskData[] };
-    try {
-       parsedTasks = JSON.parse(functionCall.arguments);
-    } catch (parseError) {
-        console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
-        throw new Error("Invalid JSON format received from OpenAI.");
-    }
+      try {
+         parsedTasks = JSON.parse(functionCall.arguments);
+      } catch (parseError) {
+          console.error("Failed to parse OpenAI JSON:", parseError, "Raw args:", functionCall.arguments);
+          throw new Error("Invalid JSON format received from OpenAI.");
+      }
 
       tasks = parsedTasks.tasks;
     }
