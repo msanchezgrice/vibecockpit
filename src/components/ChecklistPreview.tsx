@@ -71,10 +71,6 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
                     {data.tasks.length > 3 && (
                         <li className="text-xs text-muted-foreground pl-6">... and {data.tasks.length - 3} more</li>
                     )}
-                    {/* Link to full checklist */} 
-                    <Link href={`#`} className="text-sm text-blue-600 hover:underline pt-1 inline-block">
-                        View Full Checklist →
-                    </Link>
                 </ul>
             ) : (
                  <p className="text-sm text-muted-foreground italic py-2">

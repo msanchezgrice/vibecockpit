@@ -374,18 +374,18 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
           <span className="sr-only">Edit Project</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex flex-col max-h-[90vh]">
-        <DialogHeader className="pr-6">
+      <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl flex flex-col max-h-[90vh] overflow-hidden">
+        <DialogHeader className="pr-6 flex-shrink-0">
           <DialogTitle className="text-xl">Edit Project: {projectName}</DialogTitle>
           <DialogDescription className="text-sm">View details, make changes, and add notes.</DialogDescription>
         </DialogHeader>
 
         {/* Hero Image Placeholder */}
-        <div className="h-32 bg-muted rounded-md my-4 flex items-center justify-center text-muted-foreground">
+        <div className="h-32 bg-muted rounded-md my-4 flex items-center justify-center text-muted-foreground flex-shrink-0">
             Hero Image Placeholder
         </div>
 
-        <ScrollArea className="flex-grow pr-6">
+        <ScrollArea className="flex-grow overflow-y-auto pr-6 max-h-[calc(90vh-250px)]">
             <div className="grid gap-4 py-4">
                 {/* --- Edit Fields --- */} 
                  <div className="grid grid-cols-4 items-center gap-4">
@@ -625,7 +625,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
             </div>
         </ScrollArea>
 
-        <DialogFooter className="mt-auto pt-4 border-t sm:justify-between">
+        <DialogFooter className="mt-auto pt-4 border-t sm:justify-between flex-shrink-0">
             <AlertDialog>
                  <AlertDialogTrigger asChild>
                     <Button type="button" variant="destructive" disabled={isSaving || isDeleting}>
