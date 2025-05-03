@@ -263,8 +263,8 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
         try {
           errorResult = await response.json();
         } catch (error) {
-          // Ignore JSON parsing error
-          console.warn(`Could not parse JSON from error response for ${taskId}`);
+          // Log the JSON parsing error
+          console.warn(`Could not parse JSON from error response for ${taskId}:`, error);
         }
         throw new Error(errorResult.message || 'Failed to toggle task'); 
       }
