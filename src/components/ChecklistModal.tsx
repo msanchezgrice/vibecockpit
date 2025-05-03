@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from 'lucide-react';
-import { AskAIDrawer } from './AskAIDrawer';
+import { AskAIModal } from './AskAIModal';
 
 interface ChecklistModalProps {
   projectId: string;
@@ -186,7 +186,7 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
                              )}
                             </div>
                             {isUpdatingTask === task.id && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>}
-                            <AskAIDrawer 
+                            <AskAIModal 
                                 taskId={task.id} 
                                 taskTitle={task.title} 
                                 initialHint={task.ai_help_hint} 
