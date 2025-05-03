@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
 
 export default async function MarketingHomePage() {
   const session = await getServerSession(authOptions);
@@ -18,27 +20,29 @@ export default async function MarketingHomePage() {
         <div className="flex-1">
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             ✨ Your Messy Side-Projects,<br className="hidden sm:block" />
-            Organized &amp; Shipped
+            Organized & Shipped
           </h1>
           <p className="mt-4 max-w-md text-lg text-gray-600">
             <strong>BuildDeck</strong> keeps every "vibe-code" experiment in one place—repos,
-            deployments, databases, costs—then pairs you with a&nbsp;
-            <strong>Virtual Cofounder</strong> that pushes the last&nbsp;20 %.
+            deployments, databases, costs—then pairs you with a{' '}
+            <strong>Virtual Cofounder</strong> that pushes the last 20%.
           </p>
           <Button
             asChild
             className="mt-6 bg-blue-600 px-6 py-3 text-base hover:bg-blue-700"
           >
-            <a href="/api/auth/signin">Sign in with GitHub</a>
+            <Link href="/api/auth/signin">Sign in with GitHub</Link>
           </Button>
         </div>
 
         {/* Hero illustration (swap the src with your asset) */}
         <div className="hidden flex-1 lg:block">
-          <img
+          <Image
             src="/hero-illustration.png"
             alt="Developer dashboard illustration"
             className="w-full"
+            width={600}
+            height={400}
           />
         </div>
       </section>
@@ -51,22 +55,22 @@ export default async function MarketingHomePage() {
         <div className="grid gap-8 md:grid-cols-2">
           <div className="rounded-xl border bg-white p-6 shadow-sm">
             <h3 className="mb-3 text-xl font-semibold">
-              🔗&nbsp;All Your Links, Zero Guesswork
+              🔗 All Your Links, Zero Guesswork
             </h3>
             <ul className="list-disc pl-5 text-gray-600">
               <li>GitHub repos, Vercel URLs, Supabase IDs—auto-linked</li>
-              <li>Last commit, uptime &amp; spend at a glance</li>
+              <li>Last commit, uptime & spend at a glance</li>
               <li>Notes so you never say "where did I leave off?"</li>
             </ul>
           </div>
 
           <div className="rounded-xl border bg-white p-6 shadow-sm">
             <h3 className="mb-3 text-xl font-semibold">
-              🤖&nbsp;Virtual Cofounder
+              🤖 Virtual Cofounder
             </h3>
             <ul className="list-disc pl-5 text-gray-600">
               <li>Generates a tailored launch checklist</li>
-              <li>Drafts copy, OG images &amp; tweet threads</li>
+              <li>Drafts copy, OG images & tweet threads</li>
               <li>Nudges you on Slack if tasks go stale</li>
             </ul>
           </div>
@@ -76,10 +80,10 @@ export default async function MarketingHomePage() {
       {/* ---------------- AUDIENCE ---------------- */}
       <section className="bg-white py-20">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="mb-6 text-3xl font-bold">Who's It For?</h2>
+          <h2 className="mb-6 text-3xl font-bold">Who{"'"}s It For?</h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
             Perfect for <strong>new-to-code makers</strong> and weekend hackers who
-            can wrangle GitHub &amp; Vercel but struggle to stay organised once idea #5 hits.
+            can wrangle GitHub & Vercel but struggle to stay organised once idea #5 hits.
           </p>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -98,7 +102,7 @@ export default async function MarketingHomePage() {
             </div>
 
             <div className="rounded-xl border bg-gray-50 p-6 shadow-sm">
-              <h4 className="mb-2 text-lg font-semibold">🎓 Students &amp; Boot-campers</h4>
+              <h4 className="mb-2 text-lg font-semibold">🎓 Students & Boot-campers</h4>
               <p className="text-sm text-gray-600">
                 Focus on learning; let BuildDeck handle the housekeeping.
               </p>
@@ -130,7 +134,7 @@ export default async function MarketingHomePage() {
           <div className="rounded-xl border bg-white p-6 shadow-sm">
             <h3 className="mb-3 text-lg font-semibold">⚡ Automations</h3>
             <ul className="list-disc pl-5 text-sm text-gray-600">
-              <li>Nightly cost &amp; uptime scan → Slack ping</li>
+              <li>Nightly cost & uptime scan → Slack ping</li>
               <li>Detects commit drought → suggests next task</li>
               <li>Generates images via DALL·E 3 on demand</li>
             </ul>
@@ -173,7 +177,7 @@ export default async function MarketingHomePage() {
           asChild
           className="mt-6 bg-white text-blue-600 hover:bg-gray-100"
         >
-          <a href="/api/auth/signin">Sign in with GitHub</a>
+          <Link href="/api/auth/signin">Sign in with GitHub</Link>
         </Button>
       </section>
     </div>
