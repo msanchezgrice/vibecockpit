@@ -290,7 +290,27 @@ Based on the project and task details${taskReasoning ? ' and the specific task c
         if (response.tool_calls && response.tool_calls.length > 0) {
           const toolCall = response.tool_calls[0];
           const functionName = toolCall.function.name;
-          const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+          let functionArgs;
+          
+          try {
+            // Safely parse the JSON with proper error handling
+            functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+          } catch (jsonError) {
+            console.error(`[AI Task ${checklistItemId}] Error parsing JSON from tool call:`, 
+              jsonError, 
+              `Raw arguments: ${toolCall.function.arguments}`
+            );
+            // Provide a fallback response
+            updateData.ai_help_hint = "There was an error processing the AI response. Please try again.";
+            updateData.ai_image_prompt = null;
+            generatedContentType = 'error';
+            // Continue with the update rather than throwing an error
+            const updatedItem = await prisma.checklistItem.update({
+              where: { id: checklistItemId },
+              data: updateData,
+            });
+            return res.status(200).json(updatedItem);
+          }
 
           console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
 
@@ -338,7 +358,27 @@ Based on the project and task details${taskReasoning ? ' and the specific task c
       if (choice.message?.tool_calls && choice.message.tool_calls.length > 0) {
         const toolCall = choice.message.tool_calls[0];
         const functionName = toolCall.function.name;
-        const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+        let functionArgs;
+        
+        try {
+          // Safely parse the JSON with proper error handling
+          functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+        } catch (jsonError) {
+          console.error(`[AI Task ${checklistItemId}] Error parsing JSON from tool call:`, 
+            jsonError, 
+            `Raw arguments: ${toolCall.function.arguments}`
+          );
+          // Provide a fallback response
+          updateData.ai_help_hint = "There was an error processing the AI response. Please try again.";
+          updateData.ai_image_prompt = null;
+          generatedContentType = 'error';
+          // Continue with the update rather than throwing an error
+          const updatedItem = await prisma.checklistItem.update({
+            where: { id: checklistItemId },
+            data: updateData,
+          });
+          return res.status(200).json(updatedItem);
+        }
 
         console.log(`[AI Task ${checklistItemId}] OpenAI chose tool: ${functionName}`);
 
@@ -400,7 +440,11 @@ Based on the project and task details${taskReasoning ? ' and the specific task c
         res.status(404).json({ message: 'Checklist item not found' });
       } else {
         console.error(`Failed to generate AI draft for item ${checklistItemId}:`, error);
-        res.status(500).json({ message: 'Failed to generate AI draft' });
+        // Return a more detailed error message that can be displayed to the user
+        res.status(500).json({ 
+          message: 'Failed to generate AI draft', 
+          details: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
     }
   } else {

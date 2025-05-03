@@ -54,7 +54,7 @@ export function AskAIModal({
   // Initialize isViewingReasoning based on props - show reasoning view if taskReasoning exists
   const [isViewingReasoning, setIsViewingReasoning] = useState(!!taskReasoning);
 
-  // Fetch new recommendations from OpenAI only if no cached results
+  // Fetch new recommendations from OpenAI
   const fetchAIDraft = useCallback(async () => {
     // Remove check for hasCachedResult to allow fetching new recommendations
     // even when there's existing content
@@ -72,9 +72,31 @@ export function AskAIModal({
               taskReasoning
             })
         });
-        const result = await response.json();
+        
+        // Check if response is OK before trying to parse JSON
         if (!response.ok) {
-            throw new Error(result.message || 'Failed to fetch/generate AI draft');
+            let errorMessage = `Failed to fetch/generate AI draft (Status: ${response.status})`;
+            try {
+                const errorData = await response.json();
+                if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+                if (errorData.details) {
+                    errorMessage += `: ${errorData.details}`;
+                }
+            } catch (jsonError) {
+                // If JSON parsing fails, use the status text
+                errorMessage = `${errorMessage} - ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
+        }
+        
+        // Now safely parse the JSON response
+        let result;
+        try {
+            result = await response.json();
+        } catch (jsonError) {
+            throw new Error('Invalid response format from server');
         }
         
         const content = result.ai_help_hint || result.ai_image_prompt || 'No suggestion available.';
