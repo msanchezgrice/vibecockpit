@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, RotateCcw, Globe, ExternalLink, Maximize2, Code, Eye, Edit, FileText, Copy, Check, Download } from 'lucide-react';
+import { Sparkles, RotateCcw, Globe, ExternalLink, Maximize2, Code, Eye, Edit, FileText, Copy, Check, Download, SendHorizontal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
+import { Input } from "@/components/ui/input";
 
 interface AskAIModalProps {
   taskId: string;
@@ -41,6 +42,11 @@ export function AskAIModal({
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'code' | 'html'>('preview');
   const [fullscreenPreview, setFullscreenPreview] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([
+    { role: 'assistant', content: 'Hi! How may I help you?' }
+  ]);
+  const [newMessage, setNewMessage] = useState('');
 
   const fetchAIDraft = useCallback(async (isRegenerate = false) => {
     setIsLoading(true);
@@ -116,7 +122,8 @@ export function AskAIModal({
     }
   }, [aiDraft]);
 
-  const handleRegenerate = () => fetchAIDraft(true);
+  // Unused but kept for future reference
+  const _handleRegenerate = () => fetchAIDraft(true);
 
   const handleAccept = () => {
     onAccept(taskId, aiDraft); // Pass accepted draft back
@@ -211,12 +218,35 @@ export function AskAIModal({
     document.body.removeChild(element);
   }, [aiDraft, taskTitle]);
 
+  const handleRefineClick = useCallback(() => {
+    // Instead of regenerating, we'll open a chat interface
+    setIsChatOpen(true);
+  }, []);
+  
+  const handleSendMessage = useCallback(() => {
+    if (!newMessage.trim()) return;
+    
+    // Add user message to chat
+    setChatMessages(prev => [...prev, { role: 'user', content: newMessage }]);
+    
+    // Simulate assistant thinking (in a real implementation, this would call an API)
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'This is a placeholder response. The chat functionality will be implemented later.' 
+      }]);
+    }, 1000);
+    
+    // Clear input
+    setNewMessage('');
+  }, [newMessage]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}> 
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm" className="text-xs h-7 text-blue-600 hover:text-blue-700">
-            Ask AI
+            {initialHint ? "See Tips" : "Ask AI"}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -318,8 +348,8 @@ export function AskAIModal({
 
           <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t flex flex-row justify-between items-center sticky bottom-0 bg-background z-10">
                <div className="flex items-center space-x-2">
-                 <Button variant="outline" onClick={handleRegenerate} disabled={isLoading}>
-                    <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Regenerate
+                 <Button variant="outline" onClick={handleRefineClick} disabled={isLoading}>
+                    <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refine Results
                  </Button>
                  
                  {!isLoading && aiDraft && !aiDraft.startsWith('Loading') && !aiDraft.startsWith('Generating') && (
@@ -405,9 +435,63 @@ export function AskAIModal({
                  </DialogClose>
                  
                  <Button onClick={handleAccept} disabled={isLoading || !aiDraft || aiDraft.startsWith('Could not')}>
-                   Accept & Save
+                   Save
                  </Button>
                </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Chat dialog for refining results */}
+      <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <DialogContent className="sm:max-w-xl md:max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Sparkles className="w-6 h-6 mr-2 text-purple-500" /> Refine Results
+            </DialogTitle>
+            <DialogDescription>
+              Chat with AI to refine the recommendations for: &quot;{taskTitle}&quot;
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="flex-grow p-4 border rounded-md my-4">
+            <div className="space-y-4">
+              {chatMessages.map((message, index) => (
+                <div 
+                  key={index} 
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`max-w-[80%] rounded-lg p-3 ${
+                      message.role === 'user' 
+                        ? 'bg-blue-500 text-white rounded-br-none' 
+                        : 'bg-gray-100 dark:bg-gray-800 rounded-bl-none'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <div className="flex items-center gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message..."
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              className="flex-grow"
+            />
+            <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+              <SendHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsChatOpen(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
