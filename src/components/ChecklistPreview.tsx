@@ -5,7 +5,6 @@ import { useChecklist } from '@/hooks/useChecklist';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ChecklistModal } from './ChecklistModal';
-import Link from 'next/link';
 
 interface ChecklistPreviewProps {
   projectId: string;

@@ -84,7 +84,7 @@ export function AskAIModal({
                 if (errorData.details) {
                     errorMessage += `: ${errorData.details}`;
                 }
-            } catch (error) {
+            } catch (_) {
                 // If JSON parsing fails, use the status text
                 errorMessage = `${errorMessage} - ${response.statusText}`;
             }
@@ -95,7 +95,7 @@ export function AskAIModal({
         let result;
         try {
             result = await response.json();
-        } catch (error) {
+        } catch (_) {
             throw new Error('Invalid response format from server');
         }
         
