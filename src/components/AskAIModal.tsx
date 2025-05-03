@@ -50,6 +50,7 @@ export function AskAIModal({
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [hasCachedResult, setHasCachedResult] = useState(!!initialHint);
+  const [isViewingReasoning, setIsViewingReasoning] = useState(false);
 
   // Fetch new recommendations from OpenAI only if no cached results
   const fetchAIDraft = useCallback(async () => {
@@ -102,6 +103,7 @@ export function AskAIModal({
         // We have cached content, use it
         setAiDraft(initialHint);
         setHasCachedResult(true);
+        setIsViewingReasoning(false);
         
         // Still need to analyze content type
         setIsMarkdown(
@@ -110,12 +112,26 @@ export function AskAIModal({
           initialHint.includes('Source:') ||
           initialHint.includes('# ')
         );
+      } else if (taskReasoning) {
+        // We have reasoning but no saved response
+        setAiDraft(taskReasoning);
+        setIsViewingReasoning(true);
+        setHasCachedResult(false);
+        
+        // Check if reasoning is markdown
+        setIsMarkdown(
+          taskReasoning.includes('##') || 
+          taskReasoning.includes('http') || 
+          taskReasoning.includes('Source:') ||
+          taskReasoning.includes('# ')
+        );
       } else {
-        // No cached content, fetch new recommendations
+        // No cached content or reasoning, fetch new recommendations
+        setIsViewingReasoning(false);
         fetchAIDraft();
       }
     }
-  }, [isOpen, initialHint, fetchAIDraft]);
+  }, [isOpen, initialHint, taskReasoning, fetchAIDraft]);
 
   // Initial analysis of the content when it changes
   useEffect(() => {
@@ -286,7 +302,13 @@ export function AskAIModal({
             <DialogTitle className="flex items-center">
                <Sparkles className="w-6 h-6 mr-2 text-purple-500" /> AI Assistant
             </DialogTitle>
-            <DialogDescription className="text-base">Drafting help for: &quot;{taskTitle}&quot;</DialogDescription>
+            <DialogDescription className="text-base">
+              {isViewingReasoning 
+                ? "Task context for: " 
+                : "Drafting help for: "
+              }
+              &quot;{taskTitle}&quot;
+            </DialogDescription>
             
             {hasWebSearchResults(aiDraft) && !isLoading && (
               <div className="flex items-center mt-2 text-sm text-muted-foreground">
@@ -380,9 +402,21 @@ export function AskAIModal({
 
           <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t flex flex-row justify-between items-center sticky bottom-0 bg-background z-10">
                <div className="flex items-center space-x-2">
-                 <Button variant="outline" onClick={handleRefineClick} disabled={isLoading}>
-                    <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refine Results
-                 </Button>
+                 {isViewingReasoning ? (
+                   <Button 
+                     variant="default" 
+                     onClick={() => fetchAIDraft()} 
+                     disabled={isLoading}
+                     className="bg-blue-600 hover:bg-blue-700 text-white"
+                   >
+                     <Sparkles className="h-4 w-4 mr-2" /> 
+                     Ask AI for help
+                   </Button>
+                 ) : (
+                   <Button variant="outline" onClick={handleRefineClick} disabled={isLoading}>
+                      <RotateCcw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refine Results
+                   </Button>
+                 )}
                  
                  {!isLoading && aiDraft && !aiDraft.startsWith('Loading') && !aiDraft.startsWith('Generating') && (
                    <>
@@ -466,7 +500,10 @@ export function AskAIModal({
                    <Button variant="secondary">Cancel</Button>
                  </DialogClose>
                  
-                 <Button onClick={handleAccept} disabled={isLoading || !aiDraft || aiDraft.startsWith('Could not')}>
+                 <Button 
+                  onClick={handleAccept} 
+                  disabled={isLoading || !aiDraft || aiDraft.startsWith('Could not') || isViewingReasoning}
+                 >
                    Save
                  </Button>
                </div>
