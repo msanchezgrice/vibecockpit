@@ -31,7 +31,7 @@ export default async function MarketingHomePage() {
             asChild
             className="mt-6 bg-blue-600 px-6 py-3 text-base hover:bg-blue-700"
           >
-            <Link href="/api/auth/signin">Sign in with GitHub</Link>
+            <Link href="/api/auth/signin/github">Sign in with GitHub</Link>
           </Button>
         </div>
 
@@ -153,7 +153,7 @@ export default async function MarketingHomePage() {
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              { num: "1️⃣", title: "Connect", copy: "Sign in with GitHub & permit Vercel access." },
+              { num: "1️⃣", title: "Connect", copy: "Sign in with GitHub to get started." },
               { num: "2️⃣", title: "Organise", copy: "Virtualcofounder.ai auto-links repos, URLs, DBs & spend." },
               { num: "3️⃣", title: "Finish", copy: "Virtual Cofounder generates tasks & pushes them to done." },
             ].map((step) => (
@@ -177,7 +177,7 @@ export default async function MarketingHomePage() {
           asChild
           className="mt-6 bg-white text-blue-600 hover:bg-gray-100"
         >
-          <Link href="/api/auth/signin">Sign in with GitHub</Link>
+          <Link href="/api/auth/signin/github">Sign in with GitHub</Link>
         </Button>
       </section>
     </div>
