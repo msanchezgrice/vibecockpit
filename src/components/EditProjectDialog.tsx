@@ -91,9 +91,9 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const [projectName, setProjectName] = useState(project.name);
   const [description, setDescription] = useState(project.description ?? '');
   const [currentStatus, setCurrentStatus] = useState(project.status);
-  const [url, setUrl] = useState(project.url ?? '');
+  const [frontendUrl, setFrontendUrl] = useState(project.frontendUrl ?? '');
   const [vercelId, setVercelId] = useState(project.vercelProjectId ?? '');
-  const [repoUrl, setRepoUrl] = useState(project.repoUrl ?? '');
+  const [githubRepo, setGithubRepo] = useState(project.githubRepo ?? '');
   const [newNoteText, setNewNoteText] = useState('');
   
   // State for Connect flows
@@ -126,9 +126,9 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
         setProjectName(project.name);
         setDescription(project.description ?? '');
         setCurrentStatus(project.status);
-        setUrl(project.url ?? '');
+        setFrontendUrl(project.frontendUrl ?? '');
         setVercelId(project.vercelProjectId ?? '');
-        setRepoUrl(project.repoUrl ?? '');
+        setGithubRepo(project.githubRepo ?? '');
         setNewNoteText('');
         setError(null);
         setNoteError(null);
@@ -142,7 +142,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     setIsSaving(true);
     setError(null);
     // Add validation if needed...
-    const payload = { name: projectName, description, status: currentStatus, url, vercelProjectId: vercelId, repoUrl };
+    const payload = { name: projectName, description, status: currentStatus, frontendUrl, vercelProjectId: vercelId, githubRepo };
     
     try {
       const response = await fetch(`/api/projects/${project.id}`, { 
@@ -214,7 +214,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   };
 
   // Find display names for selected items
-  const selectedGitHubRepoName = githubRepos.find(r => r.full_name === repoUrl)?.full_name ?? repoUrl;
+  const selectedGitHubRepoName = githubRepos.find(r => r.full_name === githubRepo)?.full_name ?? githubRepo;
 
   // Checklist handlers
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
@@ -407,7 +407,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor={`edit-feUrl-${project.id}`} className="text-right text-sm">Frontend URL</Label>
-                    <Input id={`edit-feUrl-${project.id}`} type="url" placeholder="https://... (Optional)" value={url} onChange={(e) => setUrl(e.target.value)} className="col-span-3 text-base h-10" disabled={isSaving}/>
+                    <Input id={`edit-feUrl-${project.id}`} type="url" placeholder="https://... (Optional)" value={frontendUrl} onChange={(e) => setFrontendUrl(e.target.value)} className="col-span-3 text-base h-10" disabled={isSaving}/>
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor={`edit-vercelId-${project.id}`} className="text-right text-sm">Vercel ID</Label>
@@ -427,7 +427,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                             disabled={loadingGitHub || isSaving}
                         >
                            {loadingGitHub ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            {repoUrl ? selectedGitHubRepoName : "Select or Connect..."}
+                            {githubRepo ? selectedGitHubRepoName : "Select or Connect..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                         </PopoverTrigger>
@@ -442,7 +442,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                                     key={repo.id}
                                     value={repo.full_name} // Use full_name for value
                                     onSelect={(currentValue) => {
-                                        setRepoUrl(currentValue === repoUrl ? "" : currentValue)
+                                        setGithubRepo(currentValue === githubRepo ? "" : currentValue)
                                         setPopoverOpenGitHub(false)
                                     }}
                                     className="text-sm"
@@ -450,7 +450,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                                      <Check
                                         className={cn(
                                         "mr-2 h-4 w-4",
-                                        repoUrl === repo.full_name ? "opacity-100" : "opacity-0"
+                                        githubRepo === repo.full_name ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                     {repo.full_name}

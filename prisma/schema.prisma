@@ -14,27 +14,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum CodingPlatform {
-  CURSOR
-  WINDSURF
-  REPLIT
-  MANUS
-  OPENAI_CANVAS
-  ANTHROPIC_CONSOLE
-  OTHER
-}
-
 model Project {
   id             String   @id @default(uuid())
   name           String   @unique
   description    String?
   status         ProjectStatus @default(design)
-  url            String?  @map("frontend_url")
-  platform       CodingPlatform @default(CURSOR)
-  repoUrl        String?  @map("github_repo")
-  thumbUrl       String?  @map("thumb_url")
+  frontendUrl    String?  @map("frontend_url")
   vercelProjectId    String?   @map("vercel_project_id")
-  image_url      String?
+  githubRepo         String?   @map("github_repo")
   lastActivityAt DateTime @default(now()) @map("last_activity_at")
   createdAt      DateTime @default(now()) @map("created_at")
   changelog      ChangeLogEntry[]

@@ -3,10 +3,6 @@
     {
       "path": "/api/cron/cost-collector",
       "schedule": "35 0 * * *"
-    },
-    {
-      "path": "/api/cron/screenshot",
-      "schedule": "15 * * * *"
     }
   ],
   "build": {

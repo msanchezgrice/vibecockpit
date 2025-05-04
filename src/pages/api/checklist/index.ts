@@ -3,156 +3,114 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma'; // Import singleton instance
 import { z } from 'zod';
-import supabase from '@/lib/supabase-client';
 
 // const prisma = new PrismaClient(); // Remove direct instantiation
 
 // Schema to validate query parameters
 const querySchema = z.object({
-  // Allow both UUID format and non-UUID format for flexibility
-  projectId: z.string().min(1, { message: "Project ID cannot be empty" }),
+  // projectId: z.string().uuid({ message: "Invalid Project ID format" }),
+  projectId: z.string().min(1, { message: "Project ID cannot be empty" }), // Relaxed validation
 });
 
-// Function to normalize UUID
-function normalizeUUID(id: string): string {  
-  // If it already has hyphens, return as is
-  if (id.includes('-')) return id;
-  
-  // If it's a 32-character string without hyphens, format it as UUID
-  if (id.length === 32) {
-    return `${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;
-  }
-  
-  // Return original if it doesn't match UUID pattern
-  return id;
-}
+// Schema for creating a new checklist item
+const createItemSchema = z.object({
+  projectId: z.string().min(1, { message: "Project ID cannot be empty" }),
+  title: z.string().min(1, { message: "Task title cannot be empty" }),
+});
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("[API] /api/checklist called with method:", req.method);
-  
-  // Only allow GET and POST
-  if (req.method !== 'GET' && req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
-
-  // Verify authentication
   const session = await getServerSession(req, res, authOptions);
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  // Handle GET request to fetch checklist
   if (req.method === 'GET') {
     try {
-      // Validate the projectId query parameter
-      const { projectId } = querySchema.parse(req.query);
-      console.log("[API] Getting checklist for projectId:", projectId);
-      
-      // Format the UUID properly
-      const formattedProjectId = normalizeUUID(projectId);
-      console.log("[API] Formatted projectId:", formattedProjectId);
-      
-      // Try to fetch from the database directly first
-      try {
-        const items = await prisma.checklistItem.findMany({
-          where: { projectId: formattedProjectId },
-          orderBy: { order: 'asc' },
-        });
-        
-        console.log(`[API] Found ${items.length} items in database`);
-        return res.status(200).json({ 
-          tasks: items,
-          count: items.length,
-          source: 'prisma'
-        });
-      } catch (prismaError) {
-        console.error("[API] Prisma query failed:", prismaError);
-        // Fall through to try Supabase
+      // Validate query parameters
+      const validationResult = querySchema.safeParse(req.query);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: 'Invalid query parameters', errors: validationResult.error.errors });
       }
-      
-      // If Prisma fails, try Supabase
-      const { data: items, error } = await supabase
-        .from('checklist_items')
-        .select('*')
-        .eq('project_id', formattedProjectId)
-        .order('order', { ascending: true });
-        
-      if (error) {
-        console.error("[API] Supabase query failed:", error);
-        throw error;
-      }
-      
-      console.log(`[API] Found ${items?.length || 0} items via Supabase`);
-      
-      // Return the items
-      return res.status(200).json({ 
-        tasks: items || [],
-        count: items?.length || 0,
-        source: 'supabase'
+      const { projectId } = validationResult.data;
+
+      // Optional: Check if user owns/has access to this project ID
+
+      const checklistItems = await prisma.checklistItem.findMany({
+        where: {
+          projectId: projectId,
+        },
+        orderBy: {
+          order: 'asc', // Order by the 'order' field
+        },
       });
-      
+
+      const completedCount = checklistItems.filter(item => item.is_complete).length;
+
+      // Return data in the format expected by useChecklist hook
+      const responseData = {
+        tasks: checklistItems,
+        completed_tasks: completedCount,
+        total_tasks: checklistItems.length,
+      };
+
+      res.status(200).json(responseData);
+
     } catch (error) {
-      console.error('[API] Error getting checklist:', error);
-      return res.status(500).json({ 
-        message: 'Failed to get checklist',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Error fetching checklist items:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
-  }
-  
-  // Handle POST request to toggle task completion
-  if (req.method === 'POST') {
+  } else if (req.method === 'POST') {
     try {
-      const { taskId, isComplete } = req.body;
-      
-      if (!taskId) {
-        return res.status(400).json({ message: 'Task ID is required' });
+      // Validate request body
+      const validationResult = createItemSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: 'Invalid request data', errors: validationResult.error.errors });
       }
-      
-      // Try Prisma first
-      try {
-        const updatedTask = await prisma.checklistItem.update({
-          where: { id: taskId },
-          data: { is_complete: isComplete ?? false },
-        });
-        
-        return res.status(200).json({
-          success: true,
-          task: updatedTask,
-          source: 'prisma'
-        });
-      } catch (prismaError) {
-        console.error("[API] Prisma update failed:", prismaError);
-        // Fall through to try Supabase
-      }
-      
-      // If Prisma fails, try Supabase
-      const { data, error } = await supabase
-        .from('checklist_items')
-        .update({ is_complete: isComplete ?? false })
-        .eq('id', taskId)
-        .select();
-        
-      if (error) {
-        console.error("[API] Supabase update failed:", error);
-        throw error;
-      }
-      
-      return res.status(200).json({
-        success: true,
-        task: data?.[0] || null,
-        source: 'supabase'
+      const { projectId, title } = validationResult.data;
+
+      // Find the current maximum order value for the project
+      const maxOrderItem = await prisma.checklistItem.findFirst({
+        where: { projectId },
+        orderBy: { order: 'desc' },
+        select: { order: true },
       });
       
+      const newOrder = maxOrderItem ? maxOrderItem.order + 1 : 0;
+
+      // Create the new checklist item
+      const _newItem = await prisma.checklistItem.create({
+        data: {
+          projectId,
+          title,
+          order: newOrder,
+        },
+      });
+
+      // Refetch all tasks to return updated list
+      const checklistItems = await prisma.checklistItem.findMany({
+        where: { projectId },
+        orderBy: { order: 'asc' },
+      });
+
+      const completedCount = checklistItems.filter(item => item.is_complete).length;
+
+      // Return data in the format expected by useChecklist hook
+      const responseData = {
+        tasks: checklistItems,
+        completed_tasks: completedCount,
+        total_tasks: checklistItems.length,
+      };
+
+      res.status(201).json(responseData);
     } catch (error) {
-      console.error('[API] Error updating task:', error);
-      return res.status(500).json({ 
-        message: 'Failed to update task',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Error creating checklist item:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
+  } else {
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 } 

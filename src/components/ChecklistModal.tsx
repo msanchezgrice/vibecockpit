@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, Trash2, Plus } from 'lucide-react';
 import { AskAIModal } from './AskAIModal';
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/use-toast";
 
 interface ChecklistModalProps {
   projectId: string;
@@ -30,7 +29,7 @@ const calculateProgress = (completed: number, total: number): number => {
 export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistModalProps) {
   // const router = useRouter(); // Removed unused router
   // Get setData from the hook, remove unused refetch for now
-  const { data, isLoading, error, setData, refetch } = useChecklist(projectId); 
+  const { data, isLoading, error, setData } = useChecklist(projectId); 
   const [isUpdatingTask, setIsUpdatingTask] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -45,145 +44,78 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
     setIsModalOpen(isOpen);
   }, [isOpen]);
 
-  useEffect(() => {
-    // When modal opens, refresh the data
-    if (isOpen) {
-      console.log('[ChecklistModal] Modal opened, refreshing data for projectId:', projectId);
-      refetch();
-    }
-  }, [isOpen, projectId, refetch]);
-
   const handleOpenChange = (open: boolean) => {
     setIsModalOpen(open);
     onOpenChange(open); // Notify parent
   };
 
-  // Calculate progress with fallback values
   const progress = data ? calculateProgress(data.completed_tasks, data.total_tasks) : 0;
 
-  // Function to handle toggling a task's completion status
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
     console.log(`[ChecklistModal] Toggling task ${taskId} from ${currentStatus} to ${!currentStatus}`);
-    
-    if (isUpdatingTask) return; // Prevent multiple simultaneous updates
-    
     setIsUpdatingTask(taskId);
-    setToggleError(null);
-    
+    setToggleError(null); // Clear previous errors
+    let response: Response | null = null; // Declare response variable
     try {
-      // First try the Next.js API route
-      const response = await fetch('/api/checklist', {
-        method: 'POST',
+      response = await fetch(`/api/checklist/${taskId}/toggle`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          taskId, 
-          isComplete: !currentStatus
-        })
+        body: JSON.stringify({ is_complete: !currentStatus }),
       });
-      
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-      
-      // Update the local state to reflect the change immediately
-      if (data) {
-        const updatedTasks = data.tasks.map(task => 
-          task.id === taskId 
-            ? { ...task, is_complete: !currentStatus } 
-            : task
-        );
-        
-        const completedCount = updatedTasks.filter(task => task.is_complete).length;
-        
-        setData({
-          tasks: updatedTasks,
-          completed_tasks: completedCount,
-          total_tasks: data.total_tasks
-        });
-      }
-      
-      console.log(`[ChecklistModal] Successfully toggled task ${taskId}`);
-    } catch (error) {
-      console.error('[ChecklistModal] Error toggling task:', error);
-      setToggleError(`Failed to update task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsUpdatingTask(null);
-    }
-  };
 
-  // Function to handle adding a new task
-  const handleAddTask = async () => {
-    if (!newTaskTitle.trim() || isAddingTask) return;
-    
-    setIsAddingTask(true);
-    setAddTaskError(null);
-    
-    try {
-      // Call the API to add a new task
-      const response = await fetch('/api/checklist/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          projectId,
-          title: newTaskTitle.trim() 
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to add task: ${response.status}`);
-      }
-      
-      // Reset the input field
-      setNewTaskTitle('');
-      
-      // Refresh the checklist data
-      refetch();
-      
-    } catch (error) {
-      console.error('[ChecklistModal] Error adding task:', error);
-      setAddTaskError(`Failed to add task: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsAddingTask(false);
-    }
-  };
+      console.log(`[ChecklistModal] API response status for ${taskId}: ${response.status}`);
+      console.log(`[ChecklistModal] API response ok for ${taskId}: ${response.ok}`);
 
-  // Function to handle deleting a task
-  const handleDeleteTask = async (taskId: string) => {
-    if (isDeletingTask) return;
-    
-    setIsDeletingTask(taskId);
-    
-    try {
-      // Call the API to delete the task
-      const response = await fetch(`/api/checklist/${taskId}`, {
-        method: 'DELETE'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to delete task: ${response.status}`);
-      }
-      
-      // Update the local state
-      if (data) {
-        const updatedTasks = data.tasks.filter(task => task.id !== taskId);
-        const completedCount = updatedTasks.filter(task => task.is_complete).length;
+      // Only attempt to parse JSON if the response is OK and likely has content
+      if (response.ok) {
+        const updatedItem = await response.json(); 
+        console.log(`[ChecklistModal] Toggle API success for ${taskId}:`, updatedItem); 
         
-        setData({
-          tasks: updatedTasks,
-          completed_tasks: completedCount,
-          total_tasks: updatedTasks.length
+        // --- Manual State Update --- 
+        setData(currentData => {
+           if (!currentData) return null; // Should not happen if toggle is possible
+           
+           // Find index and create new tasks array
+           const taskIndex = currentData.tasks.findIndex(t => t.id === taskId);
+           if (taskIndex === -1) return currentData; // Task not found?
+           
+           const newTasks = [
+              ...currentData.tasks.slice(0, taskIndex),
+              updatedItem, // Insert the updated item from API response
+              ...currentData.tasks.slice(taskIndex + 1),
+           ];
+
+           // Recalculate counts
+           const newCompletedCount = newTasks.filter(t => t.is_complete).length;
+
+           // Return NEW state object
+           return {
+              ...currentData,
+              tasks: newTasks,
+              completed_tasks: newCompletedCount,
+              // total_tasks presumably doesn't change on toggle
+           };
         });
+        // --- End Manual State Update ---
+
+        // refetch(); // No longer strictly needed for immediate UI update, but can keep for consistency
+
+      } else {
+        // Try to parse error message if not ok
+        let errorResult = { message: 'Failed to toggle task' };
+        try {
+          errorResult = await response.json();
+        } catch (jsonError) {
+            console.warn(`[ChecklistModal] Could not parse JSON from error response for ${taskId}:`, jsonError);
+        }
+        console.error(`[ChecklistModal] Toggle API failed for ${taskId}:`, errorResult);
+        throw new Error(errorResult.message || 'Failed to toggle task'); 
       }
-      
-    } catch (error) {
-      console.error('[ChecklistModal] Error deleting task:', error);
-      toast({
-        title: 'Error',
-        description: `Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'destructive'
-      });
+    } catch(err) {
+      console.error(`[ChecklistModal] Error in handleToggleTask for ${taskId}. Response status: ${response?.status}`, err);
+      setToggleError(`Failed for task ${taskId}: ${err instanceof Error ? err.message : 'Unknown error'}`); 
     } finally {
-      setIsDeletingTask(null);
+      setIsUpdatingTask(null); // Stop showing loader
     }
   };
 
@@ -226,6 +158,64 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
     }
   };
 
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    
+    setIsAddingTask(true);
+    setAddTaskError(null);
+    
+    try {
+      const response = await fetch('/api/checklist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          title: newTaskTitle.trim()
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add task');
+      }
+      
+      const updatedData = await response.json();
+      setData(updatedData);
+      setNewTaskTitle(''); // Clear input after successful add
+      
+    } catch (err) {
+      console.error('Error adding task:', err);
+      setAddTaskError(err instanceof Error ? err.message : 'Failed to add task');
+    } finally {
+      setIsAddingTask(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    setIsDeletingTask(taskId);
+    
+    try {
+      const response = await fetch(`/api/checklist/${taskId}/delete`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete task');
+      }
+      
+      const updatedData = await response.json();
+      setData(updatedData);
+      
+    } catch (err) {
+      console.error(`Error deleting task ${taskId}:`, err);
+      setToggleError(`Failed to delete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsDeletingTask(null);
+    }
+  };
+
   return (
     <Dialog open={isModalOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] flex flex-col">
@@ -254,11 +244,11 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
         <form onSubmit={handleAddTask} className="flex items-center gap-2 my-4">
           <Input
             type="text"
-            placeholder={isAddingTask ? "Adding task..." : "Add new task..."}
+            placeholder="Add new task..."
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             disabled={isAddingTask}
-            className={isAddingTask ? "animate-pulse" : ""}
+            className="flex-grow"
           />
           <Button 
             type="submit" 
@@ -281,10 +271,8 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
         <ScrollArea className="flex-grow border rounded-md p-1 mb-4"> 
           <div className="p-3">
             {isLoading && (
-                <div className="flex flex-col items-center justify-center text-muted-foreground p-6">
-                    <Loader2 className="h-8 w-8 animate-spin mb-3" /> 
-                    <p className="text-center">OpenAI is generating your launch checklist...</p>
-                    <p className="text-xs text-muted-foreground mt-1">This may take a moment</p>
+                <div className="flex items-center justify-center text-muted-foreground p-6">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading Tasks...
                 </div>
             )}
             {error && <p className="text-red-500 text-center p-6">Error loading checklist: {error.message}</p>}

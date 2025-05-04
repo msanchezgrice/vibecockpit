@@ -13,6 +13,29 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     }),
+    {
+      id: "vercel",
+      name: "Vercel",
+      type: "oauth",
+      authorization: {
+        url: "https://vercel.com/oauth/authorize",
+        params: { scope: "projects:read" }, // Simplified scope
+      },
+      token: "https://api.vercel.com/v2/oauth/access_token",
+      userinfo: "https://api.vercel.com/v2/user",
+      clientId: process.env.VERCEL_CLIENT_ID as string,
+      clientSecret: process.env.VERCEL_CLIENT_SECRET as string,
+      profile(profile) {
+        // Map Vercel profile data to NextAuth User model
+        // Adjust based on actual Vercel /v2/user response structure
+        return {
+          id: profile.id || profile.uid, // Use id or uid from Vercel user object
+          name: profile.name,
+          email: profile.email,
+          image: profile.avatar,
+        };
+      },
+    },
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
@@ -45,17 +68,6 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
-      if (new URL(url).origin === baseUrl) return url;
-      return baseUrl;
-    },
-  },
-  // Direct straight to GitHub login without showing the NextAuth sign-in page
-  pages: {
-    signIn: '/api/auth/signin/github',
   },
   // Enable debug messages in the console if you are having problems
   // debug: process.env.NODE_ENV === 'development',
