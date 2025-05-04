@@ -16,8 +16,12 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
 
   if (isLoading) {
     return (
-      <div className="p-4 border rounded-md flex items-center justify-center text-muted-foreground">
-         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Checklist...
+      <div className="space-y-3 border-t pt-4 mt-4">
+        <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
+        <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin mb-2" /> 
+          <p className="text-sm text-center">OpenAI is generating your launch checklist...</p>
+        </div>
       </div>
     );
   }

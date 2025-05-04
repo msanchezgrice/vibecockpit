@@ -271,8 +271,10 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
         <ScrollArea className="flex-grow border rounded-md p-1 mb-4"> 
           <div className="p-3">
             {isLoading && (
-                <div className="flex items-center justify-center text-muted-foreground p-6">
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading Tasks...
+                <div className="flex flex-col items-center justify-center text-muted-foreground p-6">
+                    <Loader2 className="h-8 w-8 animate-spin mb-3" /> 
+                    <p className="text-center">OpenAI is generating your launch checklist...</p>
+                    <p className="text-xs text-muted-foreground mt-1">This may take a moment</p>
                 </div>
             )}
             {error && <p className="text-red-500 text-center p-6">Error loading checklist: {error.message}</p>}
