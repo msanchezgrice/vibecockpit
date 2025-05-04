@@ -133,7 +133,7 @@ export default async function handler(
       // 1. Fetch Task and Project details
       const checklistItem = await prisma.checklistItem.findUnique({
         where: { id: checklistItemId },
-        include: { project: { select: { name: true, description: true, frontendUrl: true, githubRepo: true } } },
+        include: { project: { select: { name: true, description: true, url: true, repoUrl: true } } },
       });
 
       if (!checklistItem) {
@@ -150,8 +150,8 @@ export default async function handler(
       const taskTitle = checklistItem.title;
       const projectName = checklistItem.project.name;
       const projectDescription = checklistItem.project.description || 'N/A';
-      const projectUrl = checklistItem.project.frontendUrl;
-      const githubRepo = checklistItem.project.githubRepo;
+      const projectUrl = checklistItem.project.url;
+      const githubRepo = checklistItem.project.repoUrl;
       
       // 3. First, try to use the Responses API with web search if available
       let response: ResponsesAPIResponse | ChatCompletion;
