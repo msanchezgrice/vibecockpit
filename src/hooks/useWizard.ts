@@ -12,7 +12,7 @@ interface WizardState<T> {
   steps: WizardStep[];
 }
 
-export function useWizard<T extends Record<string, any>>(
+export function useWizard<T extends Record<string, unknown>>(
   initialData: T,
   totalSteps: number,
   validators?: Record<number, (data: T) => boolean>

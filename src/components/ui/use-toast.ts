@@ -18,12 +18,6 @@ export interface Toast {
   action?: ToastActionElement;
 }
 
-interface ToasterProviderProps {
-  children: React.ReactNode;
-  toasts: Toast[];
-  variant?: ToastVariant;
-}
-
 interface ToastProps {
   title?: string;
   description?: string;

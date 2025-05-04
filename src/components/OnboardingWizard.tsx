@@ -14,11 +14,17 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { CheckCircle, X, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
 import { useSWRConfig } from 'swr';
+
+// Add gtag type declaration
+declare global {
+  interface Window {
+    gtag?: (command: string, action: string, params?: Record<string, unknown>) => void;
+  }
+}
 
 interface OnboardingWizardProps {
   open: boolean;
@@ -45,9 +51,13 @@ const validators = {
 
 export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) {
   const [urlValidationStatus, setUrlValidationStatus] = useState<'idle' | 'loading' | 'valid' | 'invalid'>('idle');
-  const inputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLSelectElement>(null)];
+  const inputRef1 = useRef<HTMLInputElement>(null);
+  const inputRef2 = useRef<HTMLInputElement>(null);
+  
+  // Create inputRefs with useMemo
+  const inputRefs = useMemo(() => [inputRef1, inputRef2], [inputRef1, inputRef2]);
+  
   const { mutate } = useSWRConfig();
-  const router = useRouter();
 
   const wizard = useWizard<CreateProjectPayload>(
     {
@@ -91,7 +101,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
           if (isMounted) {
             setUrlValidationStatus(response.ok ? 'valid' : 'invalid');
           }
-        } catch (error) {
+        } catch {
           if (isMounted) {
             setUrlValidationStatus('invalid');
           }
@@ -99,7 +109,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       };
       
       checkUrl();
-    } catch (error) {
+    } catch {
       setUrlValidationStatus('invalid');
     }
     
@@ -111,14 +121,16 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
   // Auto-focus first input when step changes
   useEffect(() => {
     if (open) {
-      const currentInputRef = inputRefs[wizard.currentStep]?.current;
-      if (currentInputRef) {
-        setTimeout(() => {
-          currentInputRef.focus();
-        }, 100);
+      if (wizard.currentStep < inputRefs.length) {
+        const currentInputRef = inputRefs[wizard.currentStep]?.current;
+        if (currentInputRef) {
+          setTimeout(() => {
+            currentInputRef.focus();
+          }, 100);
+        }
       }
     }
-  }, [wizard.currentStep, open]);
+  }, [wizard.currentStep, open, inputRefs]);
 
   // Handle escape key to close dialog
   useEffect(() => {
@@ -148,10 +160,12 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       const data = await response.json();
       
       // Analytics event
-      window.gtag?.('event', 'onboarding_completed', {
-        status: data.status,
-        hasRepo: !!wizard.formData.repoUrl
-      });
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'onboarding_completed', {
+          status: data.status,
+          hasRepo: !!wizard.formData.repoUrl
+        });
+      }
       
       // Update projects list with SWR
       mutate('/api/projects');
@@ -167,7 +181,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       // Reset wizard state
       wizard.resetWizard();
       
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error creating project',
         description: 'Please try again.',
@@ -178,11 +192,13 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
   // Skip URL step
   const handleSkipUrl = () => {
-    wizard.updateFormData({ url: null });
+    wizard.updateFormData({ url: '' });
     wizard.nextStep();
     
     // Analytics
-    window.gtag?.('event', 'onboarding_url_skipped');
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'onboarding_url_skipped');
+    }
   };
 
   // Render step content based on current step
@@ -194,7 +210,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
             <div className="space-y-2">
               <Label htmlFor="name">Project Name <span className="text-red-500">*</span></Label>
               <Input
-                ref={inputRefs[0]}
+                ref={inputRef1}
                 id="name"
                 value={wizard.formData.name}
                 onChange={(e) => wizard.updateFormData({ name: e.target.value })}
@@ -231,7 +247,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
               <Label htmlFor="url">Website URL</Label>
               <div className="relative">
                 <Input
-                  ref={inputRefs[1]}
+                  ref={inputRef2}
                   id="url"
                   value={wizard.formData.url || ''}
                   onChange={(e) => wizard.updateFormData({ url: e.target.value })}
@@ -282,7 +298,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                 value={wizard.formData.platform}
                 onValueChange={(value) => wizard.updateFormData({ platform: value as CodingPlatform })}
               >
-                <SelectTrigger className="w-full" id="platform" ref={inputRefs[2]}>
+                <SelectTrigger className="w-full" id="platform">
                   <SelectValue placeholder="Select platform" />
                 </SelectTrigger>
                 <SelectContent>

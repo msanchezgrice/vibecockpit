@@ -8,7 +8,7 @@ export type ProjectWithRelations = Project & {
 };
 
 // Project creation payload
-export interface CreateProjectPayload {
+export interface CreateProjectPayload extends Record<string, unknown> {
   name: string;
   description?: string;
   url?: string;

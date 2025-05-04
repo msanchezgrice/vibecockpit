@@ -33,10 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } else {
         return res.status(400).json({ message: 'URL returned an error status', status: response.status });
       }
-    } catch (fetchError) {
+    } catch {
       return res.status(400).json({ message: 'Could not connect to URL' });
     }
-  } catch (error) {
+  } catch {
     return res.status(400).json({ message: 'Invalid URL format' });
   }
 } 

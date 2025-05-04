@@ -102,10 +102,10 @@ async function ProjectList({ projectsPromise }: { projectsPromise: Promise<Proje
       ) : (
         <div className="text-center my-12">
           <p className="text-lg text-muted-foreground mb-4">
-            No projects found. Let's create your first project!
+            No projects found. Let&apos;s create your first project!
           </p>
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
-            Start by clicking the "Create Project" button to add your first project to the dashboard.
+            Start by clicking the &quot;Create Project&quot; button to add your first project to the dashboard.
           </p>
         </div>
       )}
