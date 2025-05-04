@@ -15,6 +15,16 @@ export interface ChecklistData {
   completed_tasks: number;
 }
 
+// Define interface for API response task items
+interface ApiTaskItem {
+  id: string;
+  title: string;
+  is_complete: boolean;
+  ai_help_hint?: string | null;
+  order?: number;
+  project_id?: string;
+}
+
 /**
  * Normalizes a UUID string to ensure it has the standard format with hyphens
  * @param id The UUID string to normalize
@@ -103,13 +113,13 @@ export function useChecklist(projectId: string): {
         
         if (apiData && apiData.tasks) {
           const formattedData: ChecklistData = {
-            tasks: apiData.tasks.map((item: any) => ({
+            tasks: apiData.tasks.map((item: ApiTaskItem) => ({
               id: item.id,
               title: item.title,
               is_complete: item.is_complete,
               ai_help_hint: item.ai_help_hint
             })),
-            completed_tasks: apiData.tasks.filter((item: any) => item.is_complete).length,
+            completed_tasks: apiData.tasks.filter((item: ApiTaskItem) => item.is_complete).length,
             total_tasks: apiData.tasks.length
           };
           
@@ -199,13 +209,13 @@ export function useChecklist(projectId: string): {
             const apiData = await response.json();
             if (apiData && apiData.tasks) {
               const formattedData: ChecklistData = {
-                tasks: apiData.tasks.map((item: any) => ({
+                tasks: apiData.tasks.map((item: ApiTaskItem) => ({
                   id: item.id,
                   title: item.title,
                   is_complete: item.is_complete,
                   ai_help_hint: item.ai_help_hint
                 })),
-                completed_tasks: apiData.tasks.filter((item: any) => item.is_complete).length,
+                completed_tasks: apiData.tasks.filter((item: ApiTaskItem) => item.is_complete).length,
                 total_tasks: apiData.tasks.length
               };
               

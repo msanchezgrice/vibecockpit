@@ -118,9 +118,6 @@ export default async function handler(
         return res.status(400).json({ message: 'Task ID is required' });
       }
       
-      // Try both update methods
-      let updated = false;
-      
       // Try Prisma first
       try {
         const updatedTask = await prisma.checklistItem.update({
@@ -128,7 +125,6 @@ export default async function handler(
           data: { is_complete: isComplete ?? false },
         });
         
-        updated = true;
         return res.status(200).json({
           success: true,
           task: updatedTask,
