@@ -72,8 +72,8 @@ export default async function handler(
 
   try {
     const projects = await prisma.project.findMany({
-      where: { githubRepo: { not: null } },
-      select: { id: true, githubRepo: true },
+      where: { repoUrl: { not: null } },
+      select: { id: true, repoUrl: true },
     });
 
     if (projects.length === 0) {
@@ -83,9 +83,9 @@ export default async function handler(
 
     let addedCount = 0;
     for (const project of projects) {
-      if (!project.githubRepo) continue;
+      if (!project.repoUrl) continue;
 
-      const commits = await getGitHubCommits(project.githubRepo);
+      const commits = await getGitHubCommits(project.repoUrl);
       if (!commits) continue;
 
       // Get existing commit shas for this project to avoid duplicates
