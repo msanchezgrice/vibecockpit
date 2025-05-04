@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { IncomingForm } from 'formidable';
+import { IncomingForm, File as FormidableFile, Fields, Files } from 'formidable';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,22 +37,24 @@ export default async function handler(
       uploadDir,
       keepExtensions: true,
       maxFileSize: 5 * 1024 * 1024, // 5MB
-      filename: (name, ext, part) => {
+      filename: (_name, ext) => {
         return `${uuidv4()}${ext}`;
       }
     });
 
-    // Parse the form
-    const { fields, files } = await new Promise<{ fields: any, files: any }>((resolve, reject) => {
+    // Parse the form with proper typing
+    const parsedForm = await new Promise<{ fields: Fields, files: Files }>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
         resolve({ fields, files });
       });
     });
 
+    const { files } = parsedForm;
+
     // Get the uploaded file
     const fileArray = files.image;
-    if (!fileArray || fileArray.length === 0) {
+    if (!fileArray) {
       return res.status(400).json({ message: 'No image file provided' });
     }
     

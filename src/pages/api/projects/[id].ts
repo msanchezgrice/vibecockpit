@@ -58,7 +58,9 @@ export default async function handler(
         // Add imageUrl separately if it exists to bypass TypeScript errors 
         // until Prisma client is regenerated with the updated schema
         if ('imageUrl' in validatedData) {
-            (updatePayload as any).imageUrl = validatedData.imageUrl === '' ? null : validatedData.imageUrl;
+            const imageUrlValue = validatedData.imageUrl === '' ? null : validatedData.imageUrl;
+            // Using type assertion with a more specific type
+            (updatePayload as unknown as { imageUrl: string | null }).imageUrl = imageUrlValue as string | null;
         }
 
         // Remove undefined fields so Prisma doesn't try to update them
