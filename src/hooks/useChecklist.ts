@@ -111,7 +111,7 @@ export function useChecklist(projectId: string): {
         const apiData = await response.json();
         console.log('[useChecklist] API data:', apiData);
         
-        if (apiData && apiData.tasks) {
+        if (apiData && apiData.tasks && apiData.tasks.length > 0) {
           const formattedData: ChecklistData = {
             tasks: apiData.tasks.map((item: ApiTaskItem) => ({
               id: item.id,
@@ -153,7 +153,7 @@ export function useChecklist(projectId: string): {
           throw supabaseError;
         }
         
-        if (items && Array.isArray(items)) {
+        if (items && Array.isArray(items) && items.length > 0) {
           console.log("[useChecklist] Supabase found items:", items.length, items);
           // Format the data to match the expected ChecklistData format
           const completedCount = items.filter(item => item.is_complete).length;
@@ -176,57 +176,63 @@ export function useChecklist(projectId: string): {
         // Continue to fallback strategy
       }
       
-      // Try a different query to see if checklist items exist for this project
+      // If we get here, we need to check if this project is in "prep_launch" status
+      // and create checklist items if it is
       try {
-        console.log('[useChecklist] Trying alternative query with direct ID');
-        const { data: directItems, error: directError } = await supabase
-          .from('checklist_items')
-          .select('count')
-          .eq('project_id', projectId); // Try with original ID just in case
-          
-        console.log('[useChecklist] Direct query result:', { data: directItems, error: directError });
-      } catch (altError) {
-        console.error('[useChecklist] Alternative query failed:', altError);
-      }
-      
-      // Fallback: Try to create a test checklist via API
-      try {
-        console.log('[useChecklist] No items found. Attempting to create test checklist.');
-        const createResponse = await fetch('/api/create-test-checklist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ projectId: formattedProjectId, itemCount: 3 })
-        });
+        console.log('[useChecklist] Checking project status');
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('status')
+          .eq('id', formattedProjectId)
+          .single();
         
-        if (createResponse.ok) {
-          const createResult = await createResponse.json();
-          console.log('[useChecklist] Test checklist created:', createResult);
+        console.log('[useChecklist] Project status check:', { data: projectData, error: projectError });
+        
+        if (projectData && projectData.status === 'prep_launch') {
+          console.log('[useChecklist] Project is in prep_launch status, creating checklist items');
           
-          // Retry fetching after creating test data
-          const response = await fetch(`/api/checklist?projectId=${formattedProjectId}`);
-          
-          if (response.ok) {
-            const apiData = await response.json();
-            if (apiData && apiData.tasks) {
-              const formattedData: ChecklistData = {
-                tasks: apiData.tasks.map((item: ApiTaskItem) => ({
-                  id: item.id,
-                  title: item.title,
-                  is_complete: item.is_complete,
-                  ai_help_hint: item.ai_help_hint
-                })),
-                completed_tasks: apiData.tasks.filter((item: ApiTaskItem) => item.is_complete).length,
-                total_tasks: apiData.tasks.length
-              };
+          // Try to create a default checklist via API
+          try {
+            console.log('[useChecklist] Creating default checklist for prep_launch project');
+            const createResponse = await fetch('/api/create-test-checklist', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ projectId: formattedProjectId, itemCount: 5 })
+            });
+            
+            if (createResponse.ok) {
+              const createResult = await createResponse.json();
+              console.log('[useChecklist] Default checklist created:', createResult);
               
-              setData(formattedData);
-              setIsLoading(false);
-              return;
+              // Retry fetching after creating test data
+              const response = await fetch(`/api/checklist?projectId=${formattedProjectId}`);
+              
+              if (response.ok) {
+                const apiData = await response.json();
+                if (apiData && apiData.tasks) {
+                  const formattedData: ChecklistData = {
+                    tasks: apiData.tasks.map((item: ApiTaskItem) => ({
+                      id: item.id,
+                      title: item.title,
+                      is_complete: item.is_complete,
+                      ai_help_hint: item.ai_help_hint
+                    })),
+                    completed_tasks: apiData.tasks.filter((item: ApiTaskItem) => item.is_complete).length,
+                    total_tasks: apiData.tasks.length
+                  };
+                  
+                  setData(formattedData);
+                  setIsLoading(false);
+                  return;
+                }
+              }
             }
+          } catch (createError) {
+            console.error('[useChecklist] Failed to create default checklist:', createError);
           }
         }
-      } catch (createError) {
-        console.error('[useChecklist] Failed to create test checklist:', createError);
+      } catch (statusError) {
+        console.error('[useChecklist] Failed to check project status:', statusError);
       }
       
       // After all attempts, we didn't find items for this project

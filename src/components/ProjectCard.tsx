@@ -95,6 +95,18 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     return entry.message;
   };
 
+  // Helper function to get a proper display label for project status
+  const getStatusLabel = (status: string): string => {
+    const statusLabels: Record<string, string> = {
+      'design': 'Design',
+      'prep_launch': 'Preparing to Launch',
+      'launched': 'Launched',
+      'paused': 'Paused',
+      'retired': 'Retired'
+    };
+    return statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   return (
     <Card className="w-full flex flex-col justify-between h-full">
       <div>
@@ -152,7 +164,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 <SelectContent>
                   {Object.values(ProjectStatus).map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)} {/* Capitalize */}
+                      {getStatusLabel(status)}
                     </SelectItem>
                   ))}
                 </SelectContent>

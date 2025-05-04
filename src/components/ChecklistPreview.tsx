@@ -11,7 +11,7 @@ interface ChecklistPreviewProps {
 }
 
 export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
-  const { data, isLoading, error } = useChecklist(projectId);
+  const { data, isLoading, error, refetch } = useChecklist(projectId);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Debug logging
@@ -29,7 +29,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   if (isLoading) {
     console.log('[ChecklistPreview] Showing loading state');
     return (
-      <div className="space-y-3 border-t pt-4 mt-4">
+      <div className="space-y-3">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
         <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin mb-2" /> 
@@ -44,19 +44,32 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
     console.error("[ChecklistPreview] Rendering error fallback:", error);
     // Show a fallback UI instead of returning null
     return (
-      <div className="space-y-3 border-t pt-4 mt-4">
+      <div className="space-y-3">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
-        <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
+        <div className="p-4 border rounded-md flex flex-col items-center justify-center">
           <AlertCircle className="h-5 w-5 text-amber-500 mb-2" />
-          <p className="text-sm text-center">Unable to load checklist. Try setting status to &apos;Preparing to Launch&apos;.</p>
-          <p className="text-xs text-muted-foreground">Error: {error.message}</p>
-          <Button 
-            variant="link" 
-            className="text-sm text-blue-600 hover:underline p-0 h-auto mt-2" 
-            onClick={() => setIsModalOpen(true)}
-          >
-            View Checklist Tools →
-          </Button>
+          <p className="text-sm text-center font-medium">Failed to load checklist data</p>
+          <p className="text-sm text-center mt-1">
+            To enable checklists, set project status to &quot;Preparing to Launch&quot; in the dropdown above.
+          </p>
+          <div className="flex space-x-2 mt-3">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => refetch()}
+              className="text-xs"
+            >
+              Try Again
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => setIsModalOpen(true)}
+              className="text-xs"
+            >
+              View Checklist Tools
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -68,18 +81,21 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   // If we have data but no tasks, show a message
   if (data && !hasTasks) {
     return (
-      <div className="space-y-3 border-t pt-4 mt-4">
+      <div className="space-y-3">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
-        <div className="p-4 border rounded-md">
-          <p className="text-sm text-muted-foreground italic py-2">
-            No checklist items found. Make sure status is set to &apos;Preparing to Launch&apos;.
+        <div className="p-4 border rounded-md bg-amber-50 dark:bg-amber-950/20">
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-1">
+            No checklist items found
+          </p>
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            Set status to &quot;Preparing to Launch&quot; in the dropdown above to generate a checklist automatically.
           </p>
           <Button 
-            variant="link" 
-            className="text-sm text-blue-600 hover:underline p-0 h-auto pt-1" 
+            variant="outline" 
+            className="text-xs mt-3" 
             onClick={() => setIsModalOpen(true)}
           >
-            View Checklist Tools →
+            View Checklist Tools
           </Button>
         </div>
       </div>
@@ -95,7 +111,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
 
   return (
     <>
-      <div className="space-y-3 border-t pt-4 mt-4">
+      <div className="space-y-3">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
         
         {/* Progress Section (show only if there are actual tasks) */} 
@@ -117,7 +133,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
         
         {/* Task List or Empty State */} 
         {hasTasks ? (
-          <ul className="space-y-2">
+          <ul className="space-y-2 mt-2">
             {firstThreeTasks.map(task => (
               <li key={task.id} className="flex items-center gap-2 text-sm">
                 {task.is_complete ? 
@@ -135,17 +151,17 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground italic py-2">
-            Set status to &apos;Preparing to Launch&apos; to generate a launch checklist with AI.
+            Set status to &quot;Preparing to Launch&quot; to generate a launch checklist with AI.
           </p>
         )}
         
         {/* Button to trigger the modal */}
         <Button 
-          variant="link" 
-          className="text-sm text-blue-600 hover:underline p-0 h-auto pt-1" 
+          variant="secondary" 
+          className="text-sm w-full mt-2" 
           onClick={() => setIsModalOpen(true)}
         >
-          View Full Checklist →
+          {hasTasks ? "View Full Checklist" : "Manage Checklist"}
         </Button>
       </div>
       
