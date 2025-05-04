@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import formidable from 'formidable';
+import { IncomingForm } from 'formidable';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,33 +28,35 @@ export default async function handler(
   }
 
   try {
-    // Parse the incoming form data
-    const form = formidable({
-      maxFileSize: 5 * 1024 * 1024, // 5MB
-      uploadDir: path.join(process.cwd(), 'public/uploads'),
+    // Ensure the upload directory exists
+    const uploadDir = path.join(process.cwd(), 'public/uploads');
+    await fs.mkdir(uploadDir, { recursive: true });
+    
+    // Configure IncomingForm
+    const form = new IncomingForm({
+      uploadDir,
       keepExtensions: true,
-      filename: (_name, _ext, part) => {
-        const uniqueFilename = `${uuidv4()}${path.extname(part.originalFilename || '')}`;
-        return uniqueFilename;
-      },
+      maxFileSize: 5 * 1024 * 1024, // 5MB
+      filename: (name, ext, part) => {
+        return `${uuidv4()}${ext}`;
+      }
     });
 
-    // Make sure the upload directory exists
-    await fs.mkdir(path.join(process.cwd(), 'public/uploads'), { recursive: true });
-
     // Parse the form
-    const [fields, files] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
+    const { fields, files } = await new Promise<{ fields: any, files: any }>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
-        resolve([fields, files]);
+        resolve({ fields, files });
       });
     });
 
-    const file = files.image as formidable.File;
-    
-    if (!file) {
+    // Get the uploaded file
+    const fileArray = files.image;
+    if (!fileArray || fileArray.length === 0) {
       return res.status(400).json({ message: 'No image file provided' });
     }
+    
+    const file = Array.isArray(fileArray) ? fileArray[0] : fileArray;
 
     // Get the file path relative to the public directory
     const relativePath = path.relative(path.join(process.cwd(), 'public'), file.filepath);
