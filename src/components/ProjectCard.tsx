@@ -1,6 +1,6 @@
 'use client';
 
-import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
+import { Project, ProjectStatus, ChangeLogEntry, CostSnapshot, AnalyticsSnapshot } from '@/generated/prisma';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -10,29 +10,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
-import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
+import { MessageSquareText, GitCommitHorizontal, Github, ExternalLink, Clock } from 'lucide-react';
 import { EditProjectDialog } from './EditProjectDialog';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime, formatDistanceToNow } from '@/lib/utils';
 import { ChecklistPreview } from './ChecklistPreview';
+import { CodingPlatform } from '@/lib/types';
 
 interface ProjectCardProps {
   project: Project & { 
-    latestCostSnapshot?: CostSnapshot | null;
-    latestAnalyticsSnapshot?: AnalyticsSnapshot | null; 
-    costSnapshots: CostSnapshot[]; 
-    analyticsSnapshots: AnalyticsSnapshot[]; 
     changelog: ChangeLogEntry[];
+    costSnapshots: CostSnapshot[];
+    analyticsSnapshots: AnalyticsSnapshot[]; 
   };
-}
-
-// Helper to format currency
-function formatCurrency(amount: string | number | null | undefined): string {
-  if (amount == null || amount === '') return 'N/A';
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return 'Invalid'; // Handle parsing errors
-  return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
 // Helper to render provider icon
@@ -42,12 +34,26 @@ function ProviderIcon({ provider }: { provider: string }) {
     return null;
 }
 
+// Helper to get platform name
+function getPlatformName(platform: CodingPlatform | undefined): string {
+  if (!platform) return 'Unknown';
+  
+  // Convert SNAKE_CASE to Title Case
+  return platform.toString()
+    .toLowerCase()
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export default function ProjectCard({ project }: ProjectCardProps) {
   const [currentStatus, setCurrentStatus] = useState(project.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const latestCost = project.costSnapshots[0]?.costAmount;
-  const latestAnalytics = project.analyticsSnapshots[0];
+  
+  // Find latest commit
+  const latestCommit = project.changelog.find(entry => entry.provider === 'github_commit');
+  const lastCommitTime = latestCommit?.createdAt;
 
   const handleStatusChange = async (newStatus: ProjectStatus) => {
     if (newStatus === currentStatus || isUpdating) {
@@ -106,6 +112,23 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </div>
         </CardHeader>
         <CardContent className="grid gap-4">
+          {/* Thumbnail Image */}
+          <div className="rounded-xl overflow-hidden border">
+            <Image 
+              src={project.thumbUrl || '/images/thumb-placeholder.png'} 
+              alt={project.name} 
+              width={500} 
+              height={280} 
+              className="w-full h-auto object-cover"
+            />
+            {lastCommitTime && (
+              <div className="p-2 bg-white border-t flex items-center text-sm text-gray-600">
+                <Clock className="h-4 w-4 mr-1" />
+                Last commit: {formatDistanceToNow(lastCommitTime)} ago
+              </div>
+            )}
+          </div>
+          
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium leading-none">Status</p>
@@ -128,6 +151,15 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
             </div>
           </div>
+          
+          {/* Platform */}
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none">Platform</p>
+              <p className="text-sm">{getPlatformName(project.platform as CodingPlatform)}</p>
+            </div>
+          </div>
+          
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <div className="flex-1 space-y-1 overflow-hidden">
               <p className="text-sm font-medium leading-none">Frontend URL</p>
@@ -145,22 +177,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               )}
             </div>
           </div>
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <ExternalLink className="h-5 w-5 text-muted-foreground" />
-            <div className="flex-1 space-y-1 overflow-hidden">
-              <p className="text-sm font-medium leading-none">Vercel Project</p>
-              {project.vercelProjectId && (
-                <Link
-                  href={`https://vercel.com/${process.env.NEXT_PUBLIC_VERCEL_TEAM_ID ?? '_'}/${project.vercelProjectId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline block truncate"
-                >
-                  {project.vercelProjectId} (View on Vercel)
-                </Link>
-              )}
-            </div>
-          </div>
+          
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <Github className="h-5 w-5 text-muted-foreground" />
             <div className="flex-1 space-y-1 overflow-hidden">
@@ -175,32 +192,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                   {project.githubRepo}
                 </Link>
               )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <DollarSign className="h-6 w-6 text-muted-foreground" />
-            <div className="flex-1 space-y-1">
-              <p className="text-sm font-medium leading-none">Est. Monthly Cost</p>
-              <p className="text-base font-semibold">
-                {formatCurrency(latestCost as unknown as string | null)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Snapshot taken: {formatDateTime(project.costSnapshots[0]?.createdAt ?? null)}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <BarChartBig className="h-6 w-6 text-muted-foreground" />
-            <div className="flex-1 space-y-1">
-              <p className="text-sm font-medium leading-none">Monthly Activity</p>
-              <p className="text-base font-semibold">
-                {latestAnalytics?.visits ?? 'N/A'} visits
-                <span className="text-sm font-normal text-muted-foreground mx-1">∙</span>
-                {latestAnalytics?.signups ?? 'N/A'} sign-ups
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Snapshot taken: {formatDateTime(latestAnalytics?.createdAt ?? null)}
-              </p>
             </div>
           </div>
 
