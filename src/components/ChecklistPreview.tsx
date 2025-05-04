@@ -77,7 +77,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
                 </ul>
             ) : (
                  <p className="text-sm text-muted-foreground italic py-2">
-                    Set status to "Preparing to Launch" to generate a launch checklist with AI.
+                    Set status to &quot;Preparing to Launch&quot; to generate a launch checklist with AI.
                  </p>
             )}
             {/* Button to trigger the modal */}

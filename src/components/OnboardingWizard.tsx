@@ -15,7 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { CheckCircle, X, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useSWRConfig } from 'swr';
 import { ProjectStatus } from '@/generated/prisma';
@@ -361,7 +361,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Projects in "Preparing to Launch" phase will automatically get an AI-generated launch checklist.
+                Projects in &quot;Preparing to Launch&quot; phase will automatically get an AI-generated launch checklist.
               </p>
             </div>
           </div>

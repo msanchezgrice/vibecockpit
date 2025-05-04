@@ -13,7 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
-import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink, Link2, Code } from 'lucide-react';
+import { MessageSquareText, GitCommitHorizontal, Github, ExternalLink, Link2, Code } from 'lucide-react';
 import { EditProjectDialog } from './EditProjectDialog';
 import { formatDateTime } from '@/lib/utils';
 import { ChecklistPreview } from './ChecklistPreview';
@@ -26,14 +26,6 @@ interface ProjectCardProps {
     analyticsSnapshots: AnalyticsSnapshot[]; 
     changelog: ChangeLogEntry[];
   };
-}
-
-// Helper to format currency
-function formatCurrency(amount: string | number | null | undefined): string {
-  if (amount == null || amount === '') return 'N/A';
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return 'Invalid'; // Handle parsing errors
-  return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
 // Helper to render provider icon
@@ -61,8 +53,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const [currentStatus, setCurrentStatus] = useState(project.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const latestCost = project.costSnapshots[0]?.costAmount;
-  const latestAnalytics = project.analyticsSnapshots[0];
 
   const handleStatusChange = async (newStatus: ProjectStatus) => {
     if (newStatus === currentStatus || isUpdating) {
