@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChecklist } from '@/hooks/useChecklist';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,20 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   const { data, isLoading, error } = useChecklist(projectId);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[ChecklistPreview] Rendering with data:', { 
+      projectId, 
+      isLoading, 
+      error: error?.message, 
+      hasData: !!data,
+      taskCount: data?.tasks?.length,
+      tasks: data?.tasks
+    });
+  }, [projectId, isLoading, error, data]);
+
   if (isLoading) {
+    console.log('[ChecklistPreview] Showing loading state');
     return (
       <div className="space-y-3 border-t pt-4 mt-4">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
@@ -27,7 +40,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   }
 
   if (error) {
-    console.error("ChecklistPreview rendering error:", error);
+    console.error("[ChecklistPreview] Rendering error:", error);
     return null;
   }
 
@@ -37,65 +50,70 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   const progress = total_tasks > 0 ? (completed_tasks / total_tasks) * 100 : 0;
   const firstThreeTasks = data?.tasks?.slice(0, 3) ?? [];
 
+  console.log('[ChecklistPreview] Rendering with:', { hasTasks, completed_tasks, total_tasks, progress, firstThreeTasks });
+
   return (
     <>
-        <div className="space-y-3 border-t pt-4 mt-4">
-            <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
-            {/* Progress Section (show only if there are actual tasks) */} 
-            {data && total_tasks > 0 && (
-                <>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
-                        <span>Progress</span>
-                        <span>{completed_tasks} / {total_tasks}</span>
-                    </div>
-                    {/* Progress Bar */}
-                    <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                         <div 
-                             className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
-                             style={{ width: `${progress}%` }}
-                         />
-                    </div>
-                </>
-            )}
-            {/* Task List or Empty State */} 
-            {hasTasks ? (
-                <ul className="space-y-2">
-                    {firstThreeTasks.map(task => (
-                        <li key={task.id} className="flex items-center gap-2 text-sm">
-                            {task.is_complete ? 
-                               <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" /> : 
-                               <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            }
-                            <span className={task.is_complete ? 'text-muted-foreground line-through' : ''}> 
-                                {task.title}
-                            </span>
-                        </li>
-                    ))}
-                    {data.tasks.length > 3 && (
-                        <li className="text-xs text-muted-foreground pl-6">... and {data.tasks.length - 3} more</li>
-                    )}
-                </ul>
-            ) : (
-                 <p className="text-sm text-muted-foreground italic py-2">
-                    Set status to &quot;Preparing to Launch&quot; to generate a launch checklist with AI.
-                 </p>
-            )}
-            {/* Button to trigger the modal */}
-            <Button 
-                variant="link" 
-                className="text-sm text-blue-600 hover:underline p-0 h-auto pt-1" 
-                onClick={() => setIsModalOpen(true)}
-            >
-                View Full Checklist →
-            </Button>
-        </div>
+      <div className="space-y-3 border-t pt-4 mt-4">
+        <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
         
-        {/* Render the Modal (controlled) */}
-        <ChecklistModal 
-            projectId={projectId} 
-            isOpen={isModalOpen} 
-            onOpenChange={setIsModalOpen} 
-        />
+        {/* Progress Section (show only if there are actual tasks) */} 
+        {data && total_tasks > 0 && (
+          <>
+            <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{completed_tasks} / {total_tasks}</span>
+            </div>
+            {/* Progress Bar */}
+            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+              <div 
+                className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </>
+        )}
+        
+        {/* Task List or Empty State */} 
+        {hasTasks ? (
+          <ul className="space-y-2">
+            {firstThreeTasks.map(task => (
+              <li key={task.id} className="flex items-center gap-2 text-sm">
+                {task.is_complete ? 
+                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" /> : 
+                  <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                }
+                <span className={task.is_complete ? 'text-muted-foreground line-through' : ''}> 
+                  {task.title}
+                </span>
+              </li>
+            ))}
+            {data.tasks.length > 3 && (
+              <li className="text-xs text-muted-foreground pl-6">... and {data.tasks.length - 3} more</li>
+            )}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground italic py-2">
+            Set status to &quot;Preparing to Launch&quot; to generate a launch checklist with AI.
+          </p>
+        )}
+        
+        {/* Button to trigger the modal */}
+        <Button 
+          variant="link" 
+          className="text-sm text-blue-600 hover:underline p-0 h-auto pt-1" 
+          onClick={() => setIsModalOpen(true)}
+        >
+          View Full Checklist →
+        </Button>
+      </div>
+      
+      {/* Render the Modal (controlled) */}
+      <ChecklistModal 
+        projectId={projectId} 
+        isOpen={isModalOpen} 
+        onOpenChange={setIsModalOpen} 
+      />
     </>
   );
 } 

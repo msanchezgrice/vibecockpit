@@ -37,6 +37,7 @@ export default async function handler(
       const { projectId } = validationResult.data;
 
       // Optional: Check if user owns/has access to this project ID
+      console.log('[API] GET /api/checklist - Fetching items for project:', projectId);
 
       const checklistItems = await prisma.checklistItem.findMany({
         where: {
@@ -46,6 +47,8 @@ export default async function handler(
           order: 'asc', // Order by the 'order' field
         },
       });
+
+      console.log('[API] GET /api/checklist - Found items:', checklistItems.length);
 
       const completedCount = checklistItems.filter(item => item.is_complete).length;
 
