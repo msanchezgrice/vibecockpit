@@ -4,6 +4,7 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { GitHubSignInButton } from '@/components/GitHubSignInButton';
 
 export default async function MarketingHomePage() {
   const session = await getServerSession(authOptions);
@@ -27,12 +28,7 @@ export default async function MarketingHomePage() {
             deployments, databases, costs—then pairs you with a{' '}
             <strong>Virtual Cofounder</strong> that pushes the last 20%.
           </p>
-          <Button
-            asChild
-            className="mt-6 bg-blue-600 px-6 py-3 text-base hover:bg-blue-700"
-          >
-            <Link href="/api/auth/signin/github">Sign in with GitHub</Link>
-          </Button>
+          <GitHubSignInButton className="mt-6 bg-blue-600 px-6 py-3 text-base hover:bg-blue-700" />
         </div>
 
         {/* Hero illustration (swap the src with your asset) */}
@@ -173,12 +169,7 @@ export default async function MarketingHomePage() {
         <h2 className="text-3xl font-bold">
           🛫 Ready to finish every project you start?
         </h2>
-        <Button
-          asChild
-          className="mt-6 bg-white text-blue-600 hover:bg-gray-100"
-        >
-          <Link href="/api/auth/signin/github">Sign in with GitHub</Link>
-        </Button>
+        <GitHubSignInButton className="mt-6 bg-white text-blue-600 hover:bg-gray-100" />
       </section>
     </div>
   );

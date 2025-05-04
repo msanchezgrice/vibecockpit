@@ -45,6 +45,17 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
+  },
+  // Direct straight to GitHub login without showing the NextAuth sign-in page
+  pages: {
+    signIn: '/api/auth/signin/github',
   },
   // Enable debug messages in the console if you are having problems
   // debug: process.env.NODE_ENV === 'development',
