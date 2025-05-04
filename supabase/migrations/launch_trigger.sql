@@ -11,9 +11,16 @@ AS $$
 DECLARE
     response json;
     http_status int;
+    supabase_service_key text := current_setting('app.supabase_service_key', true);
 BEGIN
     -- Log the attempt to call the function
     RAISE NOTICE 'Attempting to generate checklist for project %', project_id;
+    
+    -- Check if we have the service key
+    IF supabase_service_key IS NULL THEN
+        RAISE WARNING 'Missing Supabase service key. Set using: SET app.supabase_service_key = your_key';
+        supabase_service_key := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY2lmY2xqZ2t6bHRueHJsemxwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTY5OTI1MywiZXhwIjoyMDYxMjc1MjUzfQ.xUpl7YXjVbZvu8geJA6UlVOk6bE2SuVYP29YWHmfjJg';
+    END IF;
     
     -- Make a POST request to the Edge Function URL
     -- Using net.http_post from pg_net extension
@@ -27,7 +34,10 @@ BEGIN
             'project_id', project_id,
             'category', project_category
         )::jsonb,
-        headers:= '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY2lmY2xqZ2t6bHRueHJsemxwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTY5OTI1MywiZXhwIjoyMDYxMjc1MjUzfQ.xUpl7YXjVbZvu8geJA6UlVOk6bE2SuVYP29YWHmfjJg"}'::jsonb
+        headers:= json_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || supabase_service_key
+        )::jsonb
     );
     
     -- Log the response
