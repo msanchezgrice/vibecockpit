@@ -13,9 +13,11 @@ async function main() {
       name: 'Vibe Cockpit Alpha',
       status: ProjectStatus.prep_launch, // Set to prep_launch for testing checklist
       description: 'Internal dashboard for monitoring project vibes.',
-      frontendUrl: 'https://vibecockpit.vercel.app',
+      url: 'https://vibecockpit.vercel.app',
+      platform: 'CURSOR',
       vercelProjectId: 'prj_...YOUR_ALPHA_PROJECT_ID', // Replace with actual ID if known
-      githubRepo: 'msanchezgrice/vibecockpit',
+      repoUrl: 'msanchezgrice/vibecockpit',
+      thumbUrl: '/images/thumb-placeholder.png',
       image_url: null, // Add image_url field with null value
     },
   });
@@ -27,7 +29,9 @@ async function main() {
     create: {
       name: 'Legacy Dashboard',
       status: ProjectStatus.retired,
-      frontendUrl: 'https://old.dashboard.com',
+      url: 'https://old.dashboard.com',
+      platform: 'OTHER',
+      thumbUrl: '/images/thumb-placeholder.png',
       image_url: null, // Add image_url field with null value
     },
   });
