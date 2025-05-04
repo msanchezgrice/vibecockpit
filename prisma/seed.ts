@@ -37,35 +37,6 @@ async function main() {
   });
   console.log(`Created/updated project with id: ${project2.id}`);
 
-  // Seed Checklist Items for Project 1
-  console.log(`Seeding checklist items for ${project1.name} (${project1.id})...`);
-  const checklistItemsData = [
-    { order: 1, title: 'Configure DNS', is_complete: true },
-    { order: 2, title: 'Set up monitoring alerts', is_complete: true },
-    { order: 3, title: 'Run performance audit (Lighthouse)', is_complete: false },
-    { order: 4, title: 'Final stakeholder sign-off', is_complete: false, ai_help_hint: 'Draft stakeholder update email...' },
-    { order: 5, title: 'Schedule social media announcement', is_complete: false },
-    { order: 6, title: 'Update README for production', is_complete: false },
-    { order: 7, title: 'Confirm environment variables on Vercel', is_complete: true },
-  ];
-
-  let createdCount = 0;
-  for (const itemData of checklistItemsData) {
-    await prisma.checklistItem.upsert({
-        where: { projectId_order: { projectId: project1.id, order: itemData.order } },
-        update: { title: itemData.title, is_complete: itemData.is_complete, ai_help_hint: itemData.ai_help_hint },
-        create: {
-            projectId: project1.id,
-            order: itemData.order,
-            title: itemData.title,
-            is_complete: itemData.is_complete,
-            ai_help_hint: itemData.ai_help_hint,
-        }
-    });
-    createdCount++;
-  }
-  console.log(`Upserted ${createdCount} checklist items for project ${project1.id}.`);
-
   console.log(`Seeding finished.`);
 }
 

@@ -244,11 +244,11 @@ export function ChecklistModal({ projectId, isOpen, onOpenChange }: ChecklistMod
         <form onSubmit={handleAddTask} className="flex items-center gap-2 my-4">
           <Input
             type="text"
-            placeholder="Add new task..."
+            placeholder={isAddingTask ? "Adding task..." : "Add new task..."}
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             disabled={isAddingTask}
-            className="flex-grow"
+            className={isAddingTask ? "animate-pulse" : ""}
           />
           <Button 
             type="submit" 
