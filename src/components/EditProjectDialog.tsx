@@ -45,12 +45,14 @@ import { useChecklist } from '@/hooks/useChecklist';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AskAIModal } from './AskAIModal';
+import { ImageUpload } from '@/components/ImageUpload';
 
 // Define the expected prop type
 type ProjectWithRelations = Project & { 
     costSnapshots: CostSnapshot[]; 
     analyticsSnapshots: AnalyticsSnapshot[]; 
     changelog: ChangeLogEntry[];
+    imageUrl?: string | null;
 };
 
 interface EditProjectDialogProps {
@@ -94,6 +96,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
   const [frontendUrl, setFrontendUrl] = useState(project.frontendUrl ?? '');
   const [vercelId, setVercelId] = useState(project.vercelProjectId ?? '');
   const [githubRepo, setGithubRepo] = useState(project.githubRepo ?? '');
+  const [imageUrl, setImageUrl] = useState(project.imageUrl ?? '');
   const [newNoteText, setNewNoteText] = useState('');
   
   // State for Connect flows
@@ -129,6 +132,7 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
         setFrontendUrl(project.frontendUrl ?? '');
         setVercelId(project.vercelProjectId ?? '');
         setGithubRepo(project.githubRepo ?? '');
+        setImageUrl(project.imageUrl ?? '');
         setNewNoteText('');
         setError(null);
         setNoteError(null);
@@ -142,7 +146,15 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
     setIsSaving(true);
     setError(null);
     // Add validation if needed...
-    const payload = { name: projectName, description, status: currentStatus, frontendUrl, vercelProjectId: vercelId, githubRepo };
+    const payload = { 
+      name: projectName, 
+      description, 
+      status: currentStatus, 
+      frontendUrl, 
+      vercelProjectId: vercelId, 
+      githubRepo,
+      imageUrl
+    };
     
     try {
       const response = await fetch(`/api/projects/${project.id}`, { 
@@ -380,23 +392,53 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
           <DialogDescription className="text-sm">View details, make changes, and add notes.</DialogDescription>
         </DialogHeader>
 
-        {/* Hero Image Placeholder */}
-        <div className="h-32 bg-muted rounded-md my-4 flex items-center justify-center text-muted-foreground flex-shrink-0">
-            Hero Image Placeholder
+        {/* Project Name */}
+        <div className="mb-4">
+          <Label htmlFor={`edit-name-${project.id}`} className="block text-sm font-medium mb-1">
+            Project Name
+          </Label>
+          <Input 
+            id={`edit-name-${project.id}`} 
+            value={projectName} 
+            onChange={(e) => setProjectName(e.target.value)} 
+            className="text-base h-10 w-full" 
+            required 
+            disabled={isSaving}
+          />
         </div>
 
-        <ScrollArea className="flex-grow overflow-y-auto pr-6 max-h-[calc(90vh-250px)]">
+        {/* Hero Image Upload */}
+        <div className="mb-4">
+          <Label className="block text-sm font-medium mb-1">
+            Project Image
+          </Label>
+          <ImageUpload 
+            onImageUpload={setImageUrl} 
+            currentImageUrl={imageUrl} 
+            className="h-40"
+          />
+        </div>
+
+        {/* Description - Full Width */}
+        <div className="mb-4">
+          <Label htmlFor={`edit-desc-${project.id}`} className="block text-sm font-medium mb-1">
+            Description
+          </Label>
+          <Textarea 
+            id={`edit-desc-${project.id}`} 
+            placeholder="(Optional)..." 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            className="text-base min-h-[80px] w-full" 
+            rows={3} 
+            disabled={isSaving}
+          />
+        </div>
+
+        <ScrollArea className="flex-grow overflow-y-auto pr-6 max-h-[calc(90vh-350px)]">
             <div className="grid gap-4 py-4">
-                {/* --- Edit Fields --- */} 
-                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor={`edit-name-${project.id}`} className="text-right text-sm">Name</Label>
-                    <Input id={`edit-name-${project.id}`} value={projectName} onChange={(e) => setProjectName(e.target.value)} className="col-span-3 text-base h-10" required disabled={isSaving}/>
-                </div>
-                 <div className="grid grid-cols-4 items-start gap-4"> {/* Align start for textarea */}
-                    <Label htmlFor={`edit-desc-${project.id}`} className="text-right text-sm pt-2">Description</Label>
-                    <Textarea id={`edit-desc-${project.id}`} placeholder="(Optional)..." value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3 text-base min-h-[80px]" rows={3} disabled={isSaving}/>
-                </div>
-                 <div className="grid grid-cols-4 items-center gap-4">
+                {/* Status */}
+                <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor={`edit-status-${project.id}`} className="text-right text-sm">Status</Label>
                      <Select value={currentStatus} onValueChange={(v) => setCurrentStatus(v as ProjectStatus)} disabled={isSaving}>
                         <SelectTrigger className="col-span-3 h-10 text-base"><SelectValue/></SelectTrigger>
@@ -405,16 +447,21 @@ export function EditProjectDialog({ project }: EditProjectDialogProps) {
                         </SelectContent>
                     </Select>
                 </div>
+
+                {/* Frontend URL */}
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor={`edit-feUrl-${project.id}`} className="text-right text-sm">Frontend URL</Label>
                     <Input id={`edit-feUrl-${project.id}`} type="url" placeholder="https://... (Optional)" value={frontendUrl} onChange={(e) => setFrontendUrl(e.target.value)} className="col-span-3 text-base h-10" disabled={isSaving}/>
                 </div>
-                 <div className="grid grid-cols-4 items-center gap-4">
+
+                {/* Vercel ID */}
+                <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor={`edit-vercelId-${project.id}`} className="text-right text-sm">Vercel ID</Label>
-                     {/* Simple Input, assumes user already connected account */}
                     <Input id={`edit-vercelId-${project.id}`} placeholder="Enter Vercel Project ID (Optional)" className="col-span-3 text-base h-10" value={vercelId} onChange={(e) => setVercelId(e.target.value)} disabled={isSaving}/> 
                 </div>
-                 <div className="grid grid-cols-4 items-center gap-4">
+
+                {/* GitHub Repo */}
+                <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right text-sm">GitHub Repo</Label>
                      <Popover open={popoverOpenGitHub} onOpenChange={setPopoverOpenGitHub}>
                         <PopoverTrigger asChild>

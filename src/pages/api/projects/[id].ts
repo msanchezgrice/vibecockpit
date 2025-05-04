@@ -16,6 +16,7 @@ const updateProjectSchema = z.object({
   description: z.string().optional(),
   vercelProjectId: z.string().optional().or(z.literal('')),
   githubRepo: z.string().optional().or(z.literal('')),
+  imageUrl: z.string().optional().or(z.literal('')),
 });
 
 export default async function handler(
@@ -53,6 +54,12 @@ export default async function handler(
             vercelProjectId: validatedData.vercelProjectId === '' ? null : validatedData.vercelProjectId, // Allow clearing
             githubRepo: validatedData.githubRepo === '' ? null : validatedData.githubRepo, // Allow clearing
         };
+
+        // Add imageUrl separately if it exists to bypass TypeScript errors 
+        // until Prisma client is regenerated with the updated schema
+        if ('imageUrl' in validatedData) {
+            (updatePayload as any).imageUrl = validatedData.imageUrl === '' ? null : validatedData.imageUrl;
+        }
 
         // Remove undefined fields so Prisma doesn't try to update them
         Object.keys(updatePayload).forEach(key => updatePayload[key as keyof typeof updatePayload] === undefined && delete updatePayload[key as keyof typeof updatePayload]);
