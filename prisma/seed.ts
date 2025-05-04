@@ -16,6 +16,7 @@ async function main() {
       frontendUrl: 'https://vibecockpit.vercel.app',
       vercelProjectId: 'prj_...YOUR_ALPHA_PROJECT_ID', // Replace with actual ID if known
       githubRepo: 'msanchezgrice/vibecockpit',
+      image_url: null, // Add image_url field with null value
     },
   });
   console.log(`Created/updated project with id: ${project1.id}`);
@@ -27,6 +28,7 @@ async function main() {
       name: 'Legacy Dashboard',
       status: ProjectStatus.retired,
       frontendUrl: 'https://old.dashboard.com',
+      image_url: null, // Add image_url field with null value
     },
   });
   console.log(`Created/updated project with id: ${project2.id}`);
