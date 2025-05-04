@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useChecklist } from '@/hooks/useChecklist';
-import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ChecklistModal } from './ChecklistModal';
 
@@ -40,8 +40,24 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   }
 
   if (error) {
-    console.error("[ChecklistPreview] Rendering error:", error);
-    return null;
+    console.error("[ChecklistPreview] Rendering error fallback:", error);
+    // Show a fallback UI instead of returning null
+    return (
+      <div className="space-y-3 border-t pt-4 mt-4">
+        <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
+        <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
+          <AlertCircle className="h-5 w-5 text-amber-500 mb-2" />
+          <p className="text-sm text-center">Unable to load checklist. Try setting status to "Preparing to Launch".</p>
+          <Button 
+            variant="link" 
+            className="text-sm text-blue-600 hover:underline p-0 h-auto mt-2" 
+            onClick={() => setIsModalOpen(true)}
+          >
+            View Checklist Tools →
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const hasTasks = data && data.tasks && data.tasks.length > 0;

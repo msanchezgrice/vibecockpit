@@ -64,67 +64,73 @@ export function useChecklist(projectId: string): {
       const formattedProjectId = normalizeUUID(projectId);
       console.log('[useChecklist] Using formatted project ID:', formattedProjectId);
       
-      // Query checklist items directly from Supabase
-      const { data: items, error: supabaseError } = await supabase
+      // First try to fetch the checklist items with better error handling
+      try {
+        const { data: items, error: supabaseError, status } = await supabase
+          .from('checklist_items')
+          .select('*')
+          .eq('project_id', formattedProjectId)
+          .order('order', { ascending: true });
+          
+        // Log the response for debugging
+        console.log('[useChecklist] Supabase response:', { status, error: supabaseError?.message });
+        
+        if (supabaseError) {
+          console.error("[useChecklist] Supabase error:", supabaseError);
+          throw supabaseError;
+        }
+        
+        if (items && Array.isArray(items)) {
+          console.log("[useChecklist] Supabase found items:", items.length, items);
+          // Format the data to match the expected ChecklistData format
+          const completedCount = items.filter(item => item.is_complete).length;
+          const formattedData: ChecklistData = {
+            tasks: items.map(item => ({
+              id: item.id,
+              title: item.title,
+              is_complete: item.is_complete,
+              ai_help_hint: item.ai_help_hint
+            })),
+            completed_tasks: completedCount,
+            total_tasks: items.length
+          };
+          setData(formattedData);
+          setIsLoading(false);
+          return; // Success path - exit early
+        }
+      } catch (fetchError) {
+        console.error("[useChecklist] Error fetching checklist items:", fetchError);
+        // Continue to fallback strategy
+      }
+      
+      // Fallback: Try to fetch all items to see if the database has anything
+      console.log('[useChecklist] Trying fallback query to check DB state');
+      const { data: allItems, error: allItemsError } = await supabase
         .from('checklist_items')
         .select('*')
-        .eq('project_id', formattedProjectId)
-        .order('order', { ascending: true });
+        .limit(10);
         
-      if (supabaseError) {
-        console.error("[useChecklist] Supabase error:", supabaseError);
-        throw supabaseError;
+      if (allItemsError) {
+        console.error('[useChecklist] Fallback query failed:', allItemsError);
+        throw allItemsError;
       }
       
-      // DEBUG: Log all checklist items in the database to help diagnose issues
-      try {
-        const { data: allItems } = await supabase
-          .from('checklist_items')
-          .select('*');
-          
-        console.log('[useChecklist] All checklist items in DB:', allItems?.length);
-        if (allItems && allItems.length > 0) {
-          console.log('[useChecklist] First few items:', allItems.slice(0, 3));
-          
-          const projectIds = [...new Set(allItems.map(i => i.project_id))];
-          console.log('[useChecklist] All unique project_ids in DB:', projectIds);
-          
-          // Check if our projectId exists in any form in the database
-          const normalizedIds = projectIds.map(id => normalizeUUID(id));
-          const projectIdExists = normalizedIds.includes(formattedProjectId);
-          console.log('[useChecklist] Our project ID exists in DB:', projectIdExists);
-        }
-      } catch (allItemsError) {
-        console.error('[useChecklist] Error fetching all items:', allItemsError);
-      }
+      console.log('[useChecklist] Fallback query results:', { 
+        count: allItems?.length || 0,
+        firstFew: allItems?.slice(0, 3) || []
+      });
       
-      if (items && Array.isArray(items)) {
-        console.log("[useChecklist] Supabase found items:", items.length, items);
-        // Format the data to match the expected ChecklistData format
-        const completedCount = items.filter(item => item.is_complete).length;
-        const formattedData: ChecklistData = {
-          tasks: items.map(item => ({
-            id: item.id,
-            title: item.title,
-            is_complete: item.is_complete,
-            ai_help_hint: item.ai_help_hint
-          })),
-          completed_tasks: completedCount,
-          total_tasks: items.length
-        };
-        setData(formattedData);
-      } else {
-        console.log("[useChecklist] No items found for project ID:", formattedProjectId);
-        // No items found, but not an error
-        setData({
-          tasks: [],
-          completed_tasks: 0,
-          total_tasks: 0
-        });
-      }
+      // Even if we found other items, we didn't find items for this project
+      console.log("[useChecklist] No items found for project ID:", formattedProjectId);
+      // No items found, but not an error - return an empty list
+      setData({
+        tasks: [],
+        completed_tasks: 0,
+        total_tasks: 0
+      });
     } catch (err) {
       console.error("[useChecklist] Supabase query failed:", err);
-      setError(err instanceof Error ? err : new Error('Failed to load checklist'));
+      setError(err instanceof Error ? err : new Error('Failed to load checklist data'));
       // Don't set data to null here to maintain previous data if available
     } finally {
       setIsLoading(false);

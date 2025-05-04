@@ -8,6 +8,16 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': supabaseAnonKey
+    },
+  },
+  // Set longer timeouts for API calls
+  db: {
+    schema: 'public'
   }
 });
 
