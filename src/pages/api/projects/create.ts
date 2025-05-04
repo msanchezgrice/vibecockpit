@@ -3,14 +3,13 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
-import { CodingPlatform, ProjectStatus, Prisma } from '@/generated/prisma';
+import { ProjectStatus, Prisma } from '@/generated/prisma';
 
 // Validation schema - make it more flexible
 const createProjectSchema = z.object({
   name: z.string().min(1).max(60),
   description: z.string().max(140).optional().nullable(),
   url: z.string().url().optional().nullable().or(z.literal('')),
-  platform: z.nativeEnum(CodingPlatform).optional().default('CURSOR'),
   repoUrl: z.string().regex(/^[\w-]+\/[\w.-]+$/).optional().nullable().or(z.literal('')),
   status: z.nativeEnum(ProjectStatus).optional().default('design'),
 });
@@ -47,7 +46,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       name: validatedData.name,
       description: validatedData.description || null,
       url: validatedData.url || null,
-      platform: validatedData.platform,
       repoUrl: validatedData.repoUrl || null,
       status: validatedData.status,
       thumbUrl: '/images/thumb-placeholder.png', // Default placeholder

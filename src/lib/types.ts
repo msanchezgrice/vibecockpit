@@ -1,4 +1,4 @@
-import { Project, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry, CodingPlatform, ProjectStatus } from '@/generated/prisma';
+import { Project, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry, ProjectStatus } from '@/generated/prisma';
 
 // Project with relations type
 export type ProjectWithRelations = Project & {
@@ -12,7 +12,6 @@ export interface CreateProjectPayload extends Record<string, unknown> {
   name: string;
   description?: string;
   url?: string;
-  platform: CodingPlatform;
   repoUrl?: string;
   status: ProjectStatus;
 }
@@ -24,4 +23,4 @@ export interface CreateProjectResponse {
   thumbUrl: string;
 }
 
-export { CodingPlatform, ProjectStatus }; 
+export { ProjectStatus }; 

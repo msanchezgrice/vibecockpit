@@ -1,7 +1,7 @@
 'use client';
 
 import { useWizard } from '@/hooks/useWizard';
-import { CodingPlatform, CreateProjectPayload } from '@/lib/types';
+import { CreateProjectPayload } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,7 +66,6 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       name: '',
       description: '',
       url: '',
-      platform: 'CURSOR',
       repoUrl: '',
       status: 'design', // Default to 'design'
     },
@@ -320,27 +319,6 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       case 2:
         return (
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="platform">Development Platform</Label>
-              <Select
-                value={wizard.formData.platform}
-                onValueChange={(value) => wizard.updateFormData({ platform: value as CodingPlatform })}
-              >
-                <SelectTrigger className="w-full" id="platform">
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CURSOR">Cursor</SelectItem>
-                  <SelectItem value="WINDSURF">Windsurf</SelectItem>
-                  <SelectItem value="REPLIT">Replit</SelectItem>
-                  <SelectItem value="MANUS">Manus</SelectItem>
-                  <SelectItem value="OPENAI_CANVAS">OpenAI Canvas</SelectItem>
-                  <SelectItem value="ANTHROPIC_CONSOLE">Anthropic Console</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
             <div className="space-y-2">
               <Label htmlFor="repoUrl">GitHub Repository (optional)</Label>
               <div className="flex items-center">
