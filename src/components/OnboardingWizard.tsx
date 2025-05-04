@@ -18,6 +18,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { CheckCircle, X, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useSWRConfig } from 'swr';
+import { ProjectStatus } from '@/generated/prisma';
 
 // Add gtag type declaration
 declare global {
@@ -46,7 +47,8 @@ const validators = {
   2: (data: CreateProjectPayload) => {
     if (!data.repoUrl) return true; // Repo URL is optional
     return /^[\w-]+\/[\w.-]+$/.test(data.repoUrl);
-  }
+  },
+  3: (data: CreateProjectPayload) => !!data.status // Status is required
 };
 
 export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) {
@@ -66,8 +68,9 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       url: '',
       platform: 'CURSOR',
       repoUrl: '',
+      status: 'design', // Default to 'design'
     },
-    3,
+    4, // Increase total steps to 4
     validators
   );
 
@@ -337,6 +340,33 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
           </div>
         );
         
+      case 3:
+        return (
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="status">Project Phase</Label>
+              <Select
+                value={wizard.formData.status}
+                onValueChange={(value) => wizard.updateFormData({ status: value as ProjectStatus })}
+              >
+                <SelectTrigger className="w-full" id="status">
+                  <SelectValue placeholder="Select project phase" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="design">Design</SelectItem>
+                  <SelectItem value="prep_launch">Preparing to Launch</SelectItem>
+                  <SelectItem value="launched">Launched</SelectItem>
+                  <SelectItem value="paused">Paused</SelectItem>
+                  <SelectItem value="retired">Retired</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Projects in "Preparing to Launch" phase will automatically get an AI-generated launch checklist.
+              </p>
+            </div>
+          </div>
+        );
+        
       default:
         return null;
     }
@@ -347,15 +377,6 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="relative">
           <DialogTitle>Create your first project</DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0 rounded-full"
-            onClick={() => onOpenChange(false)}
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
           <div className="flex justify-end mt-2 space-x-1">
             {Array.from({ length: wizard.totalSteps }).map((_, i) => (
               <div 

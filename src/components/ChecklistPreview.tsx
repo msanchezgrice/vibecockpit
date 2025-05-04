@@ -41,8 +41,8 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
     <>
         <div className="space-y-3 border-t pt-4 mt-4">
             <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
-            {/* Progress Section (always show if data is not null, even if 0 tasks) */} 
-            {data && (
+            {/* Progress Section (show only if there are actual tasks) */} 
+            {data && total_tasks > 0 && (
                 <>
                     <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
                         <span>Progress</span>
@@ -77,7 +77,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
                 </ul>
             ) : (
                  <p className="text-sm text-muted-foreground italic py-2">
-                    No checklist items defined yet.
+                    Set status to "Preparing to Launch" to generate a launch checklist with AI.
                  </p>
             )}
             {/* Button to trigger the modal */}

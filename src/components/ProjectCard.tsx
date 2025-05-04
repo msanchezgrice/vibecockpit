@@ -218,31 +218,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             </div>
           </div>
           
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <DollarSign className="h-6 w-6 text-muted-foreground" />
-            <div className="flex-1 space-y-1">
-              <p className="text-sm font-medium leading-none">Est. Monthly Cost</p>
-              <p className="text-base font-semibold">
-                {formatCurrency(latestCost as unknown as string | null)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Snapshot taken: {formatDateTime(project.costSnapshots[0]?.createdAt ?? null)}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <BarChartBig className="h-6 w-6 text-muted-foreground" />
-            <div className="flex-1 space-y-1">
-              <p className="text-sm font-medium leading-none">Monthly Activity</p>
-              <p className="text-base font-semibold">
-                {latestAnalytics?.visits ?? 'N/A'} visits
-                <span className="text-sm font-normal text-muted-foreground mx-1">∙</span>
-                {latestAnalytics?.signups ?? 'N/A'} sign-ups
-              </p>
-            </div>
-          </div>
-          
           {/* Checklist Preview */}
           <div className="rounded-md border p-4">
             <ChecklistPreview projectId={project.id} />

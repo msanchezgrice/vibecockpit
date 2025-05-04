@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
-import { CodingPlatform } from '@/generated/prisma';
+import { CodingPlatform, ProjectStatus } from '@/generated/prisma';
 
 // Validation schema
 const createProjectSchema = z.object({
@@ -12,6 +12,7 @@ const createProjectSchema = z.object({
   url: z.string().url().optional().nullable(),
   platform: z.nativeEnum(CodingPlatform),
   repoUrl: z.string().regex(/^[\w-]+\/[\w.-]+$/).optional().nullable(),
+  status: z.nativeEnum(ProjectStatus),
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -38,40 +39,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         url: validatedData.url,
         platform: validatedData.platform,
         repoUrl: validatedData.repoUrl,
-        status: validatedData.url ? 'prep_launch' : 'design',
+        status: validatedData.status,
         thumbUrl: '/images/thumb-placeholder.png', // Default placeholder
       }
     });
-
-    // If URL exists, seed default tasks
-    if (validatedData.url) {
-      await prisma.checklistItem.createMany({
-        data: [
-          { 
-            projectId: project.id, 
-            title: 'Define Minimum Lovable MVP', 
-            ai_help_hint: 'mvp',
-            order: 0
-          },
-          { 
-            projectId: project.id, 
-            title: 'Set up /landing page', 
-            ai_help_hint: 'landing',
-            order: 1
-          },
-          { 
-            projectId: project.id, 
-            title: 'Add README badges',
-            order: 2
-          },
-          { 
-            projectId: project.id, 
-            title: 'Push first deploy',
-            order: 3
-          }
-        ]
-      });
-    }
 
     // Track analytics event
     try {

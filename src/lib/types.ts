@@ -14,6 +14,7 @@ export interface CreateProjectPayload extends Record<string, unknown> {
   url?: string;
   platform: CodingPlatform;
   repoUrl?: string;
+  status: ProjectStatus;
 }
 
 // API response for project creation
