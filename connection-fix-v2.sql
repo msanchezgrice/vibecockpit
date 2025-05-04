@@ -46,7 +46,7 @@ BEGIN
     
     -- Insert starter items
     BEGIN
-        INSERT INTO checklist_items (id, project_id, title, is_complete, order, created_at, updated_at)
+        INSERT INTO checklist_items (id, project_id, title, is_complete, "order", created_at, updated_at)
         VALUES 
             (gen_random_uuid(), project_id, 'Define Minimum Lovable MVP', false, 0, now(), now()),
             (gen_random_uuid(), project_id, 'Set up landing page', false, 1, now(), now()),
@@ -98,7 +98,7 @@ create trigger on_project_status_prep_launch
     execute function handle_project_status_change();
 
 -- 8. Create basic checklists for projects already in prep_launch status
-INSERT INTO checklist_items (id, project_id, title, is_complete, order, created_at, updated_at)
+INSERT INTO checklist_items (id, project_id, title, is_complete, "order", created_at, updated_at)
 SELECT 
     gen_random_uuid(), p.id, items.title, false, items.ord, now(), now()
 FROM "Project" p

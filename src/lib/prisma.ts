@@ -14,11 +14,6 @@ const prismaClientSingleton = () => {
       db: {
         url: process.env.DATABASE_URL
       }
-    },
-    // Add connection management options
-    // @ts-expect-error - The connection_limit option is supported but not in the types
-    connection: {
-      connection_limit: 5 // Limit max connections in the pool
     }
   });
 };
