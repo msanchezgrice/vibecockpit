@@ -23,6 +23,7 @@ export default function ChecklistDebugPage() {
   const [isLoadingTrigger, setIsLoadingTrigger] = useState(false);
   const [isLoadingTest, setIsLoadingTest] = useState(false);
   const [isLoadingProject, setIsLoadingProject] = useState(false);
+  const [isRegeneratingChecklists, setIsRegeneratingChecklists] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
 
   // Setup trigger
@@ -143,6 +144,46 @@ export default function ChecklistDebugPage() {
     }
   };
 
+  // Function to regenerate checklists for all prep_launch projects
+  const regenerateAllChecklists = async () => {
+    setIsRegeneratingChecklists(true);
+    setResult(null);
+    
+    try {
+      const response = await fetch('/api/projects/create-checklists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}) // Empty body to process all projects
+      });
+      
+      const data = await response.json();
+      console.log('Regenerate checklists response:', data);
+      setResult(data);
+      
+      if (response.ok) {
+        toast({
+          title: 'Success!',
+          description: `Processed ${data.results?.processed || 0} projects with ${data.results?.errors || 0} errors`,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: data.message || 'Failed to regenerate checklists',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error regenerating checklists:', error);
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRegeneratingChecklists(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-10 space-y-8">
       <h1 className="text-3xl font-bold">Checklist Debug Tools</h1>
@@ -174,6 +215,37 @@ export default function ChecklistDebugPage() {
                     Setting up...
                   </>
                 ) : 'Setup Database Trigger'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Regenerate All Checklists Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Regenerate All Checklists</CardTitle>
+            <CardDescription>
+              Regenerate checklists for all projects in &quot;Preparing to Launch&quot; status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                This will delete existing checklist items and create new ones for all projects 
+                with &quot;prep_launch&quot; status. Use this if the Supabase trigger isn&apos;t working.
+              </p>
+              
+              <Button 
+                onClick={regenerateAllChecklists} 
+                disabled={isRegeneratingChecklists}
+                className="w-full"
+              >
+                {isRegeneratingChecklists ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : 'Regenerate All Checklists'}
               </Button>
             </div>
           </CardContent>

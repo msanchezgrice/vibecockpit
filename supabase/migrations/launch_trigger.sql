@@ -37,9 +37,38 @@ BEGIN
     IF http_status < 200 OR http_status >= 300 THEN
         RAISE WARNING 'Launch checklist API call failed: HTTP Status %', http_status;
     END IF;
+
+    -- Fallback: Create basic checklist items directly if edge function fails
+    IF http_status < 200 OR http_status >= 300 THEN
+        RAISE NOTICE 'Creating fallback checklist items directly';
+        -- Insert starter items
+        INSERT INTO checklist_items (id, project_id, title, is_complete, order, created_at, updated_at)
+        VALUES 
+            (gen_random_uuid(), project_id, 'Define Minimum Lovable MVP', false, 0, now(), now()),
+            (gen_random_uuid(), project_id, 'Set up /landing page', false, 1, now(), now()),
+            (gen_random_uuid(), project_id, 'Add README badges', false, 2, now(), now()),
+            (gen_random_uuid(), project_id, 'Push first deploy', false, 3, now(), now()),
+            (gen_random_uuid(), project_id, 'Create social media plan', false, 4, now(), now());
+    END IF;
 EXCEPTION WHEN OTHERS THEN
     -- Log any exceptions
     RAISE WARNING 'Error calling launch checklist: %', SQLERRM;
+    
+    -- Fallback: Create basic checklist items directly in case of any exception
+    BEGIN
+        RAISE NOTICE 'Creating emergency fallback checklist items after exception';
+        -- Insert starter items
+        INSERT INTO checklist_items (id, project_id, title, is_complete, order, created_at, updated_at)
+        VALUES 
+            (gen_random_uuid(), project_id, 'Define Minimum Lovable MVP', false, 0, now(), now()),
+            (gen_random_uuid(), project_id, 'Set up /landing page', false, 1, now(), now()),
+            (gen_random_uuid(), project_id, 'Add README badges', false, 2, now(), now()),
+            (gen_random_uuid(), project_id, 'Push first deploy', false, 3, now(), now()),
+            (gen_random_uuid(), project_id, 'Create social media plan', false, 4, now(), now());
+    EXCEPTION WHEN OTHERS THEN
+        -- Log but don't re-throw
+        RAISE WARNING 'Emergency fallback checklist creation also failed: %', SQLERRM;
+    END;
 END;
 $$;
 
@@ -62,11 +91,23 @@ BEGIN
 END;
 $$;
 
--- Create the trigger on the Project table
-drop trigger if exists on_project_status_prep_launch on "Project"; -- Drop existing first
+-- Drop all existing triggers to ensure clean state
+drop trigger if exists on_project_status_prep_launch on "Project";
+drop trigger if exists on_project_status_prep_launch on "project";
+drop trigger if exists on_project_status_prep_launch on projects;
+drop trigger if exists on_project_status_prep_launch on checklist_items;
+
+-- Create the trigger on the Project table - try both cases to ensure it works
 create trigger on_project_status_prep_launch
     after insert or update of status -- Trigger on insert or status update
     on "Project"
+    for each row
+    execute function handle_project_status_change();
+
+-- Also create a trigger on the lowercase version as a fallback
+create trigger on_project_status_prep_launch_lowercase
+    after insert or update of status
+    on "project" 
     for each row
     execute function handle_project_status_change();
 
