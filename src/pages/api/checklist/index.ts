@@ -13,12 +13,6 @@ const querySchema = z.object({
   projectId: z.string().min(1, { message: "Project ID cannot be empty" }),
 });
 
-// Schema for creating a new checklist item
-const createItemSchema = z.object({
-  projectId: z.string().min(1, { message: "Project ID cannot be empty" }),
-  title: z.string().min(1, { message: "Task title cannot be empty" }),
-});
-
 // Function to normalize UUID
 function normalizeUUID(id: string): string {  
   // If it already has hyphens, return as is
