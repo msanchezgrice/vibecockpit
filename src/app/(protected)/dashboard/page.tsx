@@ -7,7 +7,7 @@ import { Project, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/gene
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import React from 'react';
-import { AddProjectDialog } from '@/components/AddProjectDialog';
+import { OnboardingClient } from './OnboardingClient';
 import { VercelConnectPrompt } from '@/components/VercelConnectPrompt';
 
 // Define ProjectWithData including relations fetched
@@ -73,15 +73,11 @@ export default async function DashboardPage() {
         <ProjectList projectsPromise={projectsPromise} />
       </React.Suspense>
 
-      {/* Add Project Button */}
-      <div className="mt-8">
-        <AddProjectDialog />
-      </div>
+      <OnboardingClient />
 
-       <Link href="/" className="mt-12 text-blue-500 hover:underline">
+      <Link href="/" className="mt-12 text-blue-500 hover:underline">
         Go back home
       </Link>
-
     </main>
   );
 }
@@ -94,17 +90,25 @@ function LoadingProjects() {
 // Component to render the list after data is fetched
 async function ProjectList({ projectsPromise }: { projectsPromise: Promise<ProjectWithRelations[]> }) {
   const projects = await projectsPromise;
+  
   return (
-    <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+    <>
       {projects.length > 0 ? (
-        projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
-        ))
+        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+          {projects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
       ) : (
-        <p className="col-span-full text-center text-muted-foreground">
-          No projects found. Click &quot;Add New Project&quot; to get started.
-        </p>
+        <div className="text-center my-12">
+          <p className="text-lg text-muted-foreground mb-4">
+            No projects found. Let's create your first project!
+          </p>
+          <p className="text-muted-foreground max-w-md mx-auto mb-8">
+            Start by clicking the "Create Project" button to add your first project to the dashboard.
+          </p>
+        </div>
       )}
-    </div>
+    </>
   );
 } 

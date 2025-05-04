@@ -122,9 +122,12 @@ exports.Prisma.ProjectScalarFieldEnum = {
   name: 'name',
   description: 'description',
   status: 'status',
-  frontendUrl: 'frontendUrl',
+  url: 'url',
+  platform: 'platform',
+  repoUrl: 'repoUrl',
+  thumbUrl: 'thumbUrl',
   vercelProjectId: 'vercelProjectId',
-  githubRepo: 'githubRepo',
+  image_url: 'image_url',
   lastActivityAt: 'lastActivityAt',
   createdAt: 'createdAt'
 };
@@ -234,6 +237,16 @@ exports.ProjectStatus = exports.$Enums.ProjectStatus = {
   launched: 'launched',
   paused: 'paused',
   retired: 'retired'
+};
+
+exports.CodingPlatform = exports.$Enums.CodingPlatform = {
+  CURSOR: 'CURSOR',
+  WINDSURF: 'WINDSURF',
+  REPLIT: 'REPLIT',
+  MANUS: 'MANUS',
+  OPENAI_CANVAS: 'OPENAI_CANVAS',
+  ANTHROPIC_CONSOLE: 'ANTHROPIC_CONSOLE',
+  OTHER: 'OTHER'
 };
 
 exports.Prisma.ModelName = {

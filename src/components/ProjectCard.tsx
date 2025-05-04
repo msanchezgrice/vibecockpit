@@ -1,6 +1,6 @@
 'use client';
 
-import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry } from '@/generated/prisma';
+import { Project, ProjectStatus, CostSnapshot, AnalyticsSnapshot, ChangeLogEntry, CodingPlatform } from '@/generated/prisma';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -10,9 +10,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import NotesDrawer from './NotesDrawer';
-import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink } from 'lucide-react';
+import { DollarSign, BarChartBig, MessageSquareText, GitCommitHorizontal, Github, ExternalLink, Link2, Code } from 'lucide-react';
 import { EditProjectDialog } from './EditProjectDialog';
 import { formatDateTime } from '@/lib/utils';
 import { ChecklistPreview } from './ChecklistPreview';
@@ -37,9 +38,23 @@ function formatCurrency(amount: string | number | null | undefined): string {
 
 // Helper to render provider icon
 function ProviderIcon({ provider }: { provider: string }) {
-    if (provider === 'note') return <MessageSquareText className="h-4 w-4 text-muted-foreground" />;
-    if (provider === 'github_commit') return <GitCommitHorizontal className="h-4 w-4 text-muted-foreground" />;
-    return null;
+  if (provider === 'note') return <MessageSquareText className="h-4 w-4 text-muted-foreground" />;
+  if (provider === 'github_commit') return <GitCommitHorizontal className="h-4 w-4 text-muted-foreground" />;
+  return null;
+}
+
+// Platform title mapper
+function getPlatformTitle(platform: CodingPlatform): string {
+  const titles: Record<CodingPlatform, string> = {
+    CURSOR: 'Cursor',
+    WINDSURF: 'Windsurf',
+    REPLIT: 'Replit',
+    MANUS: 'Manus',
+    OPENAI_CANVAS: 'OpenAI Canvas',
+    ANTHROPIC_CONSOLE: 'Anthropic Console',
+    OTHER: 'Other Platform'
+  };
+  return titles[platform] || 'Unknown Platform';
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
@@ -84,16 +99,16 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
   // Format changelog message (simple example: take first line)
   const formatChangelogMessage = (entry: ChangeLogEntry) => {
-     if (entry.provider === 'github_commit') {
-         return entry.message.split('\n')[1] || entry.message; // Show message after SHA
-     }
-     return entry.message;
+    if (entry.provider === 'github_commit') {
+      return entry.message.split('\n')[1] || entry.message; // Show message after SHA
+    }
+    return entry.message;
   };
 
   return (
     <Card className="w-full flex flex-col justify-between h-full">
       <div>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div className="flex-1 mr-2 overflow-hidden">
               <CardTitle className="truncate text-lg">{project.name}</CardTitle>
@@ -105,6 +120,33 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             <EditProjectDialog project={project} />
           </div>
         </CardHeader>
+        
+        {/* Thumbnail Preview */}
+        {project.thumbUrl && (
+          <div className="px-6 pb-4">
+            <div className="relative w-full h-40 rounded-md overflow-hidden border border-border">
+              <Image 
+                src={project.thumbUrl} 
+                alt={`Screenshot of ${project.name}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+              {project.url && (
+                <Link 
+                  href={project.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm text-foreground px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-background/95 transition-colors"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Visit Site
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+        
         <CardContent className="grid gap-4">
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <div className="flex-1 space-y-1">
@@ -128,55 +170,54 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
             </div>
           </div>
+          
+          {/* Platform Info */}
           <div className="flex items-center space-x-4 rounded-md border p-4">
+            <Code className="h-5 w-5 text-muted-foreground" />
             <div className="flex-1 space-y-1 overflow-hidden">
-              <p className="text-sm font-medium leading-none">Frontend URL</p>
-              {project.frontendUrl ? (
+              <p className="text-sm font-medium leading-none">Development Platform</p>
+              <p className="text-sm">
+                {getPlatformTitle(project.platform)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-4 rounded-md border p-4">
+            <Link2 className="h-5 w-5 text-muted-foreground" />
+            <div className="flex-1 space-y-1 overflow-hidden">
+              <p className="text-sm font-medium leading-none">Website URL</p>
+              {project.url ? (
                 <Link
-                  href={project.frontendUrl}
+                  href={project.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-500 hover:underline block truncate"
                 >
-                  {project.frontendUrl}
+                  {project.url}
                 </Link>
               ) : (
                 <p className="text-sm text-muted-foreground italic">Not set</p>
               )}
             </div>
           </div>
-          <div className="flex items-center space-x-4 rounded-md border p-4">
-            <ExternalLink className="h-5 w-5 text-muted-foreground" />
-            <div className="flex-1 space-y-1 overflow-hidden">
-              <p className="text-sm font-medium leading-none">Vercel Project</p>
-              {project.vercelProjectId && (
-                <Link
-                  href={`https://vercel.com/${process.env.NEXT_PUBLIC_VERCEL_TEAM_ID ?? '_'}/${project.vercelProjectId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline block truncate"
-                >
-                  {project.vercelProjectId} (View on Vercel)
-                </Link>
-              )}
-            </div>
-          </div>
+          
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <Github className="h-5 w-5 text-muted-foreground" />
             <div className="flex-1 space-y-1 overflow-hidden">
               <p className="text-sm font-medium leading-none">GitHub Repo</p>
-              {project.githubRepo && (
+              {project.repoUrl && (
                 <Link
-                  href={`https://github.com/${project.githubRepo}`}
+                  href={`https://github.com/${project.repoUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-500 hover:underline block truncate"
                 >
-                  {project.githubRepo}
+                  {project.repoUrl}
                 </Link>
               )}
             </div>
           </div>
+          
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <DollarSign className="h-6 w-6 text-muted-foreground" />
             <div className="flex-1 space-y-1">
@@ -189,6 +230,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               </p>
             </div>
           </div>
+          
           <div className="flex items-center space-x-4 rounded-md border p-4">
             <BarChartBig className="h-6 w-6 text-muted-foreground" />
             <div className="flex-1 space-y-1">
@@ -198,46 +240,42 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 <span className="text-sm font-normal text-muted-foreground mx-1">∙</span>
                 {latestAnalytics?.signups ?? 'N/A'} sign-ups
               </p>
-              <p className="text-xs text-muted-foreground">
-                Snapshot taken: {formatDateTime(latestAnalytics?.createdAt ?? null)}
-              </p>
             </div>
           </div>
-
-          {/* Conditionally render Checklist Preview */}
-          {project.status === 'prep_launch' && (
+          
+          {/* Checklist Preview */}
+          <div className="rounded-md border p-4">
             <ChecklistPreview projectId={project.id} />
-          )}
-
-          {/* Add Changelog Display */}
-          {project.changelog && project.changelog.length > 0 && (
-            <div className="space-y-2 border-t pt-4 mt-4">
-              <h4 className="text-sm font-medium leading-none mb-2">Recent Activity</h4>
-              <ul className="space-y-3">
-                {project.changelog.map((entry) => (
-                  <li key={entry.id} className="flex items-start space-x-3">
-                    <div className="mt-1">
-                        <ProviderIcon provider={entry.provider} />
+          </div>
+          
+          {/* Recent Changes */}
+          <div className="rounded-md border p-4">
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium leading-none mb-3">Recent Activity</p>
+              <div className="space-y-2">
+                {project.changelog.slice(0, 3).map((entry) => (
+                  <div key={entry.id} className="flex items-start gap-2">
+                    <div className="mt-0.5">
+                      <ProviderIcon provider={entry.provider} />
                     </div>
-                    <div className="flex-1 space-y-0.5 overflow-hidden">
-                      <p className="text-sm text-muted-foreground line-clamp-2" title={formatChangelogMessage(entry)}>
-                        {formatChangelogMessage(entry)}
-                      </p>
+                    <div>
+                      <p className="text-sm line-clamp-1">{formatChangelogMessage(entry)}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatDateTime(entry.createdAt)}
                       </p>
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+                {project.changelog.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">No recent activity</p>
+                )}
+              </div>
             </div>
-          )}
+          </div>
+          
         </CardContent>
       </div>
-      <CardFooter className="flex justify-between items-center border-t mt-auto pt-4">
-        <p className="text-xs text-muted-foreground">
-          Last Activity: {formatDateTime(project.lastActivityAt)}
-        </p>
+      <CardFooter className="justify-between p-4 pt-0">
         <NotesDrawer projectId={project.id} />
       </CardFooter>
     </Card>
