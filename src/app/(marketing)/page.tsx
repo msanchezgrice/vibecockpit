@@ -1,8 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
 import { GitHubSignInButton } from '@/components/GitHubSignInButton';
 
