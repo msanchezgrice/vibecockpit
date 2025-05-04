@@ -150,6 +150,8 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
   // Handle project creation
   const handleCreateProject = async () => {
     try {
+      console.log('Creating project with data:', wizard.formData);
+      
       const response = await fetch('/api/projects/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,10 +159,17 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create project');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Project creation API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error(`Failed to create project: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log('Project creation successful, response:', data);
       
       // Analytics event
       if (typeof window !== 'undefined' && window.gtag) {
@@ -175,7 +184,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       
       toast({
         title: 'Project created successfully!',
-        description: 'Checklist seeded 📋',
+        description: data.status === 'prep_launch' ? 'Checklist generation initiated.' : 'Project created.',
       });
       
       // Close the wizard
@@ -184,10 +193,11 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
       // Reset wizard state
       wizard.resetWizard();
       
-    } catch {
+    } catch (error) {
+      console.error('Error creating project:', error);
       toast({
         title: 'Error creating project',
-        description: 'Please try again.',
+        description: error instanceof Error ? error.message : 'Please try again.',
         variant: 'destructive',
       });
     }

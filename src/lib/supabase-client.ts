@@ -1,13 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Create a single supabase client for browser-side use
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zscifcljgkzltnxrlzlp.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY2lmY2xqZ2t6bHRueHJsemxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2OTkyNTMsImV4cCI6MjA2MTI3NTI1M30.0vGkxX-SNI8UBYbRzEPL37ycbANhQY0mVcXrBPVwYTk';
+// Get environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+// Validate environment variables are set
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables', { 
+    hasUrl: !!supabaseUrl, 
+    hasKey: !!supabaseAnonKey 
+  });
+}
+
+// Create and export the Supabase client
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    autoRefreshToken: true
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   },
   global: {
     headers: {
@@ -19,6 +29,12 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   db: {
     schema: 'public'
   }
+});
+
+// Log connection status
+console.log('Supabase client initialized:', { 
+  url: supabaseUrl.substring(0, 20) + '...',
+  connected: !!supabase
 });
 
 export default supabase; 

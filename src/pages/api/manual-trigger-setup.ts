@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 
+// Updated SQL to handle both table naming conventions
 const triggerSQL = `
 -- Function to call the Edge Function
 create or replace function generate_launch_checklist(project_id uuid, project_category text)
@@ -65,20 +66,44 @@ BEGIN
 END;
 $$;
 
--- Create the trigger on the Project table
+-- Create triggers for both potential table names (case sensitive in Postgres)
+-- First drop if exists
 drop trigger if exists on_project_status_prep_launch on "Project";
-create trigger on_project_status_prep_launch
-    after insert or update of status -- Trigger on insert or status update
-    on "Project"
-    for each row
-    execute function handle_project_status_change();
+drop trigger if exists on_project_status_prep_launch on "project";
+
+-- Create for uppercase Project table
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_name = 'Project') then
+    execute 'create trigger on_project_status_prep_launch
+        after insert or update of status
+        on "Project"
+        for each row
+        execute function handle_project_status_change();';
+  end if;
+end $$;
+
+-- Create for lowercase project table
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_name = 'project') then
+    execute 'create trigger on_project_status_prep_launch
+        after insert or update of status
+        on "project"
+        for each row
+        execute function handle_project_status_change();';
+  end if;
+end $$;
 
 -- Grant required permissions to make network calls
 grant usage on schema net to postgres, authenticated, service_role;
 grant execute on function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) to postgres, authenticated, service_role;
 `;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -91,19 +116,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Execute the SQL directly using Prisma's $executeRawUnsafe
+    console.log("Setting up database triggers...");
+    
+    // Execute the SQL script using Prisma
     await prisma.$executeRawUnsafe(triggerSQL);
     
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Database trigger setup successfully' 
+    // Also try directly creating a simple test trigger for verification
+    try {
+      await prisma.$executeRawUnsafe(`
+        DO $$ 
+        BEGIN
+          RAISE NOTICE 'Testing trigger creation mechanism...';
+        END $$;
+      `);
+    } catch (testError) {
+      console.error("Test statement execution failed:", testError);
+    }
+    
+    console.log("Database triggers set up successfully");
+    
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Database triggers set up successfully'
     });
   } catch (error) {
-    console.error('Error setting up database trigger:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to set up database trigger',
-      error: error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to set up database triggers:', error);
+    
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to set up database triggers',
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 } 

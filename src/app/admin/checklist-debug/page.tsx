@@ -22,6 +22,7 @@ export default function ChecklistDebugPage() {
   const [itemCount, setItemCount] = useState(3);
   const [isLoadingTrigger, setIsLoadingTrigger] = useState(false);
   const [isLoadingTest, setIsLoadingTest] = useState(false);
+  const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
 
   // Setup trigger
@@ -101,6 +102,47 @@ export default function ChecklistDebugPage() {
     }
   };
 
+  // Function to create a test project
+  const createTestProject = async () => {
+    setIsLoadingProject(true);
+    try {
+      const response = await fetch('/api/projects/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Test Project ${Date.now()}`,
+          description: 'Created for checklist debug testing',
+          platform: 'CURSOR',
+          status: 'prep_launch'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to create test project: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Created test project:', data);
+      
+      // Set the project ID to the newly created one
+      setProjectId(data.projectId);
+      
+      toast({
+        title: 'Test Project Created',
+        description: `ID: ${data.projectId}`,
+      });
+    } catch (error) {
+      console.error('Error creating test project:', error);
+      toast({
+        title: 'Error Creating Test Project',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingProject(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-10 space-y-8">
       <h1 className="text-3xl font-bold">Checklist Debug Tools</h1>
@@ -132,6 +174,36 @@ export default function ChecklistDebugPage() {
                     Setting up...
                   </>
                 ) : 'Setup Database Trigger'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Test Project Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Create Test Project</CardTitle>
+            <CardDescription>
+              Create a test project with &quot;Preparing to Launch&quot; status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Creates a new project with prep_launch status to test if the trigger is working correctly.
+              </p>
+              
+              <Button 
+                onClick={createTestProject} 
+                disabled={isLoadingProject}
+                className="w-full"
+              >
+                {isLoadingProject ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating project...
+                  </>
+                ) : 'Create Test Project'}
               </Button>
             </div>
           </CardContent>

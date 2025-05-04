@@ -33,7 +33,8 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
         <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin mb-2" /> 
-          <p className="text-sm text-center">OpenAI is generating your launch checklist...</p>
+          <p className="text-sm text-center">Loading launch checklist...</p>
+          <p className="text-xs text-muted-foreground">Project ID: {projectId.substring(0, 8)}...</p>
         </div>
       </div>
     );
@@ -48,6 +49,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
         <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
           <AlertCircle className="h-5 w-5 text-amber-500 mb-2" />
           <p className="text-sm text-center">Unable to load checklist. Try setting status to &apos;Preparing to Launch&apos;.</p>
+          <p className="text-xs text-muted-foreground">Error: {error.message}</p>
           <Button 
             variant="link" 
             className="text-sm text-blue-600 hover:underline p-0 h-auto mt-2" 
@@ -61,6 +63,29 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
   }
 
   const hasTasks = data && data.tasks && data.tasks.length > 0;
+  console.log("[ChecklistPreview] Has tasks:", hasTasks, "Count:", data?.tasks?.length || 0);
+
+  // If we have data but no tasks, show a message
+  if (data && !hasTasks) {
+    return (
+      <div className="space-y-3 border-t pt-4 mt-4">
+        <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
+        <div className="p-4 border rounded-md">
+          <p className="text-sm text-muted-foreground italic py-2">
+            No checklist items found. Make sure status is set to &apos;Preparing to Launch&apos;.
+          </p>
+          <Button 
+            variant="link" 
+            className="text-sm text-blue-600 hover:underline p-0 h-auto pt-1" 
+            onClick={() => setIsModalOpen(true)}
+          >
+            View Checklist Tools →
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const completed_tasks = data?.completed_tasks ?? 0;
   const total_tasks = data?.total_tasks ?? 0;
   const progress = total_tasks > 0 ? (completed_tasks / total_tasks) * 100 : 0;

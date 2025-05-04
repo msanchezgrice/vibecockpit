@@ -21,15 +21,30 @@ export interface ChecklistData {
  * @returns Properly formatted UUID with hyphens
  */
 function normalizeUUID(id: string): string {
+  // Log the input for debugging
+  console.log('[normalizeUUID] Input:', id, 'Type:', typeof id);
+  
+  // Handle invalid or empty inputs
+  if (!id || typeof id !== 'string') {
+    console.error('[normalizeUUID] Invalid input:', id);
+    return '';
+  }
+  
   // If it already has hyphens, return as is
-  if (id.includes('-')) return id;
+  if (id.includes('-')) {
+    console.log('[normalizeUUID] Already has hyphens, returning as is:', id);
+    return id;
+  }
   
   // If it's a 32-character string without hyphens, format it as UUID
   if (id.length === 32) {
-    return `${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;
+    const formatted = `${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;
+    console.log('[normalizeUUID] Formatted 32-char ID as UUID:', formatted);
+    return formatted;
   }
   
   // Return original if it doesn't match UUID pattern
+  console.log('[normalizeUUID] Not a standard UUID pattern, returning original:', id);
   return id;
 }
 
@@ -62,6 +77,13 @@ export function useChecklist(projectId: string): {
     try {
       // Format the UUID properly to ensure consistent querying
       const formattedProjectId = normalizeUUID(projectId);
+      
+      // Skip if we couldn't format the ID properly
+      if (!formattedProjectId) {
+        console.error('[useChecklist] Failed to normalize project ID');
+        throw new Error('Invalid project ID format');
+      }
+      
       console.log('[useChecklist] Using formatted project ID:', formattedProjectId);
       
       // First try to fetch the checklist items with better error handling
@@ -73,7 +95,11 @@ export function useChecklist(projectId: string): {
           .order('order', { ascending: true });
           
         // Log the response for debugging
-        console.log('[useChecklist] Supabase response:', { status, error: supabaseError?.message });
+        console.log('[useChecklist] Supabase response:', { 
+          status, 
+          error: supabaseError?.message, 
+          itemCount: items?.length || 0
+        });
         
         if (supabaseError) {
           console.error("[useChecklist] Supabase error:", supabaseError);
@@ -103,6 +129,19 @@ export function useChecklist(projectId: string): {
         // Continue to fallback strategy
       }
       
+      // Try a different query to see if checklist items exist for this project
+      try {
+        console.log('[useChecklist] Trying alternative query with direct ID');
+        const { data: directItems, error: directError } = await supabase
+          .from('checklist_items')
+          .select('count')
+          .eq('project_id', projectId); // Try with original ID just in case
+          
+        console.log('[useChecklist] Direct query result:', { data: directItems, error: directError });
+      } catch (altError) {
+        console.error('[useChecklist] Alternative query failed:', altError);
+      }
+      
       // Fallback: Try to fetch all items to see if the database has anything
       console.log('[useChecklist] Trying fallback query to check DB state');
       const { data: allItems, error: allItemsError } = await supabase
@@ -120,7 +159,7 @@ export function useChecklist(projectId: string): {
         firstFew: allItems?.slice(0, 3) || []
       });
       
-      // Even if we found other items, we didn't find items for this project
+      // After all attempts, we didn't find items for this project
       console.log("[useChecklist] No items found for project ID:", formattedProjectId);
       // No items found, but not an error - return an empty list
       setData({
@@ -129,7 +168,7 @@ export function useChecklist(projectId: string): {
         total_tasks: 0
       });
     } catch (err) {
-      console.error("[useChecklist] Supabase query failed:", err);
+      console.error("[useChecklist] Query failed:", err);
       setError(err instanceof Error ? err : new Error('Failed to load checklist data'));
       // Don't set data to null here to maintain previous data if available
     } finally {

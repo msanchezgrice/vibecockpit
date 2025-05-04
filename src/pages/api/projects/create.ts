@@ -29,7 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Validate request body
+    console.log("Received project creation request:", req.body);
     const validatedData = createProjectSchema.parse(req.body);
+    console.log("Validated project data:", validatedData);
     
     // Create the project
     const project = await prisma.project.create({
@@ -43,6 +45,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         thumbUrl: '/images/thumb-placeholder.png', // Default placeholder
       }
     });
+
+    console.log("Project created successfully:", {
+      id: project.id,
+      name: project.name,
+      status: project.status
+    });
+
+    // Force trigger database function for checklist generation if status is prep_launch
+    if (project.status === ProjectStatus.prep_launch) {
+      try {
+        console.log("Attempting to manually trigger checklist generation for project:", project.id);
+        
+        // Execute the database function directly
+        await prisma.$executeRawUnsafe(`
+          SELECT generate_launch_checklist('${project.id}', 'SaaS');
+        `);
+        
+        console.log("Checklist generation triggered for project:", project.id);
+      } catch (triggerError) {
+        console.error("Failed to trigger checklist generation:", triggerError);
+        // Don't fail the request if this fails
+      }
+    }
 
     // Track analytics event
     try {
@@ -68,6 +93,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Invalid request data', details: error.errors });
     }
     
-    return res.status(500).json({ error: 'Failed to create project' });
+    return res.status(500).json({ error: 'Failed to create project', message: error instanceof Error ? error.message : 'Unknown error' });
   }
 } 
