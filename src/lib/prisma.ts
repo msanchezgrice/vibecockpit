@@ -6,19 +6,36 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-let prisma: PrismaClient;
+// Configure with better connection management
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL
+      }
+    },
+    // Add connection management options
+    // @ts-expect-error - The connection_limit option is supported but not in the types
+    connection: {
+      connection_limit: 5 // Limit max connections in the pool
+    }
+  });
+};
 
 // Check if we are in production environment
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  // Check if prisma instance already exists in the global object during development
-  if (!global.prisma) {
-    // If not, create a new instance and store it in the global object
-    global.prisma = new PrismaClient();
-  }
-  // Use the instance from the global object
-  prisma = global.prisma;
+const prisma = global.prisma ?? prismaClientSingleton();
+
+// In development, attach to global object to prevent multiple instances during hot reload
+if (process.env.NODE_ENV !== 'production') {
+  global.prisma = prisma;
+}
+
+// Handle application shutdown - crucial for connection cleanup
+if (typeof window === 'undefined') { // Only in Node.js context, not browser
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect();
+  });
 }
 
 export default prisma; 
