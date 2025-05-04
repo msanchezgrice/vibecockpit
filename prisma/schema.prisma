@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -15,31 +9,23 @@ datasource db {
 }
 
 model Project {
-  id             String   @id @default(uuid())
-  name           String   @unique
-  description    String?
-  status         ProjectStatus @default(design)
-  frontendUrl    String?  @map("frontend_url")
-  vercelProjectId    String?   @map("vercel_project_id")
-  githubRepo         String?   @map("github_repo")
-  imageUrl           String?   @map("image_url")
-  lastActivityAt DateTime @default(now()) @map("last_activity_at")
-  createdAt      DateTime @default(now()) @map("created_at")
-  changelog      ChangeLogEntry[]
-  costSnapshots  CostSnapshot[]
+  id                 String              @id @default(uuid())
+  name               String              @unique
+  status             ProjectStatus       @default(design)
+  platform           CodingPlatform      @default(CURSOR)
+  thumbUrl           String?             @map("thumb_url")
+  frontendUrl        String?             @map("frontend_url")
+  lastActivityAt     DateTime            @default(now()) @map("last_activity_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  description        String?
+  githubRepo         String?             @map("github_repo")
+  vercelProjectId    String?             @map("vercel_project_id")
   analyticsSnapshots AnalyticsSnapshot[]
+  changelog          ChangeLogEntry[]
   checklistItems     ChecklistItem[]
+  costSnapshots      CostSnapshot[]
 }
 
-enum ProjectStatus {
-  design
-  prep_launch
-  launched
-  paused
-  retired
-}
-
-// NextAuth Models
 model Account {
   id                 String  @id @default(cuid())
   userId             String  @map("user_id")
@@ -55,8 +41,7 @@ model Account {
   session_state      String?
   oauth_token        String?
   oauth_token_secret String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -94,59 +79,79 @@ model VerificationToken {
 }
 
 model ChangeLogEntry {
-  id          String    @id @default(cuid())
-  projectId   String    @map("project_id")
-  provider    String    // e.g., "note", "github_commit", "vercel_deploy"
-  message     String    // Removed @db.Text
-  meta        Json?     // Store arbitrary JSON data if needed
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  provider  String
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId, createdAt])
   @@map("changelog_entries")
 }
 
 model CostSnapshot {
-  id         String    @id @default(cuid())
-  projectId  String    @map("project_id")
-  costAmount Decimal   @map("cost_amount")
-  createdAt  DateTime  @default(now()) @map("created_at")
-
-  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  projectId  String   @map("project_id")
+  costAmount Decimal  @map("cost_amount")
+  createdAt  DateTime @default(now()) @map("created_at")
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId, createdAt(sort: Desc)])
   @@map("cost_snapshots")
 }
 
 model AnalyticsSnapshot {
-  id        String    @id @default(cuid())
-  projectId String    @map("project_id")
-  visits    Int       @default(0)
-  signups   Int       @default(0)
-  createdAt DateTime  @default(now()) @map("created_at")
-
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  visits    Int      @default(0)
+  signups   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId, createdAt(sort: Desc)])
   @@map("analytics_snapshots")
 }
 
-// Add ChecklistItem model
 model ChecklistItem {
-  id            String  @id @default(cuid())
-  projectId     String  @map("project_id")
-  title         String
-  is_complete   Boolean @default(false) @map("is_complete")
-  ai_help_hint  String? @map("ai_help_hint") // Store the AI draft/hint
-  ai_image_prompt String? @map("ai_image_prompt") // Added for image prompts
-  order         Int     @default(0) // For ordering tasks
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  projectId       String   @map("project_id")
+  title           String
+  is_complete     Boolean  @default(false) @map("is_complete")
+  ai_help_hint    String?  @map("ai_help_hint")
+  order           Int      @default(0)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+  ai_image_prompt String?  @map("ai_image_prompt")
+  is_persistent   Boolean  @default(false)
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([projectId, order])
   @@unique([projectId, order])
+  @@index([projectId, order])
   @@map("checklist_items")
+}
+
+model debug_trigger_log {
+  log_id            Int       @id @default(autoincrement())
+  project_id_logged String?   @db.Uuid
+  logged_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+enum ProjectStatus {
+  design
+  prep_launch
+  launched
+  paused
+  retired
+}
+
+enum CodingPlatform {
+  CURSOR
+  WINDSURF
+  REPLIT
+  MANUS
+  OPENAI_CANVAS
+  ANTHROPIC_CONSOLE
+  OTHER
 }

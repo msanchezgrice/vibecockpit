@@ -1,4 +1,4 @@
-import { PrismaClient, ProjectStatus, Prisma } from '../src/generated/prisma';
+import { PrismaClient, ProjectStatus, CodingPlatform, Prisma } from '../src/generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -8,7 +8,10 @@ async function main() {
   // Seed Projects
   const project1 = await prisma.project.upsert({
     where: { name: 'Vibe Cockpit Alpha' },
-    update: {},
+    update: {
+      platform: CodingPlatform.CURSOR,
+      thumbUrl: '/images/thumb-placeholder.png'
+    },
     create: {
       name: 'Vibe Cockpit Alpha',
       status: ProjectStatus.prep_launch, // Set to prep_launch for testing checklist
@@ -16,17 +19,25 @@ async function main() {
       frontendUrl: 'https://vibecockpit.vercel.app',
       vercelProjectId: 'prj_...YOUR_ALPHA_PROJECT_ID', // Replace with actual ID if known
       githubRepo: 'msanchezgrice/vibecockpit',
+      platform: CodingPlatform.CURSOR,
+      thumbUrl: '/images/thumb-placeholder.png'
     },
   });
   console.log(`Created/updated project with id: ${project1.id}`);
 
   const project2 = await prisma.project.upsert({
     where: { name: 'Legacy Dashboard' },
-    update: { status: ProjectStatus.retired }, // Ensure retired status
+    update: { 
+      status: ProjectStatus.retired,
+      platform: CodingPlatform.OTHER,
+      thumbUrl: '/images/thumb-placeholder.png'
+    },
     create: {
       name: 'Legacy Dashboard',
       status: ProjectStatus.retired,
       frontendUrl: 'https://old.dashboard.com',
+      platform: CodingPlatform.OTHER,
+      thumbUrl: '/images/thumb-placeholder.png'
     },
   });
   console.log(`Created/updated project with id: ${project2.id}`);
