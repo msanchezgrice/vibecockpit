@@ -8,12 +8,21 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
+// Define proper types for API responses
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+  projectId?: string;
+  count?: number;
+}
+
 export default function ChecklistDebugPage() {
   const [projectId, setProjectId] = useState('');
   const [itemCount, setItemCount] = useState(3);
   const [isLoadingTrigger, setIsLoadingTrigger] = useState(false);
   const [isLoadingTest, setIsLoadingTest] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ApiResponse | null>(null);
 
   // Setup trigger
   const setupTrigger = async () => {
