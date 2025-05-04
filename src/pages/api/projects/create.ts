@@ -3,16 +3,16 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
-import { CodingPlatform, ProjectStatus } from '@/generated/prisma';
+import { CodingPlatform, ProjectStatus, Prisma } from '@/generated/prisma';
 
-// Validation schema
+// Validation schema - make it more flexible
 const createProjectSchema = z.object({
   name: z.string().min(1).max(60),
-  description: z.string().max(140).optional(),
-  url: z.string().url().optional().nullable(),
-  platform: z.nativeEnum(CodingPlatform),
-  repoUrl: z.string().regex(/^[\w-]+\/[\w.-]+$/).optional().nullable(),
-  status: z.nativeEnum(ProjectStatus),
+  description: z.string().max(140).optional().nullable(),
+  url: z.string().url().optional().nullable().or(z.literal('')),
+  platform: z.nativeEnum(CodingPlatform).optional().default('CURSOR'),
+  repoUrl: z.string().regex(/^[\w-]+\/[\w.-]+$/).optional().nullable().or(z.literal('')),
+  status: z.nativeEnum(ProjectStatus).optional().default('design'),
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -30,20 +30,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Validate request body
     console.log("Received project creation request:", req.body);
-    const validatedData = createProjectSchema.parse(req.body);
+    
+    // Clean input data - convert empty strings to null
+    const cleanedBody = { ...req.body };
+    Object.keys(cleanedBody).forEach(key => {
+      if (cleanedBody[key] === '') {
+        cleanedBody[key] = null;
+      }
+    });
+    
+    const validatedData = createProjectSchema.parse(cleanedBody);
     console.log("Validated project data:", validatedData);
+    
+    // Clean data for Prisma - remove undefined and empty strings
+    const prismaData = {
+      name: validatedData.name,
+      description: validatedData.description || null,
+      url: validatedData.url || null,
+      platform: validatedData.platform,
+      repoUrl: validatedData.repoUrl || null,
+      status: validatedData.status,
+      thumbUrl: '/images/thumb-placeholder.png', // Default placeholder
+    };
+    
+    console.log("Data being sent to Prisma:", prismaData);
     
     // Create the project
     const project = await prisma.project.create({
-      data: {
-        name: validatedData.name,
-        description: validatedData.description,
-        url: validatedData.url,
-        platform: validatedData.platform,
-        repoUrl: validatedData.repoUrl,
-        status: validatedData.status,
-        thumbUrl: '/images/thumb-placeholder.png', // Default placeholder
-      }
+      data: prismaData
     });
 
     console.log("Project created successfully:", {
@@ -89,10 +103,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error('Project creation failed:', error);
     
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
+    // Handle specific Prisma errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return res.status(409).json({ 
+          error: 'Project name already exists',
+          message: 'A project with this name already exists. Please choose a different name.'
+        });
+      }
     }
     
-    return res.status(500).json({ error: 'Failed to create project', message: error instanceof Error ? error.message : 'Unknown error' });
+    // Handle validation errors
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        error: 'Invalid request data', 
+        details: error.errors,
+        message: 'Please check your input and try again.'
+      });
+    }
+    
+    // Handle all other errors
+    return res.status(500).json({ 
+      error: 'Failed to create project', 
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 } 

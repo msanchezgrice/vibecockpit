@@ -150,25 +150,40 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
   // Handle project creation
   const handleCreateProject = async () => {
     try {
-      console.log('Creating project with data:', wizard.formData);
+      // Clean input data for API
+      const formData = { ...wizard.formData };
+      
+      // Handle URL formatting
+      if (formData.url && !formData.url.match(/^https?:\/\//)) {
+        formData.url = `https://${formData.url}`;
+      }
+      
+      // Handle empty strings
+      Object.keys(formData).forEach(key => {
+        if (formData[key] === '') {
+          formData[key] = null;
+        }
+      });
+      
+      console.log('Creating project with data:', formData);
       
       const response = await fetch('/api/projects/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(wizard.formData)
+        body: JSON.stringify(formData)
       });
       
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
         console.error('Project creation API error:', {
           status: response.status,
           statusText: response.statusText,
-          error: errorData
+          error: data
         });
-        throw new Error(`Failed to create project: ${response.status} ${response.statusText}`);
+        throw new Error(data.message || `Failed to create project: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
       console.log('Project creation successful, response:', data);
       
       // Analytics event
