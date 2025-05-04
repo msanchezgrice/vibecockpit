@@ -47,7 +47,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
         <div className="p-4 border rounded-md flex flex-col items-center justify-center text-muted-foreground">
           <AlertCircle className="h-5 w-5 text-amber-500 mb-2" />
-          <p className="text-sm text-center">Unable to load checklist. Try setting status to "Preparing to Launch".</p>
+          <p className="text-sm text-center">Unable to load checklist. Try setting status to &apos;Preparing to Launch&apos;.</p>
           <Button 
             variant="link" 
             className="text-sm text-blue-600 hover:underline p-0 h-auto mt-2" 
@@ -110,7 +110,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground italic py-2">
-            Set status to &quot;Preparing to Launch&quot; to generate a launch checklist with AI.
+            Set status to &apos;Preparing to Launch&apos; to generate a launch checklist with AI.
           </p>
         )}
         
