@@ -59,14 +59,19 @@ export function ImageUpload({ onImageUpload, currentImageUrl, className = '' }: 
     setUploadError(null);
 
     try {
-      // Create FormData
-      const formData = new FormData();
-      formData.append('image', file);
-
-      // Upload to API
+      // For now, we're using a simplified API that doesn't actually upload files
+      // but returns mock URLs, so we'll skip the FormData creation
+      
       const response = await fetch('/api/upload/image', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size 
+        }),
       });
 
       if (!response.ok) {
