@@ -25,16 +25,16 @@ interface GitHubCommit {
 }
 
 // Helper to fetch recent commits
-async function getGitHubCommits(repo: string): Promise<GitHubCommit[] | null> {
+async function getGitHubCommits(githubRepo: string): Promise<GitHubCommit[] | null> {
   if (!GITHUB_PAT) {
     console.warn('GITHUB_PAT is not set. Skipping GitHub commit fetch.');
     return null;
   }
-  if (!repo || !repo.includes('/')) {
-      console.warn(`Invalid repo format: ${repo}. Skipping.`);
+  if (!githubRepo || !githubRepo.includes('/')) {
+      console.warn(`Invalid repo format: ${githubRepo}. Skipping.`);
       return null;
   }
-  const url = `${GITHUB_API_URL}/repos/${repo}/commits?per_page=5`; // Fetch last 5
+  const url = `${GITHUB_API_URL}/repos/${githubRepo}/commits?per_page=5`; // Fetch last 5
   try {
     const response = await fetch(url, {
       headers: {
@@ -44,12 +44,12 @@ async function getGitHubCommits(repo: string): Promise<GitHubCommit[] | null> {
       },
     });
     if (!response.ok) {
-      console.error(`Failed to fetch commits for ${repo}: ${response.status} ${response.statusText}`);
+      console.error(`Failed to fetch commits for ${githubRepo}: ${response.status} ${response.statusText}`);
       return null;
     }
     return await response.json();
   } catch (error) {
-    console.error(`Error fetching commits for ${repo}:`, error);
+    console.error(`Error fetching commits for ${githubRepo}:`, error);
     return null;
   }
 }
@@ -72,8 +72,8 @@ export default async function handler(
 
   try {
     const projects = await prisma.project.findMany({
-      where: { repoUrl: { not: null } },
-      select: { id: true, repoUrl: true },
+      where: { githubRepo: { not: null } },
+      select: { id: true, githubRepo: true },
     });
 
     if (projects.length === 0) {
@@ -83,9 +83,9 @@ export default async function handler(
 
     let addedCount = 0;
     for (const project of projects) {
-      if (!project.repoUrl) continue;
+      if (!project.githubRepo) continue;
 
-      const commits = await getGitHubCommits(project.repoUrl);
+      const commits = await getGitHubCommits(project.githubRepo);
       if (!commits) continue;
 
       // Get existing commit shas for this project to avoid duplicates

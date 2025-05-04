@@ -1,47 +1,20 @@
 import prisma from '@/lib/prisma';
 
 /**
- * Vercel Cron Job: Update thumbUrl for projects that don't have one
- * This job runs on a schedule defined in vercel.json
+ * Vercel Cron Job: This was previously used to update thumbUrl for projects
+ * But since that field is no longer in the schema, this job is now a no-op
+ * Keeping the file for future implementation or reference
  */
 export async function processScreenshots() {
   try {
-    console.log('Starting screenshot job');
+    console.log('Starting screenshot job (disabled)');
     
-    // Find all projects without a thumbUrl
-    const projects = await prisma.project.findMany({
-      where: {
-        thumbUrl: null,
-      },
-      select: {
-        id: true,
-        name: true,
-        url: true,
-      },
-    });
-    
-    console.log(`Found ${projects.length} projects without thumbnails`);
-    
-    if (projects.length === 0) {
-      return { success: true, message: 'No projects to process' };
-    }
-    
-    // Update each project with a placeholder thumbnail
-    // In Sprint 02, this will be replaced with actual screenshot capture
-    const updatePromises = projects.map(project => 
-      prisma.project.update({
-        where: { id: project.id },
-        data: { thumbUrl: '/images/thumb-placeholder.png' },
-      })
-    );
-    
-    await Promise.all(updatePromises);
-    
-    console.log(`Updated ${projects.length} projects with placeholder thumbnails`);
+    // Since thumbUrl no longer exists, this job doesn't do anything
+    // A placeholder for future implementation
     
     return {
       success: true,
-      message: `Processed ${projects.length} projects`,
+      message: 'Screenshot job disabled - field no longer in schema',
     };
   } catch (error) {
     console.error('Error in screenshot job:', error);

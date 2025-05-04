@@ -9,8 +9,8 @@ import { ProjectStatus, Prisma } from '@/generated/prisma';
 const createProjectSchema = z.object({
   name: z.string().min(1).max(60),
   description: z.string().max(140).optional().nullable(),
-  url: z.string().url().optional().nullable().or(z.literal('')),
-  repoUrl: z.string().regex(/^[\w-]+\/[\w.-]+$/).optional().nullable().or(z.literal('')),
+  frontendUrl: z.string().url().optional().nullable().or(z.literal('')),
+  githubRepo: z.string().regex(/^[\w-]+\/[\w.-]+$/).optional().nullable().or(z.literal('')),
   status: z.nativeEnum(ProjectStatus).optional().default('design'),
 });
 
@@ -45,10 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const prismaData = {
       name: validatedData.name,
       description: validatedData.description || null,
-      url: validatedData.url || null,
-      repoUrl: validatedData.repoUrl || null,
+      frontendUrl: validatedData.frontendUrl || null,
+      githubRepo: validatedData.githubRepo || null,
       status: validatedData.status,
-      thumbUrl: '/images/thumb-placeholder.png', // Default placeholder
     };
     
     console.log("Data being sent to Prisma:", prismaData);
@@ -95,8 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Return success response
     return res.status(201).json({
       projectId: project.id,
-      status: project.status,
-      thumbUrl: project.thumbUrl
+      status: project.status
     });
   } catch (error) {
     console.error('Project creation failed:', error);

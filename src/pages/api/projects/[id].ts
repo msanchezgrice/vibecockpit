@@ -12,10 +12,10 @@ import { z, ZodError } from 'zod';
 const updateProjectSchema = z.object({
   name: z.string().min(1).optional(),
   status: z.nativeEnum(ProjectStatus).optional(),
-  url: z.string().url().optional().or(z.literal('')),
+  frontendUrl: z.string().url().optional().or(z.literal('')),
   description: z.string().optional(),
   vercelProjectId: z.string().optional().or(z.literal('')),
-  repoUrl: z.string().optional().or(z.literal('')),
+  githubRepo: z.string().optional().or(z.literal('')),
 });
 
 export default async function handler(
@@ -49,9 +49,9 @@ export default async function handler(
             name: validatedData.name, // Will be undefined if not sent
             description: validatedData.description === '' ? null : validatedData.description, // Allow clearing
             status: validatedData.status,
-            url: validatedData.url === '' ? null : validatedData.url,
+            frontendUrl: validatedData.frontendUrl === '' ? null : validatedData.frontendUrl,
             vercelProjectId: validatedData.vercelProjectId === '' ? null : validatedData.vercelProjectId, // Allow clearing
-            repoUrl: validatedData.repoUrl === '' ? null : validatedData.repoUrl, // Allow clearing
+            githubRepo: validatedData.githubRepo === '' ? null : validatedData.githubRepo, // Allow clearing
         };
 
         // Remove undefined fields so Prisma doesn't try to update them
