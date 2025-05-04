@@ -1,7 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { v4 as uuidv4 } from 'uuid';
+
+// Function to generate a random string to replace uuid
+function generateRandomId(length: number = 24): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // Allow file uploads by disabling the default body parser
 export const config = {
@@ -26,8 +35,8 @@ export default async function handler(
   }
 
   try {
-    // Generate a mock image URL (in production we would actually save the file)
-    const mockImageId = uuidv4();
+    // Generate a mock image URL using our random string function
+    const mockImageId = generateRandomId();
     const imageUrl = `/uploads/${mockImageId}.jpg`;
 
     // In a real implementation, we would save the file here
