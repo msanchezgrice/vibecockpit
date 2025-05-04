@@ -75,11 +75,12 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
     );
   }
 
+  // Make sure we accurately check if tasks exist
   const hasTasks = data && data.tasks && data.tasks.length > 0;
   console.log("[ChecklistPreview] Has tasks:", hasTasks, "Count:", data?.tasks?.length || 0);
 
   // If we have data but no tasks, show a message
-  if (data && !hasTasks) {
+  if (!hasTasks) {
     return (
       <div className="space-y-3">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
@@ -102,58 +103,49 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
     );
   }
 
+  // If we reach this point, we have tasks to display
   const completed_tasks = data?.completed_tasks ?? 0;
   const total_tasks = data?.total_tasks ?? 0;
   const progress = total_tasks > 0 ? (completed_tasks / total_tasks) * 100 : 0;
   const firstThreeTasks = data?.tasks?.slice(0, 3) ?? [];
 
-  console.log('[ChecklistPreview] Rendering with:', { hasTasks, completed_tasks, total_tasks, progress, firstThreeTasks });
+  console.log('[ChecklistPreview] Rendering tasks:', { hasTasks, completed_tasks, total_tasks, progress, firstThreeTasks });
 
   return (
     <>
       <div className="space-y-3">
         <h4 className="text-sm font-medium leading-none mb-2">Launch Checklist</h4>
         
-        {/* Progress Section (show only if there are actual tasks) */} 
-        {data && total_tasks > 0 && (
-          <>
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
-              <span>Progress</span>
-              <span>{completed_tasks} / {total_tasks}</span>
-            </div>
-            {/* Progress Bar */}
-            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-              <div 
-                className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </>
-        )}
+        {/* Progress Section */} 
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
+          <span>Progress</span>
+          <span>{completed_tasks} / {total_tasks}</span>
+        </div>
+        {/* Progress Bar */}
+        <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+          <div 
+            className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
         
-        {/* Task List or Empty State */} 
-        {hasTasks ? (
-          <ul className="space-y-2 mt-2">
-            {firstThreeTasks.map(task => (
-              <li key={task.id} className="flex items-center gap-2 text-sm">
-                {task.is_complete ? 
-                  <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" /> : 
-                  <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                }
-                <span className={task.is_complete ? 'text-muted-foreground line-through' : ''}> 
-                  {task.title}
-                </span>
-              </li>
-            ))}
-            {data.tasks.length > 3 && (
-              <li className="text-xs text-muted-foreground pl-6">... and {data.tasks.length - 3} more</li>
-            )}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground italic py-2">
-            Set status to &quot;Preparing to Launch&quot; to generate a launch checklist with AI.
-          </p>
-        )}
+        {/* Task List */} 
+        <ul className="space-y-2 mt-2">
+          {firstThreeTasks.map(task => (
+            <li key={task.id} className="flex items-center gap-2 text-sm">
+              {task.is_complete ? 
+                <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" /> : 
+                <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              }
+              <span className={task.is_complete ? 'text-muted-foreground line-through' : ''}> 
+                {task.title}
+              </span>
+            </li>
+          ))}
+          {data.tasks.length > 3 && (
+            <li className="text-xs text-muted-foreground pl-6">... and {data.tasks.length - 3} more</li>
+          )}
+        </ul>
         
         {/* Button to trigger the modal */}
         <Button 
@@ -161,7 +153,7 @@ export function ChecklistPreview({ projectId }: ChecklistPreviewProps) {
           className="text-sm w-full mt-2" 
           onClick={() => setIsModalOpen(true)}
         >
-          {hasTasks ? "View Full Checklist" : "Manage Checklist"}
+          View Full Checklist
         </Button>
       </div>
       
