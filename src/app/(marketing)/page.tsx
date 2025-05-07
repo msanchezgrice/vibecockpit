@@ -31,7 +31,7 @@ export default async function MarketingHomePage() {
             asChild
             className="mt-6 bg-blue-600 px-6 py-3 text-base hover:bg-blue-700"
           >
-            <Link href="/api/auth/signin">Sign in with GitHub</Link>
+            <Link href="/api/auth/signin?callbackUrl=/dashboard">Sign in with GitHub</Link>
           </Button>
         </div>
 
@@ -177,7 +177,7 @@ export default async function MarketingHomePage() {
           asChild
           className="mt-6 bg-white text-blue-600 hover:bg-gray-100"
         >
-          <Link href="/api/auth/signin">Sign in with GitHub</Link>
+          <Link href="/api/auth/signin?callbackUrl=/dashboard">Sign in with GitHub</Link>
         </Button>
       </section>
     </div>

@@ -8,7 +8,7 @@ export function LoginButton() {
   return (
     <button
       className={`${buttonClass} bg-blue-600 hover:bg-blue-700`}
-      onClick={() => signIn('github')}
+      onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
     >
       Sign in with GitHub
     </button>
