@@ -21,7 +21,7 @@ export default async function MarketingHomePage() {
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             ✨ Your Messy Side-Projects,<br className="hidden sm:block" />
             Organized & Shipped
-          </h1>
+                  </h1>
           <p className="mt-4 max-w-md text-lg text-gray-600">
             <strong>Virtualcofounder.ai</strong> keeps every {'"'}vibe-code{'"'} experiment in one place—repos,
             deployments, databases, costs—then pairs you with a{' '}
@@ -33,7 +33,7 @@ export default async function MarketingHomePage() {
           >
             <Link href="/api/auth/signin?callbackUrl=/dashboard">Sign in with GitHub</Link>
           </Button>
-        </div>
+                </div>
 
         {/* Hero illustration (swap the src with your asset) */}
         <div className="hidden flex-1 lg:block">
@@ -44,7 +44,7 @@ export default async function MarketingHomePage() {
             width={600}
             height={400}
           />
-        </div>
+                </div>
       </section>
 
       {/* ---------------- FEATURES ---------------- */}
@@ -62,7 +62,7 @@ export default async function MarketingHomePage() {
               <li>Last commit, uptime & spend at a glance</li>
               <li>Notes so you never say {'"'}where did I leave off?{'"'}</li>
             </ul>
-          </div>
+              </div>
 
           <div className="rounded-xl border bg-white p-6 shadow-sm">
             <h3 className="mb-3 text-xl font-semibold">
@@ -73,9 +73,9 @@ export default async function MarketingHomePage() {
               <li>Drafts copy, OG images & tweet threads</li>
               <li>Nudges you on Slack if tasks go stale</li>
             </ul>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* ---------------- AUDIENCE ---------------- */}
       <section className="bg-white py-20">
@@ -91,8 +91,8 @@ export default async function MarketingHomePage() {
               <h4 className="mb-2 text-lg font-semibold">🚀 Indie Devs</h4>
               <p className="text-sm text-gray-600">
                 Keep experiments tidy and launch more often.
-              </p>
-            </div>
+                </p>
+              </div>
 
             <div className="rounded-xl border bg-gray-50 p-6 shadow-sm">
               <h4 className="mb-2 text-lg font-semibold">🛠️ Hack-Week Teams</h4>
@@ -164,9 +164,9 @@ export default async function MarketingHomePage() {
                 <p className="text-sm text-gray-600">{step.copy}</p>
               </div>
             ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* ---------------- CTA ---------------- */}
       <section className="bg-blue-600 py-16 text-center text-white">

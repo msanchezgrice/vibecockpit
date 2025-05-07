@@ -49,6 +49,12 @@ export const authOptions: NextAuthOptions = {
     // Use it to limit write operations. Set to 0 to always update the database.
     updateAge: 24 * 60 * 60, // 24 hours
   },
+  pages: {
+    signIn: '/api/auth/signin',
+    signOut: '/api/auth/signout',
+    error: '/api/auth/error',
+    newUser: '/dashboard', // Redirect new users to the dashboard
+  },
   callbacks: {
     async signIn({ account, profile }) {
       if (account?.provider === 'github') {
@@ -60,6 +66,10 @@ export const authOptions: NextAuthOptions = {
         console.log('GitHub Sign In - Profile:', profile);
       }
       return true; // Return true to allow sign in
+    },
+    async redirect({ url: _url, baseUrl }) {
+      // Always redirect to dashboard after sign in
+      return `${baseUrl}/dashboard`;
     },
     async session({ session, user }) {
       // Send properties to the client, like an access_token from a provider.
