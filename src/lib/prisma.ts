@@ -3,7 +3,19 @@ import { PrismaClient } from '@/generated/prisma';
 // Create an interface for our mock client that matches the relevant properties of PrismaClient
 interface PrismaClientInterface {
   $disconnect?: () => Promise<void>;
+  $connect?: () => Promise<void>;
   [key: string]: unknown;
+  
+  // Define model properties to match Prisma schema
+  project: unknown;
+  account: unknown;
+  session: unknown;
+  user: unknown;
+  verificationToken: unknown;
+  changeLogEntry: unknown;
+  costSnapshot: unknown;
+  analyticsSnapshot: unknown;
+  checklistItem: unknown;
 }
 
 // Extend the NodeJS Global type to allow for 'prisma'
@@ -18,22 +30,70 @@ const isBuildOrPreview = process.env.NODE_ENV === 'production' &&
    process.env.NEXT_PUBLIC_SKIP_DB_CONN === 'true' ||
    process.env.VERCEL_ENV === undefined);
 
+// Create a mock query handler that returns empty results
+const createQueryHandler = () => {
+  return new Proxy({}, {
+    get: (_target, prop) => {
+      // Handle common Prisma query methods
+      if (
+        prop === 'findUnique' || 
+        prop === 'findFirst' || 
+        prop === 'findMany' || 
+        prop === 'create' || 
+        prop === 'update' || 
+        prop === 'upsert' || 
+        prop === 'delete' || 
+        prop === 'count' ||
+        prop === 'aggregate'
+      ) {
+        return () => Promise.resolve(prop === 'findMany' ? [] : null);
+      }
+      // Handle any unknown props
+      return createQueryHandler();
+    },
+  });
+};
+
 // Create a mock PrismaClient that doesn't connect to a database
 // This is used during build time or when DATABASE_URL is not available
 class PrismaMock implements PrismaClientInterface {
   [key: string]: unknown;
   
+  // Define all models from the Prisma schema
+  project: unknown;
+  account: unknown;
+  session: unknown;
+  user: unknown;
+  verificationToken: unknown;
+  changeLogEntry: unknown;
+  costSnapshot: unknown;
+  analyticsSnapshot: unknown;
+  checklistItem: unknown;
+  
   constructor() {
-    return new Proxy<PrismaClientInterface>(this, {
-      get: (_target, prop) => {
-        // Return a function that returns a Promise for any property access
-        return () => {
-          console.log(`Mock PrismaClient: ${String(prop)} called`);
-          return Promise.resolve([]);
-        };
-      }
-    });
+    // Initialize all model properties with the query handler
+    this.project = createQueryHandler();
+    this.account = createQueryHandler();
+    this.session = createQueryHandler();
+    this.user = createQueryHandler();
+    this.verificationToken = createQueryHandler();
+    this.changeLogEntry = createQueryHandler();
+    this.costSnapshot = createQueryHandler();
+    this.analyticsSnapshot = createQueryHandler();
+    this.checklistItem = createQueryHandler();
+    
+    // Add disconnect/connect methods
+    this.$disconnect = async () => Promise.resolve();
+    this.$connect = async () => Promise.resolve();
+    
+    // Log that we're using the mock
+    console.log('🔶 Using PrismaMock - database operations will return empty results');
+    
+    return this;
   }
+  
+  $disconnect = async (): Promise<void> => Promise.resolve();
+  $connect = async (): Promise<void> => Promise.resolve();
 }
 
 // Initialize PrismaClient based on environment
