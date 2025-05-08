@@ -1,57 +1,76 @@
 import { PrismaClient } from '@/generated/prisma';
 
+// Create an interface for our mock client that matches the relevant properties of PrismaClient
+interface PrismaClientInterface {
+  $disconnect?: () => Promise<void>;
+  [key: string]: unknown;
+}
+
 // Extend the NodeJS Global type to allow for 'prisma'
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prisma: PrismaClient | PrismaClientInterface | undefined;
 }
 
-// Default to a dummy URL during build time if DATABASE_URL is not available
-// This prevents build failures but won't actually connect to a database
-const databaseUrl = process.env.DATABASE_URL || 
-  (process.env.VERCEL_ENV === 'production' ? 
-    process.env.NEXT_PUBLIC_SUPABASE_URL ? 
-      `postgresql://postgres:postgres@${process.env.NEXT_PUBLIC_SUPABASE_URL.replace('https://', '')}:5432/postgres` :
-      'postgresql://postgres:postgres@localhost:5432/postgres' : 
-    'postgresql://postgres:postgres@localhost:5432/postgres');
+// Determine if we're in a build/preview environment
+const isBuildOrPreview = process.env.NODE_ENV === 'production' && 
+  (process.env.VERCEL_ENV === 'preview' || 
+   process.env.NEXT_PUBLIC_SKIP_DB_CONN === 'true' ||
+   process.env.VERCEL_ENV === undefined);
 
-// Configure with better connection management
-const prismaClientSingleton = () => {
-  // Skip database connections during build time in Vercel
-  if (process.env.NEXT_PUBLIC_SKIP_DB_CONN === 'true') {
-    console.log('🔶 Skipping database connection during build');
-    // Return a mock PrismaClient to prevent build errors
-    return new PrismaClient({
-      datasources: {
-        db: {
-          url: 'postgresql://postgres:postgres@localhost:5432/postgres'
-        }
+// Create a mock PrismaClient that doesn't connect to a database
+// This is used during build time or when DATABASE_URL is not available
+class PrismaMock implements PrismaClientInterface {
+  [key: string]: unknown;
+  
+  constructor() {
+    return new Proxy<PrismaClientInterface>(this, {
+      get: (_target, prop) => {
+        // Return a function that returns a Promise for any property access
+        return () => {
+          console.log(`Mock PrismaClient: ${String(prop)} called`);
+          return Promise.resolve([]);
+        };
       }
     });
   }
-  
-  return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    datasources: {
-      db: {
-        url: databaseUrl
-      }
-    }
-  });
-};
+}
 
-// Check if we are in production environment
-const prisma = global.prisma ?? prismaClientSingleton();
+// Initialize PrismaClient based on environment
+function createPrismaClient(): PrismaClient | PrismaClientInterface {
+  if (isBuildOrPreview) {
+    console.log('🔷 Using mock PrismaClient during build/preview');
+    return new PrismaMock();
+  }
 
-// In development, attach to global object to prevent multiple instances during hot reload
+  try {
+    // For actual runtime in development or production
+    console.log('🟢 Connecting to database with real PrismaClient');
+    return new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    });
+  } catch (error) {
+    console.error('⚠️ Failed to initialize PrismaClient', error);
+    // Fallback to mock if we can't initialize the real client
+    return new PrismaMock();
+  }
+}
+
+// In development, we want to use a singleton to prevent multiple connections
+const prisma = global.prisma || createPrismaClient();
+
+// Prevent multiple instances during hot module reloading in development
 if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma;
 }
 
-// Handle application shutdown - crucial for connection cleanup
-if (typeof window === 'undefined') { // Only in Node.js context, not browser
+// Handle application shutdown
+if (typeof window === 'undefined') {
   process.on('beforeExit', async () => {
-    await prisma.$disconnect();
+    // Only disconnect if it's a real PrismaClient
+    if (prisma.$disconnect && typeof prisma.$disconnect === 'function') {
+      await prisma.$disconnect();
+    }
   });
 }
 
