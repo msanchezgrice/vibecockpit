@@ -18,6 +18,14 @@ interface PrismaClientInterface {
   checklistItem: unknown;
 }
 
+// Define a type for our mock entities
+interface BaseMockEntity {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  [key: string]: unknown;
+}
+
 // Extend the NodeJS Global type to allow for 'prisma'
 declare global {
   // eslint-disable-next-line no-var
@@ -30,26 +38,80 @@ const isBuildOrPreview = process.env.NODE_ENV === 'production' &&
    process.env.NEXT_PUBLIC_SKIP_DB_CONN === 'true' ||
    process.env.VERCEL_ENV === undefined);
 
+// Create sample mock data for relations
+const createMockEntity = (modelName: string, id?: string): BaseMockEntity => {
+  const mockId = id || 'mock-id-123';
+  // Base entity that all models will have
+  const baseEntity: BaseMockEntity = {
+    id: mockId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  
+  // Add model-specific fields
+  switch (modelName) {
+    case 'project':
+      return {
+        ...baseEntity,
+        name: 'Mock Project',
+        description: 'A mock project for build time',
+        status: 'design',
+        frontendUrl: 'https://example.com',
+        githubRepo: 'user/repo',
+      };
+    case 'checklistItem':
+      return {
+        ...baseEntity,
+        title: 'Mock Task',
+        is_complete: false,
+        projectId: 'mock-project-id',
+        order: 0,
+        ai_help_hint: null,
+        ai_image_prompt: null,
+        // Include relation
+        project: createMockEntity('project', 'mock-project-id'),
+      };
+    default:
+      return baseEntity;
+  }
+};
+
 // Create a mock query handler that returns empty results
-const createQueryHandler = () => {
+const createQueryHandler = (modelName = '') => {
   return new Proxy({}, {
     get: (_target, prop) => {
       // Handle common Prisma query methods
-      if (
-        prop === 'findUnique' || 
-        prop === 'findFirst' || 
-        prop === 'findMany' || 
-        prop === 'create' || 
-        prop === 'update' || 
-        prop === 'upsert' || 
-        prop === 'delete' || 
-        prop === 'count' ||
-        prop === 'aggregate'
-      ) {
-        return () => Promise.resolve(prop === 'findMany' ? [] : null);
+      if (prop === 'findUnique' || prop === 'findFirst') {
+        return (params?: { where?: unknown; include?: unknown }) => {
+          console.log(`Mock ${modelName}.${String(prop)} called with params:`, params);
+          
+          // Return a mock entity with relations if include is specified
+          if (params?.include) {
+            const mockEntity = createMockEntity(modelName);
+            return Promise.resolve(mockEntity);
+          }
+          
+          return Promise.resolve(null);
+        };
       }
-      // Handle any unknown props
-      return createQueryHandler();
+      
+      if (prop === 'findMany') {
+        return () => Promise.resolve([]);
+      }
+      
+      if (prop === 'create' || prop === 'update' || prop === 'upsert' || prop === 'delete') {
+        return (params?: unknown) => {
+          console.log(`Mock ${modelName}.${String(prop)} called with params:`, params);
+          return Promise.resolve(createMockEntity(modelName));
+        };
+      }
+      
+      if (prop === 'count' || prop === 'aggregate') {
+        return () => Promise.resolve(0);
+      }
+      
+      // Handle any unknown props by returning another proxy
+      return createQueryHandler(`${modelName}.${String(prop)}`);
     },
   });
 };
@@ -72,15 +134,15 @@ class PrismaMock implements PrismaClientInterface {
   
   constructor() {
     // Initialize all model properties with the query handler
-    this.project = createQueryHandler();
-    this.account = createQueryHandler();
-    this.session = createQueryHandler();
-    this.user = createQueryHandler();
-    this.verificationToken = createQueryHandler();
-    this.changeLogEntry = createQueryHandler();
-    this.costSnapshot = createQueryHandler();
-    this.analyticsSnapshot = createQueryHandler();
-    this.checklistItem = createQueryHandler();
+    this.project = createQueryHandler('project');
+    this.account = createQueryHandler('account');
+    this.session = createQueryHandler('session');
+    this.user = createQueryHandler('user');
+    this.verificationToken = createQueryHandler('verificationToken');
+    this.changeLogEntry = createQueryHandler('changeLogEntry');
+    this.costSnapshot = createQueryHandler('costSnapshot');
+    this.analyticsSnapshot = createQueryHandler('analyticsSnapshot');
+    this.checklistItem = createQueryHandler('checklistItem');
     
     // Add disconnect/connect methods
     this.$disconnect = async () => Promise.resolve();
