@@ -6,6 +6,47 @@ import { Prisma } from '@/generated/prisma';
 import { openai, supportsResponsesApi, callResponsesApi, callResponsesWithWebSearch, extractWebSearchResults, ResponsesAPIResponse } from '@/lib/openai';
 import { ChatCompletion } from 'openai/resources';
 
+// Type assertion to help TypeScript during build
+// This is a workaround for the PrismaMock implementation when building
+type FindUniqueParams = {
+  where: { id: string };
+  include?: { 
+    project?: { 
+      select?: { 
+        name?: boolean; 
+        description?: boolean; 
+        frontendUrl?: boolean; 
+        githubRepo?: boolean;
+      } 
+    } 
+  };
+};
+
+type ChecklistItem = {
+  id: string;
+  title: string;
+  is_complete: boolean;
+  project?: {
+    name: string;
+    description?: string | null;
+    frontendUrl?: string | null;
+    githubRepo?: string | null;
+  } | null;
+};
+
+type UpdateParams = {
+  where: { id: string };
+  data: Prisma.ChecklistItemUpdateInput;
+};
+
+// Type-safe model properties for the prisma client
+interface PrismaWithModels {
+  checklistItem: {
+    findUnique: (params: FindUniqueParams) => Promise<ChecklistItem | null>;
+    update: (params: UpdateParams) => Promise<ChecklistItem>;
+  }
+}
+
 // Extend Vercel function timeout from 60 to 90 seconds
 export const config = {
   maxDuration: 60, // Set timeout to 60 seconds
@@ -131,7 +172,9 @@ export default async function handler(
   if (req.method === 'POST') {
     try {
       // 1. Fetch Task and Project details
-      const checklistItem = await prisma.checklistItem.findUnique({
+      // Use the type assertion to help TypeScript
+      const typedPrisma = prisma as PrismaWithModels;
+      const checklistItem = await typedPrisma.checklistItem.findUnique({
         where: { id: checklistItemId },
         include: { project: { select: { name: true, description: true, frontendUrl: true, githubRepo: true } } },
       });
@@ -310,7 +353,7 @@ Based on the project and task details${taskReasoning ? ' and the specific task c
             updateData.ai_image_prompt = null;
             generatedContentType = 'error';
             // Continue with the update rather than throwing an error
-            const updatedItem = await prisma.checklistItem.update({
+            const updatedItem = await typedPrisma.checklistItem.update({
               where: { id: checklistItemId },
               data: updateData,
             });
@@ -378,7 +421,7 @@ Based on the project and task details${taskReasoning ? ' and the specific task c
           updateData.ai_image_prompt = null;
           generatedContentType = 'error';
           // Continue with the update rather than throwing an error
-          const updatedItem = await prisma.checklistItem.update({
+          const updatedItem = await typedPrisma.checklistItem.update({
             where: { id: checklistItemId },
             data: updateData,
           });
@@ -434,7 +477,7 @@ Based on the project and task details${taskReasoning ? ' and the specific task c
 
       // Update the database
          console.log(`[AI Task ${checklistItemId}] Updating database with ${generatedContentType}`);
-         const updatedItem = await prisma.checklistItem.update({
+         const updatedItem = await typedPrisma.checklistItem.update({
             where: { id: checklistItemId },
             data: updateData,
          });
