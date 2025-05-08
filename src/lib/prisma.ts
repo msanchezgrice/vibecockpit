@@ -6,7 +6,7 @@ interface PrismaClientInterface {
   $connect?: () => Promise<void>;
   [key: string]: unknown;
   
-  // Define model properties to match Prisma schema
+  // Define model properties to match Prisma client naming (camelCase)
   project: unknown;
   account: unknown;
   session: unknown;
@@ -59,7 +59,7 @@ const createQueryHandler = () => {
 class PrismaMock implements PrismaClientInterface {
   [key: string]: unknown;
   
-  // Define all models from the Prisma schema
+  // Define all models from the Prisma schema with client naming convention (camelCase)
   project: unknown;
   account: unknown;
   session: unknown;
