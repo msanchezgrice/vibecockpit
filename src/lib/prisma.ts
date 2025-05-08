@@ -6,13 +6,35 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
+// Default to a dummy URL during build time if DATABASE_URL is not available
+// This prevents build failures but won't actually connect to a database
+const databaseUrl = process.env.DATABASE_URL || 
+  (process.env.VERCEL_ENV === 'production' ? 
+    process.env.NEXT_PUBLIC_SUPABASE_URL ? 
+      `postgresql://postgres:postgres@${process.env.NEXT_PUBLIC_SUPABASE_URL.replace('https://', '')}:5432/postgres` :
+      'postgresql://postgres:postgres@localhost:5432/postgres' : 
+    'postgresql://postgres:postgres@localhost:5432/postgres');
+
 // Configure with better connection management
 const prismaClientSingleton = () => {
+  // Skip database connections during build time in Vercel
+  if (process.env.NEXT_PUBLIC_SKIP_DB_CONN === 'true') {
+    console.log('🔶 Skipping database connection during build');
+    // Return a mock PrismaClient to prevent build errors
+    return new PrismaClient({
+      datasources: {
+        db: {
+          url: 'postgresql://postgres:postgres@localhost:5432/postgres'
+        }
+      }
+    });
+  }
+  
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL
+        url: databaseUrl
       }
     }
   });
